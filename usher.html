@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haleon — Usher Redemption Terminal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+
+  <!-- Firebase (same config as main app) -->
+  <script type="module">
+    import { initializeApp }                            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, get, update }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    // 🔧 SAME CONFIG AS index.html
+  const firebaseConfig = {
+    apiKey: "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU",
+    authDomain: "haleon-partners-club.firebaseapp.com",
+    projectId: "haleon-partners-club",
+    storageBucket: "haleon-partners-club.firebasestorage.app",
+    messagingSenderId: "1037867331058",
+    appId: "1:1037867331058:web:0777855bac1c681ad88f6b"
+  };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    window._usherFb = { db, ref, get, update };
+  </script>
+
+  <style>
+    :root {
+      --bg:#0a0d0f; --surface:#111418; --surface2:#181c21;
+      --border:#1e2329; --green:#4ade80; --green-dark:#22c55e;
+      --green-dim:rgba(74,222,128,0.12); --text:#f0f4f8; --muted:#6b7a8d;
+      --red:#ef4444; --red-dim:rgba(239,68,68,0.12);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text);
+      min-height:100vh; -webkit-font-smoothing:antialiased;
+    }
+
+    .page { max-width:480px; margin:0 auto; padding:32px 20px 60px; }
+
+    /* Header */
+    .header { text-align:center; margin-bottom:32px; }
+    .brand {
+      font-family:'Barlow Condensed',sans-serif;
+      font-weight:900; font-size:2rem; letter-spacing:-1px;
+    }
+    .brand span { color:var(--green); }
+    .subtitle {
+      color:var(--muted); font-size:0.78rem; letter-spacing:3px;
+      text-transform:uppercase; margin-top:4px;
+    }
+
+    /* Cards */
+    .card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:20px; padding:24px; margin-bottom:20px;
+    }
+    .card-title {
+      font-family:'Barlow Condensed',sans-serif;
+      font-weight:800; font-size:1.3rem; margin-bottom:4px;
+    }
+    .card-sub { color:var(--muted); font-size:0.83rem; margin-bottom:20px; }
+
+    /* Video Scanner */
+    #video-wrap {
+      border-radius:14px; overflow:hidden; background:#000;
+      width:100%; aspect-ratio:1; position:relative; display:none;
+    }
+    video { width:100%; height:100%; object-fit:cover; display:block; }
+    .scan-overlay {
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .scan-corner {
+      position:absolute;
+      width:60%; aspect-ratio:1;
+    }
+    .scan-corner::before,.scan-corner::after,
+    .scan-corner > span::before,.scan-corner > span::after {
+      content:''; position:absolute; width:22px; height:22px;
+      border-color:var(--green); border-style:solid;
+    }
+    .scan-corner::before  { top:0; left:0; border-width:3px 0 0 3px; border-radius:4px 0 0 0; }
+    .scan-corner::after   { top:0; right:0; border-width:3px 3px 0 0; border-radius:0 4px 0 0; }
+    .scan-corner > span::before { bottom:0; left:0; border-width:0 0 3px 3px; border-radius:0 0 0 4px; }
+    .scan-corner > span::after  { bottom:0; right:0; border-width:0 3px 3px 0; border-radius:0 0 4px 0; }
+    .scan-line {
+      position:absolute; width:60%; height:2px;
+      background:linear-gradient(90deg,transparent,var(--green),transparent);
+      animation:scanAnim 2s linear infinite;
+    }
+    @keyframes scanAnim { 0%{top:20%} 50%{top:80%} 100%{top:20%} }
+
+    /* Buttons */
+    .btn {
+      width:100%; border:none; border-radius:12px; padding:14px;
+      font-family:'Barlow Condensed',sans-serif; font-weight:700;
+      font-size:1rem; letter-spacing:0.5px; cursor:pointer;
+      transition:opacity 0.2s; margin-top:12px;
+    }
+    .btn-green  { background:var(--green); color:#000; }
+    .btn-green:hover { opacity:0.88; }
+    .btn-red    { background:transparent; color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+    .btn-muted  { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+    .btn-muted:hover { border-color:var(--muted); color:var(--text); }
+    .btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+    /* Divider */
+    .divider {
+      display:flex; align-items:center; gap:12px; margin:20px 0;
+    }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .divider span { color:var(--muted); font-size:0.78rem; white-space:nowrap; }
+
+    /* Manual */
+    textarea.manual {
+      width:100%; background:var(--surface2); border:1px solid var(--border);
+      border-radius:10px; padding:14px 16px; color:var(--text);
+      font-family:'Barlow',sans-serif; font-size:0.85rem; outline:none;
+      transition:border-color 0.2s; resize:none; height:90px; line-height:1.5;
+    }
+    textarea.manual:focus { border-color:var(--green); }
+
+    /* Result */
+    #result-card { display:none; }
+    #result-card.show { display:block; }
+
+    .info-label { font-size:0.7rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:3px; }
+    .info-val   { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1.15rem; margin-bottom:14px; }
+
+    .reward-highlight {
+      background:var(--green-dim); border:1px solid rgba(74,222,128,0.3);
+      border-radius:14px; padding:16px 20px; display:flex; align-items:center;
+      gap:16px; margin:16px 0;
+    }
+    .reward-icon { font-size:2.8rem; }
+    .reward-name {
+      font-family:'Barlow Condensed',sans-serif; font-weight:800;
+      font-size:1.4rem; color:var(--green);
+    }
+    .reward-pts  { font-size:0.82rem; color:var(--muted); margin-top:2px; }
+
+    .member-card {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:14px; padding:16px; margin-bottom:16px;
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    }
+    .member-field span  { display:block; font-size:0.68rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+    .member-field strong{ font-weight:600; font-size:0.9rem; }
+
+    .points-row {
+      display:flex; justify-content:space-between; align-items:center;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:12px; padding:14px 18px; margin-bottom:16px;
+    }
+    .points-row .label { color:var(--muted); font-size:0.85rem; }
+    .points-row .val   {
+      font-family:'Barlow Condensed',sans-serif; font-weight:800;
+      font-size:1.3rem; color:var(--green);
+    }
+    .points-row .after-val {
+      font-family:'Barlow Condensed',sans-serif; font-weight:800;
+      font-size:1.1rem; color:var(--red);
+    }
+
+    .status-banner {
+      border-radius:12px; padding:16px; text-align:center;
+      font-weight:700; font-size:0.95rem; margin-top:14px; display:none;
+    }
+    .status-banner.success {
+      display:block; background:rgba(74,222,128,0.15);
+      border:1px solid rgba(74,222,128,0.4); color:var(--green);
+    }
+    .status-banner.error {
+      display:block; background:var(--red-dim);
+      border:1px solid rgba(239,68,68,0.3); color:var(--red);
+    }
+
+    /* Loading spinner inline */
+    .spinner {
+      display:inline-block; width:18px; height:18px; border-radius:50%;
+      border:2px solid rgba(0,0,0,0.3); border-top-color:#000;
+      animation:spin 0.7s linear infinite; vertical-align:middle; margin-left:8px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    canvas { display:none; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="brand">HAL<span>E</span>ON <span>PARTNERS CLUB</span></div>
+    <div class="subtitle">Usher Redemption Terminal</div>
+  </div>
+
+  <!-- Scanner -->
+  <div class="card">
+    <div class="card-title">Scan Member QR Code</div>
+    <div class="card-sub">Point camera at the QR code shown on the member's reward dialog</div>
+
+    <div id="video-wrap">
+      <video id="qr-video" playsinline autoplay muted></video>
+      <div class="scan-overlay">
+        <div class="scan-corner"><span></span></div>
+        <div class="scan-line"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-green" id="btn-start" onclick="startScan()">📷 Start Camera Scan</button>
+    <button class="btn btn-red"   id="btn-stop"  onclick="stopScan()" style="display:none;">✕ Stop Camera</button>
+
+    <div class="divider"><span>or paste QR data manually</span></div>
+    <textarea class="manual" id="manual-data" placeholder='Paste JSON from QR code here...'></textarea>
+    <button class="btn btn-muted" onclick="parseManual()" style="margin-top:8px;">Parse & Load →</button>
+  </div>
+
+  <!-- Result -->
+  <div class="card" id="result-card">
+    <div class="card-title">Redemption Details</div>
+
+    <div class="member-card">
+      <div class="member-field"><span>Name</span><strong id="res-name">—</strong></div>
+      <div class="member-field"><span>Phone</span><strong id="res-phone">—</strong></div>
+      <div class="member-field"><span>Email</span><strong id="res-email">—</strong></div>
+      <div class="member-field"><span>Pharmacy</span><strong id="res-pharmacy">—</strong></div>
+      <div class="member-field"><span>Member ID</span><strong id="res-member-id">—</strong></div>
+    </div>
+
+    <div class="reward-highlight">
+      <div class="reward-icon" id="res-icon">🎁</div>
+      <div>
+        <div class="reward-name" id="res-reward">—</div>
+        <div class="reward-pts" id="res-pts-label">— pts required</div>
+      </div>
+    </div>
+
+    <div class="points-row">
+      <div><div class="label">Current Points</div><div class="val" id="res-current-pts">—</div></div>
+      <div style="color:var(--muted);font-size:1.5rem;">→</div>
+      <div><div class="label">After Redemption</div><div class="after-val" id="res-after-pts">—</div></div>
+    </div>
+
+    <button class="btn btn-green" id="btn-redeem" onclick="confirmRedeem()">✓ Confirm Redemption</button>
+    <div class="status-banner" id="status-banner"></div>
+    <button class="btn btn-muted" onclick="resetResult()" style="margin-top:8px;">← Scan Another</button>
+  </div>
+
+</div>
+
+<canvas id="scan-canvas"></canvas>
+
+<script>
+  const rewardIcons = { flask:'🧪', pen:'🖊️', notebook:'📓', mug:'☕' };
+  let videoStream  = null;
+  let scanInterval = null;
+  let parsedData   = null;
+  let memberCurrentPts = 0;
+
+  function startScan() {
+    document.getElementById('video-wrap').style.display = 'block';
+    document.getElementById('btn-start').style.display  = 'none';
+    document.getElementById('btn-stop').style.display   = 'block';
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        videoStream = stream;
+        const video = document.getElementById('qr-video');
+        video.srcObject = stream;
+        video.play();
+        scanInterval = setInterval(scanFrame, 200);
+      })
+      .catch(() => {
+        alert('Camera not available. Use manual paste below.');
+        stopScan();
+      });
+  }
+
+  function stopScan() {
+    clearInterval(scanInterval); scanInterval = null;
+    if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+    document.getElementById('video-wrap').style.display = 'none';
+    document.getElementById('btn-start').style.display  = 'block';
+    document.getElementById('btn-stop').style.display   = 'none';
+  }
+
+  function scanFrame() {
+    const video  = document.getElementById('qr-video');
+    const canvas = document.getElementById('scan-canvas');
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(img.data, img.width, img.height);
+    if (code) { stopScan(); parseQRString(code.data); }
+  }
+
+  function parseManual() {
+    parseQRString(document.getElementById('manual-data').value.trim());
+  }
+
+  function parseQRString(raw) {
+    try {
+      const data = JSON.parse(raw);
+      if (!data.uid || !data.reward) throw new Error('Invalid payload');
+      parsedData = data;
+      loadMemberAndShow(data);
+    } catch {
+      alert('Invalid QR data. Please scan a valid Haleon Partners Club reward QR.');
+    }
+  }
+
+  async function loadMemberAndShow(data) {
+    const btn = document.getElementById('btn-redeem');
+    btn.innerHTML = 'Loading member data… <span class="spinner"></span>';
+    btn.disabled  = true;
+
+    // Check QR isn't older than 5 minutes
+    const age = Date.now() - (data.ts || 0);
+    if (age > 5 * 60 * 1000) {
+      showStatus('error', '⏰ QR code has expired (older than 5 minutes). Ask member to generate a new one.');
+      showResult(data, null);
+      return;
+    }
+
+    try {
+      // Fetch live user data from Firebase
+      const fb   = window._usherFb;
+      const snap = await fb.get(fb.ref(fb.db, 'users/' + data.uid));
+      if (!snap.exists()) { showStatus('error', '❌ Member not found in database.'); return; }
+
+      const userData = snap.val();
+      memberCurrentPts = userData.score || 0;
+      showResult(data, memberCurrentPts);
+    } catch (e) {
+      // Firebase not configured — show data from QR only
+      memberCurrentPts = -1;
+      showResult(data, null);
+    }
+  }
+
+  function showResult(data, currentPts) {
+    document.getElementById('res-name').textContent      = data.user     || data.name || '—';
+    document.getElementById('res-phone').textContent     = data.phone    || '—';
+    document.getElementById('res-email').textContent     = data.email    || '—';
+    document.getElementById('res-pharmacy').textContent  = data.pharmacy || '—';
+    document.getElementById('res-member-id').textContent = data.memberId || '—';
+    document.getElementById('res-reward').textContent    = data.reward   || '—';
+    document.getElementById('res-pts-label').textContent = (data.pts || '—') + ' pts required';
+    document.getElementById('res-icon').textContent      = rewardIcons[data.key] || '🎁';
+
+    if (currentPts !== null && currentPts >= 0) {
+      const after = Math.max(0, currentPts - (data.pts || 0));
+      document.getElementById('res-current-pts').textContent = currentPts.toLocaleString() + ' pts';
+      document.getElementById('res-after-pts').textContent   = after.toLocaleString() + ' pts';
+
+      const btn = document.getElementById('btn-redeem');
+      if (currentPts < (data.pts || 0)) {
+        btn.disabled     = true;
+        btn.textContent  = '✕ Insufficient Points';
+        showStatus('error', '⚠ Member does not have enough points for this reward.');
+      } else {
+        btn.disabled     = false;
+        btn.textContent  = '✓ Confirm Redemption';
+      }
+    } else {
+      document.getElementById('res-current-pts').textContent = 'N/A';
+      document.getElementById('res-after-pts').textContent   = 'N/A';
+      document.getElementById('btn-redeem').disabled = false;
+      document.getElementById('btn-redeem').textContent = '✓ Confirm Redemption';
+    }
+
+    document.getElementById('status-banner').className = 'status-banner';
+    document.getElementById('status-banner').style.display = 'none';
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function confirmRedeem() {
+    if (!parsedData) return;
+    const btn = document.getElementById('btn-redeem');
+    btn.innerHTML = 'Processing… <span class="spinner"></span>';
+    btn.disabled  = true;
+
+    try {
+      const fb  = window._usherFb;
+      const uid = parsedData.uid;
+      const pts = parsedData.pts || 0;
+
+      // Read current score from Firebase
+      const snap = await fb.get(fb.ref(fb.db, 'users/' + uid));
+      if (!snap.exists()) throw new Error('User not found');
+
+      const current = snap.val().score || 0;
+      if (current < pts) {
+        showStatus('error', '⚠ Insufficient points. Redemption cancelled.');
+        btn.textContent = '✕ Insufficient Points';
+        return;
+      }
+
+      const newScore = current - pts;
+      const tier = newScore < 100 ? 'Student' : newScore < 300 ? 'Community Pharmacist' : 'Pharmacy Owner';
+
+      await fb.update(fb.ref(fb.db, 'users/' + uid), {
+        score:       newScore,
+        tier,
+        lastUpdated: new Date().toISOString(),
+      });
+
+      // Update UI
+      document.getElementById('res-current-pts').textContent = newScore.toLocaleString() + ' pts';
+      document.getElementById('res-after-pts').textContent   = newScore.toLocaleString() + ' pts';
+
+      showStatus('success',
+        `✅ Redeemed! "${parsedData.reward}" given to ${parsedData.user || 'member'}.\n−${pts} pts. New balance: ${newScore.toLocaleString()} pts.`);
+
+      btn.textContent = '✓ Redeemed';
+
+    } catch (e) {
+      // Firebase not configured / offline — manual confirmation
+      showStatus('success',
+        `✅ Manually confirmed. Please deduct ${parsedData.pts} pts from member ${parsedData.memberId} in your records.`);
+      btn.textContent = '✓ Confirmed (Manual)';
+    }
+  }
+
+  function showStatus(type, msg) {
+    const el = document.getElementById('status-banner');
+    el.textContent  = msg;
+    el.className    = 'status-banner ' + type;
+    el.style.display = 'block';
+  }
+
+  function resetResult() {
+    document.getElementById('result-card').classList.remove('show');
+    document.getElementById('manual-data').value = '';
+    document.getElementById('status-banner').className = 'status-banner';
+    parsedData = null;
+  }
+</script>
+</body>
+</html>
