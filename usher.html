@@ -10,29 +10,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
-    <!-- Firebase Firestore -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-      import {
-        getFirestore,
-        doc,
-        getDoc,
-        updateDoc,
-      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU",
-        authDomain: "haleon-partners-club.firebaseapp.com",
-        projectId: "haleon-partners-club",
-        storageBucket: "haleon-partners-club.firebasestorage.app",
-        messagingSenderId: "1037867331058",
-        appId: "1:1037867331058:web:0777855bac1c681ad88f6b",
-      };
-      const fbApp = initializeApp(firebaseConfig);
-      const db = getFirestore(fbApp);
-      window._fb = { db, doc, getDoc, updateDoc };
-      window._fbReady = true;
-    </script>
 
     <style>
       :root {
@@ -652,7 +630,26 @@
 
     <canvas id="qr-canvas"></canvas>
 
-    <script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey:            "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU",
+        authDomain:        "haleon-partners-club.firebaseapp.com",
+        projectId:         "haleon-partners-club",
+        storageBucket:     "haleon-partners-club.firebasestorage.app",
+        messagingSenderId: "1037867331058",
+        appId:             "1:1037867331058:web:0777855bac1c681ad88f6b",
+      };
+      const fbApp = initializeApp(firebaseConfig);
+      const db    = getFirestore(fbApp);
+
       const SHEETS_WEBHOOK =
         "https://script.google.com/macros/s/AKfycbzXv_YPKLL1UUW00yZ07DvlCDgTB_bdf3Cqlb48QPVoG1e4BEeE5mPACs-9tnw7cYkw/exec";
 
@@ -1145,7 +1142,14 @@
         hideAlert("scan-alert");
         setPill("", "Ready to scan");
       }
+
+      // ── Expose to HTML onclick attributes (required for type=module scope) ──
+      window.startCamera   = startCamera;
+      window.stopCamera    = stopCamera;
+      window.doRedeem      = doRedeem;
+      window.resetAll      = resetAll;
+      window.selectReward  = selectReward;
+      window.backToPicker  = backToPicker;
     </script>
   </body>
 </html>
-
