@@ -392,9 +392,10 @@ function syncToSheets(uid, data) {
 
 function getTier() {
   const s = state.score;
-  if (s < 100) return { name: "Student", cls: "card-student" };
-  if (s < 300) return { name: "Community Pharmacist", cls: "card-community" };
-  return { name: "Pharmacy Owner", cls: "card-owner" };
+  if (s < 100)  return { name: "Student",  cls: "card-student" };
+  if (s < 300)  return { name: "Silver",   cls: "card-silver" };
+  if (s < 600)  return { name: "Gold",     cls: "card-gold" };
+  return              { name: "Platinum", cls: "card-platinum" };
 }
 
 // ════════════════════════════════════════

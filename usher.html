@@ -462,10 +462,92 @@
       canvas {
         display: none;
       }
+
+      /* ── Login overlay ── */
+      #login-overlay {
+        position: fixed; inset: 0; z-index: 999;
+        background: var(--bg);
+        display: flex; align-items: center; justify-content: center; padding: 24px;
+      }
+      #login-overlay.hidden { display: none; }
+      .login-box {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 20px; padding: 32px 26px; width: 100%; max-width: 360px;
+      }
+      .login-title {
+        font-family: "Barlow Condensed", sans-serif;
+        font-weight: 900; font-size: 1.6rem; margin-bottom: 4px;
+      }
+      .login-title span { color: var(--green); }
+      .login-sub {
+        color: var(--muted); font-size: 0.75rem;
+        letter-spacing: 3px; text-transform: uppercase; margin-bottom: 28px;
+      }
+      .login-field { margin-bottom: 14px; }
+      .login-field label {
+        display: block; font-size: 0.72rem; color: var(--muted);
+        margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase;
+      }
+      .login-field input {
+        width: 100%; padding: 12px 14px;
+        background: var(--surface2); border: 1px solid var(--border);
+        border-radius: 10px; color: var(--text);
+        font-family: "Barlow", sans-serif; font-size: 0.95rem;
+        outline: none; transition: border-color 0.2s;
+      }
+      .login-field input:focus { border-color: var(--green); }
+      .login-btn {
+        width: 100%; padding: 13px; background: var(--green); color: #000;
+        font-family: "Barlow Condensed", sans-serif;
+        font-weight: 800; font-size: 1.1rem; letter-spacing: 1px;
+        border: none; border-radius: 10px; cursor: pointer;
+        margin-top: 8px; transition: opacity 0.2s;
+      }
+      .login-btn:hover { opacity: 0.88; }
+      .login-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+      .login-err {
+        margin-top: 12px; padding: 10px 14px;
+        background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+        border-radius: 8px; color: var(--red); font-size: 0.82rem; display: none;
+      }
+      .login-err.show { display: block; }
+      .usher-user-bar {
+        display: none; align-items: center; gap: 8px;
+        font-size: 0.72rem; color: var(--muted); margin-bottom: 8px;
+        padding: 8px 12px; background: var(--surface2);
+        border: 1px solid var(--border); border-radius: 10px;
+      }
+      .usher-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; }
+      .usher-signout { margin-left:auto; cursor:pointer; color:var(--red); }
     </style>
   </head>
   <body>
+    <!-- ── Login Overlay ── -->
+    <div id="login-overlay">
+      <div class="login-box">
+        <div class="login-title">HAL<span>E</span>ON <span>PARTNERS CLUB</span></div>
+        <div class="login-sub">Usher Terminal</div>
+        <div class="login-field">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="usher@haleon.com" autocomplete="username" />
+        </div>
+        <div class="login-field">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password" />
+        </div>
+        <button class="login-btn" id="login-btn">Sign In</button>
+        <div class="login-err" id="login-err"></div>
+      </div>
+    </div>
+
     <div class="page">
+      <!-- Usher user bar -->
+      <div class="usher-user-bar" id="usher-user-bar">
+        <div class="usher-dot"></div>
+        <span id="usher-email-display"></span>
+        <span class="usher-signout" id="usher-signout">Sign out</span>
+      </div>
+
       <!-- Header -->
       <div class="header">
         <div class="brand">HAL<span>E</span>ON <span>PARTNERS CLUB</span></div>
@@ -633,6 +715,9 @@
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
       import {
+        getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import {
         getFirestore,
         doc,
         getDoc,
@@ -649,6 +734,60 @@
       };
       const fbApp = initializeApp(firebaseConfig);
       const db    = getFirestore(fbApp);
+
+      // Expose Firebase to window
+      window._fb = { db, doc, getDoc, updateDoc };
+      window._fbReady = true;
+
+      const auth = getAuth(fbApp);
+
+      onAuthStateChanged(auth, (user) => {
+        const overlay = document.getElementById("login-overlay");
+        const userBar = document.getElementById("usher-user-bar");
+        const emailEl = document.getElementById("usher-email-display");
+        if (user) {
+          overlay.classList.add("hidden");
+          if (userBar) userBar.style.display = "flex";
+          if (emailEl) emailEl.textContent = user.email;
+        } else {
+          overlay.classList.remove("hidden");
+          if (userBar) userBar.style.display = "none";
+        }
+      });
+
+      async function doLogin() {
+        const btn   = document.getElementById("login-btn");
+        const email = document.getElementById("login-email").value.trim();
+        const pass  = document.getElementById("login-password").value;
+        const err   = document.getElementById("login-err");
+        err.classList.remove("show");
+        if (!email || !pass) {
+          err.textContent = "Please enter your email and password.";
+          err.classList.add("show"); return;
+        }
+        btn.disabled = true; btn.textContent = "Signing in…";
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+        } catch (e) {
+          err.textContent = "Invalid email or password. Please try again.";
+          err.classList.add("show");
+          btn.disabled = false; btn.textContent = "Sign In";
+        }
+      }
+
+      async function doLogout() { await signOut(auth); resetAll(); }
+      window.doLogin  = doLogin;
+      window.doLogout = doLogout;
+
+      // Wire up login button and enter key inside module (avoids onclick scope issues)
+      document.getElementById("login-btn").addEventListener("click", doLogin);
+      document.getElementById("usher-signout").addEventListener("click", doLogout);
+      document.getElementById("login-password").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doLogin();
+      });
+      document.getElementById("login-email").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("login-password").focus();
+      });
 
       const SHEETS_WEBHOOK =
         "https://script.google.com/macros/s/AKfycbzXv_YPKLL1UUW00yZ07DvlCDgTB_bdf3Cqlb48QPVoG1e4BEeE5mPACs-9tnw7cYkw/exec";

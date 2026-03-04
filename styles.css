@@ -807,12 +807,17 @@ a {
 }
 
 /* Tier body gradients — updated */
-.card-student  { background: linear-gradient(155deg,#c0ccc0 0%,#dde8dd 55%,#aebcae 100%); }
-.card-community{ background: linear-gradient(155deg,#2c3748 0%,#3d5060 55%,#1e2c3c 100%); }
-.card-owner    { background: linear-gradient(155deg,#a8b8a0 0%,#c0d0b4 55%,#96a890 100%); }
+/* Student — light silver with green accent (matching reference) */
+.card-student  { background: linear-gradient(155deg,#c8d4c8 0%,#e0e8e0 55%,#b8c8b8 100%); }
+/* Silver — dark blue-grey slate */
 .card-silver   { background: linear-gradient(155deg,#2c3748 0%,#3d5060 55%,#1e2c3c 100%); }
-.card-gold     { background: linear-gradient(155deg,#a8b8a0 0%,#c0d0b4 55%,#96a890 100%); }
-.card-platinum { background: linear-gradient(155deg,#0d1117 0%,#1a2030 55%,#090c12 100%); }
+/* Gold — warm gold/lime tinted */
+.card-gold     { background: linear-gradient(155deg,#c8b870 0%,#ddd080 55%,#b0a058 100%); }
+/* Platinum — near-black charcoal */
+.card-platinum { background: linear-gradient(155deg,#1a1a1a 0%,#2d2d2d 55%,#0d0d0d 100%); }
+/* Legacy aliases */
+.card-community{ background: linear-gradient(155deg,#2c3748 0%,#3d5060 55%,#1e2c3c 100%); }
+.card-owner    { background: linear-gradient(155deg,#c8b870 0%,#ddd080 55%,#b0a058 100%); }
 
 /* ─── CARD FRONT (cf-*) ─── */
 .cf-content {
@@ -828,7 +833,7 @@ a {
 }
 .cf-rewards {
   font-family:'Barlow Condensed',sans-serif;
-  font-weight:700; font-size:0.68rem; letter-spacing:1.5px;
+  font-weight:700; font-size:0.6rem; letter-spacing:1px;
 }
 .cf-hdivide { width:1px; height:26px; flex-shrink:0; }
 .cf-tier {
@@ -888,34 +893,55 @@ a {
 /* ─── Tier-specific colours ─── */
 /* Student */
 .card-student .cf-haleon,.card-student .cf-rewards,.card-student .cf-tier { color:rgba(0,0,0,0.78); }
-.card-student .cf-plus    { color:#167a40; }
 .card-student .cf-hdivide { background:rgba(0,0,0,0.25); }
 .card-student .cf-watermark { color:rgba(0,0,0,0.1); }
 .card-student .cb-haleon,.card-student .cb-rewards,.card-student .cb-tagline { color:rgba(0,0,0,0.7); }
-.card-student .cb-plus    { color:#167a40; }
 .card-student .cb-watermark { color:rgba(0,0,0,0.1); }
 .card-student .cb-name-cell { background:#4ade80; color:rgba(0,0,0,0.85); }
 .card-student .cb-id-cell   { background:rgba(255,255,255,0.88); color:rgba(0,0,0,0.8); }
+/* Silver */
+.card-silver .cf-haleon,.card-silver .cf-rewards,.card-silver .cf-tier { color:rgba(255,255,255,0.9); }
+.card-silver .cf-hdivide { background:rgba(255,255,255,0.3); }
+.card-silver .cf-watermark { color:rgba(255,255,255,0.08); }
+.card-silver .cb-haleon,.card-silver .cb-rewards,.card-silver .cb-tagline { color:rgba(255,255,255,0.78); }
+.card-silver .cb-watermark { color:rgba(255,255,255,0.08); }
+.card-silver .cb-name-cell { background:#4b5563; color:rgba(255,255,255,0.92); }
+.card-silver .cb-id-cell   { background:rgba(255,255,255,0.15); color:rgba(255,255,255,0.88); }
+/* Gold */
+.card-gold .cf-haleon,.card-gold .cf-rewards,.card-gold .cf-tier { color:rgba(0,0,0,0.8); }
+.card-gold .cf-hdivide { background:rgba(0,0,0,0.25); }
+.card-gold .cf-watermark { color:rgba(0,0,0,0.1); }
+.card-gold .cb-haleon,.card-gold .cb-rewards,.card-gold .cb-tagline { color:rgba(0,0,0,0.72); }
+.card-gold .cb-watermark { color:rgba(0,0,0,0.1); }
+.card-gold .cb-name-cell { background:#a3e635; color:rgba(0,0,0,0.88); }
+.card-gold .cb-id-cell   { background:rgba(0,0,0,0.15); color:rgba(0,0,0,0.82); }
+/* Platinum */
+.card-platinum .cf-haleon,.card-platinum .cf-rewards,.card-platinum .cf-tier { color:rgba(255,255,255,0.92); }
+.card-platinum .cf-hdivide { background:rgba(255,255,255,0.25); }
+.card-platinum .cf-watermark { color:rgba(255,255,255,0.07); }
+.card-platinum .cb-haleon,.card-platinum .cb-rewards,.card-platinum .cb-tagline { color:rgba(255,255,255,0.75); }
+.card-platinum .cb-watermark { color:rgba(255,255,255,0.07); }
+.card-platinum .cb-name-cell { background:#374151; color:rgba(255,255,255,0.92); }
+.card-platinum .cb-id-cell   { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.85); }
 /* Community (Silver) */
 .card-community .cf-haleon,.card-community .cf-rewards,.card-community .cf-tier { color:rgba(255,255,255,0.88); }
-.card-community .cf-plus    { color:#9ca3af; }
 .card-community .cf-hdivide { background:rgba(255,255,255,0.3); }
 .card-community .cf-watermark { color:rgba(255,255,255,0.08); }
 .card-community .cb-haleon,.card-community .cb-rewards,.card-community .cb-tagline { color:rgba(255,255,255,0.75); }
-.card-community .cb-plus    { color:#9ca3af; }
 .card-community .cb-watermark { color:rgba(255,255,255,0.08); }
 .card-community .cb-name-cell { background:#4b5563; color:rgba(255,255,255,0.9); }
 .card-community .cb-id-cell   { background:rgba(255,255,255,0.15); color:rgba(255,255,255,0.85); }
 /* Owner (Gold/Lime) */
 .card-owner .cf-haleon,.card-owner .cf-rewards,.card-owner .cf-tier { color:rgba(0,0,0,0.78); }
-.card-owner .cf-plus    { color:#3a6b0a; }
 .card-owner .cf-hdivide { background:rgba(0,0,0,0.25); }
 .card-owner .cf-watermark { color:rgba(0,0,0,0.1); }
 .card-owner .cb-haleon,.card-owner .cb-rewards,.card-owner .cb-tagline { color:rgba(0,0,0,0.7); }
-.card-owner .cb-plus    { color:#3a6b0a; }
 .card-owner .cb-watermark { color:rgba(0,0,0,0.1); }
 .card-owner .cb-name-cell { background:#a3e635; color:rgba(0,0,0,0.85); }
 .card-owner .cb-id-cell   { background:rgba(255,255,255,0.88); color:rgba(0,0,0,0.8); }
+
+
+
 
 
 /* Stats */
