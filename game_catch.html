@@ -26,6 +26,8 @@
     .float-good { color: var(--green); }
     .float-bad { color: #ef4444; }
     @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-50px) scale(1.2); opacity: 0; } }
+
+    .fact-box { background: rgba(74, 222, 128, 0.1); border: 1px solid var(--green); border-radius: 12px; padding: 16px; margin-bottom: 24px; color: var(--text); font-size: 0.95rem; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -36,7 +38,7 @@
     <div style="font-size: 5rem; margin-bottom: 20px;">🧺</div>
     <div class="auth-title">Catch & Win</div>
     <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
-      Use the joystick (or drag) to catch good items (+10 pts).<br>
+      drag to catch good items (+10 pts).<br>
       Avoid bad items or missing good ones (-10 pts & lose 1 life).<br>
       You have 60 seconds and 3 lives!
     </p>
@@ -75,7 +77,12 @@
     <div style="font-size: 4rem; margin-bottom: 10px;" id="result-icon">🏆</div>
     <div class="auth-title" id="result-title">Time's Up!</div>
     <div style="font-size: 3.5rem; font-weight: 800; color: var(--green); margin-bottom: 10px; line-height: 1;" id="result-score">0 pts</div>
-    <div style="color:var(--muted); font-size: 0.95rem; margin-bottom: 24px;" id="result-breakdown">Great job catching healthy items!</div>
+    
+    <div class="fact-box" id="result-fact">
+        <strong>Did you know?</strong><br>
+        <span id="fact-text">Fact goes here.</span>
+    </div>
+
     <div id="result-actions"></div>
   </div>
 
@@ -121,8 +128,39 @@
     const ctx = canvas.getContext('2d');
     let cw, ch;
 
-    const goodEmojis = ['💊', '🌿', '💧', '🦷'];
-    const badEmojis = ['🦠', '🍔', '🍭', '🍩'];
+    // ---------------------------------------------------------
+    // 🛠️ IMAGE ASSETS & FACTS SETUP
+    // ---------------------------------------------------------
+
+    // 1. The Panadol Facts (Shown on Game Over)
+    const panadolFacts = [
+        "Panadol with Optizorb dissolves 5X faster because it contains innovative Optizorb technology.",
+        "Two small film-coated tablets are proven to be much easier to swallow than one large non-coated tablet.",
+        "Adding caffeine significantly boosts the efficacy of the fast-absorbing formula!",
+        "89% of Egyptian consumers have tried this trusted brand!",
+        "79% of Egyptian consumers rely on it regularly. High trust!",
+        "25% of Egyptian consumers select it as their absolute most often used brand. A true market leader!"
+    ];
+
+    // 2. Setup your Bad Image (e.g. standard paracetamol, bugs, junk food)
+    const badImg = new Image();
+    badImg.src = 'assets/not_panadol.png'; // <--- CHANGE THIS TO YOUR BAD IMAGE FILE NAME
+
+    // 3. Setup your Good Images (Add as many as you want to the array)
+    const goodImageSrcs = [
+        'assets/pack1.png', // <--- CHANGE THIS TO YOUR GOOD IMAGE FILE NAME
+        'assets/pack2.png',
+        'assets/pack3.png',
+        'assets/pack4.png', // <--- ADD MORE OR REMOVE IF YOU ONLY HAVE ONE
+    ];
+    
+    const goodImgs = goodImageSrcs.map(src => {
+        let img = new Image();
+        img.src = src;
+        return img;
+    });
+
+    // ---------------------------------------------------------
     
     let basket = { x: 0, y: 0, w: 80, h: 60, emoji: '🧺' };
     let items = [];
@@ -214,15 +252,21 @@
       if(timeLeft <= 0 || lives <= 0) return;
       
       const isGood = Math.random() > 0.35; 
-      const list = isGood ? goodEmojis : badEmojis;
-      const emoji = list[Math.floor(Math.random() * list.length)];
+      
+      // Select the image to spawn
+      let imgObj;
+      if (isGood) {
+          imgObj = goodImgs[Math.floor(Math.random() * goodImgs.length)];
+      } else {
+          imgObj = badImg;
+      }
       
       items.push({
-        x: Math.random() * (cw - 40) + 20,
-        y: -40,
-        size: 40,
+        x: Math.random() * (cw - 60) + 30, // Added slight margin so images don't clip edge
+        y: -50,
+        size: 50, // Increased size slightly to make images look better
         dy: (Math.random() * 2 + 3) * speedMultiplier,
-        emoji: emoji,
+        img: imgObj,
         isGood: isGood
       });
       
@@ -281,8 +325,10 @@
         let item = items[i];
         item.y += item.dy;
         
-        ctx.font = item.size + 'px sans-serif';
-        ctx.fillText(item.emoji, item.x, item.y);
+        // Draw the image instead of the emoji
+        if (item.img && item.img.complete) {
+            ctx.drawImage(item.img, item.x - item.size/2, item.y - item.size/2, item.size, item.size);
+        }
 
         const hitX = item.x > basket.x && item.x < basket.x + basket.w;
         const hitY = item.y > basket.y - 20 && item.y < basket.y + basket.h;
@@ -329,6 +375,10 @@
       document.getElementById('result-icon').textContent = survived ? "⏱️" : "💔";
       document.getElementById('result-score').textContent = score + " pts";
       
+      // Inject random fact
+      const randomFact = panadolFacts[Math.floor(Math.random() * panadolFacts.length)];
+      document.getElementById('fact-text').textContent = randomFact;
+
       if (score > 0) launchConfetti(3000);
 
       const actionsDiv = document.getElementById('result-actions');
