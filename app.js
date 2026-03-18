@@ -12,7 +12,7 @@ const state = {
 
 const answeredSet = new Set();
 const tabOrder = ["home", "rewards", "scanner", "profile"];
-const TOTAL_GAMES = 9; // Updated to 9 games
+const TOTAL_GAMES = 10; // Updated games
 
 function makeQRUrl(data, size = 200) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
@@ -152,7 +152,7 @@ function syncToSheets(uid, data) {
   fetch(SHEETS_WEBHOOK, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).catch(() => {});
 }
 
-function getTier() { const points = state.score || 0; if (points >= 400) return { name: "Pharmacy Owner", cls: "card-owner", front: "assets/card3_front.png", back: "assets/card3_back.png" }; if (points >= 200) return { name: "Community Pharmacists", cls: "card-community", front: "assets/card2_front.png", back: "assets/card2_back.png" }; return { name: "Student", cls: "card-student", front: "assets/card1_front.png", back: "assets/card1_back.png" }; }
+function getTier() { const points = state.score || 0; if (points >= 400) return { name: "Pharmacy Owner", cls: "card-owner", front: "assets/Phar Front.png", back: "assets/Phar Back.png" }; if (points >= 200) return { name: "Community Pharmacists", cls: "card-community", front: "assets/Comm Front.png", back: "assets/Comm Back.png" }; return { name: "Student", cls: "card-student", front: "assets/Stu Front.png", back: "assets/Stu Back.png" }; }
 
 function updateHomeUI() {
   const tier = getTier();

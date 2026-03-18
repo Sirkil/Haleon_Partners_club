@@ -285,7 +285,7 @@
       [firstCard, secondCard, lockBoard] = [null, null, false];
     }
 
-    function endGame(isWin) {
+function endGame(isWin) {
       document.getElementById('screen-game').style.display = 'none';
       document.getElementById('screen-result').style.display = 'flex';
 
@@ -310,19 +310,10 @@
       }
 
       const actionsDiv = document.getElementById('result-actions');
-      
-      if (currentMode === 'challenge' && isWin) {
-        actionsDiv.innerHTML = `
-          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-        `;
-      } else if (currentMode === 'test' && isWin) {
-        actionsDiv.innerHTML = `
-          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-          <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
-        `;
-      } else {
-        actionsDiv.innerHTML = `<button class="btn-primary" onclick="goBack()">Return to Home</button>`;
-      }
+      actionsDiv.innerHTML = `
+        <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
+        <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
+      `;
     }
 
     function processPoints() {

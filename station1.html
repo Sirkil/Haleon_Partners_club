@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Station 1: Speed & Reflexes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+  <style>
+    body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+    .station-container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    
+    .cards-row { display: flex; flex-direction: row; gap: 30px; width: 100%; justify-content: center; margin-top: 40px; }
+    .station-card { flex: 1; max-width: 400px; background: var(--surface2); border: 2px solid var(--border); border-radius: 24px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+    .station-card:hover { border-color: var(--green); transform: translateY(-8px); box-shadow: 0 12px 24px rgba(46, 231, 1, 0.15); }
+    .station-card-icon { font-size: 5rem; margin-bottom: 20px; }
+    .station-card-title { font-size: 1.8rem; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+
+    /* Canvas styling for Catch Game on Desktop */
+    #catch-canvas-wrap { position: relative; width: 100%; max-width: 800px; height: 600px; margin: 20px auto; background: var(--surface2); border: 2px solid var(--border); border-radius: 16px; overflow: hidden; }
+    #catch-canvas { display: block; width: 100%; height: 100%; }
+
+    /* Custom Buzzer Area */
+    .buzzer-area { display: flex; gap: 30px; justify-content: center; margin-top: 40px; }
+    .buzzer-btn-visual { flex: 1; max-width: 300px; padding: 40px 20px; border-radius: 20px; font-size: 2rem; font-weight: 800; text-align: center; border: 4px solid var(--border); background: var(--surface); color: var(--text); }
+    .buzzer-btn-visual.active-p1 { border-color: var(--green); background: rgba(74,222,128,0.1); }
+    .buzzer-btn-visual.active-p2 { border-color: #60a5fa; background: rgba(96,165,250,0.1); }
+
+    .fact-box { background: rgba(74, 222, 128, 0.1); border: 1px solid var(--green); border-radius: 12px; padding: 20px; margin: 20px 0; font-size: 1.1rem; }
+    .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
+
+  <div class="station-container screen active" id="screen-hub">
+    <div style="color:var(--green); font-weight:800; font-size:1.2rem; letter-spacing:3px; margin-bottom:10px;">STATION 1</div>
+    <div class="auth-title" style="font-size: 3rem;">Speed & Reflexes</div>
+    <div class="cards-row">
+      <div class="station-card" onclick="startGame('buzzer')">
+        <div class="station-card-icon">🚨</div>
+        <div class="station-card-title">Buzzer Battle</div>
+        <p style="color:var(--muted);">2 Players. First to buzz answers True or False!</p>
+      </div>
+      <div class="station-card" onclick="startGame('catch')">
+        <div class="station-card-icon">🧺</div>
+        <div class="station-card-title">Catch & Win</div>
+        <p style="color:var(--muted);">Single Player. Move left and right to catch items.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="station-container screen" id="screen-buzzer">
+    <button class="btn-secondary" style="align-self:flex-start; width:auto; padding:10px 20px;" onclick="goToHub()">← Exit Game</button>
+    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+      <div style="font-size:1.5rem; font-weight:800; color:var(--green);" id="buzzer-level">LEVEL 1</div>
+      <div style="font-size:2rem; font-weight:800;" id="buzzer-timer">10s</div>
+    </div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:40px; width:100%; margin-top:20px; font-size:1.8rem; font-weight:600; text-align:center;" id="buzzer-question">
+      Question goes here
+    </div>
+    <div class="buzzer-area" style="width:100%;">
+      <div class="buzzer-btn-visual" id="ui-p1">Player 1<br><span style="font-size:1rem; color:var(--muted);">Press 'E'</span></div>
+      <div class="buzzer-btn-visual" id="ui-p2">Player 2<br><span style="font-size:1rem; color:var(--muted);">Press 'T'</span></div>
+    </div>
+    <div id="buzzer-dialog" style="display:none; margin-top:30px; font-size:1.5rem; color:var(--green); font-weight:800; text-align:center;">
+      <span id="buzzer-announcement">Player 1 Buzzed!</span><br>
+      <span style="color:var(--text); font-size:1.2rem; font-weight:500;">Press 'E' for TRUE &nbsp;&nbsp;|&nbsp;&nbsp; Press 'T' for FALSE</span>
+    </div>
+  </div>
+
+  <div class="station-container screen" id="screen-catch">
+    <button class="btn-secondary" style="align-self:flex-start; width:auto; padding:10px 20px;" onclick="goToHub()">← Exit Game</button>
+    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-top:20px; max-width:800px;">
+      <div style="font-size:1.5rem; font-weight:800; color:var(--green);" id="catch-score-hud">0 pts</div>
+      <div style="font-size:1.2rem; color:var(--muted);">Use 'E' (Left) & 'T' (Right)</div>
+      <div style="font-size:1.5rem; font-weight:800;" id="catch-timer-hud">60s</div>
+    </div>
+    <div id="catch-canvas-wrap">
+      <canvas id="catch-canvas"></canvas>
+    </div>
+  </div>
+
+  <div class="station-container screen" id="screen-result" style="text-align: center;">
+    <div style="font-size: 5rem; margin-bottom: 10px;" id="result-icon">🏆</div>
+    <div class="auth-title" style="font-size: 3rem;" id="result-title">Game Over</div>
+    <div style="font-size: 3.5rem; font-weight: 800; color: var(--green); margin-bottom: 10px; line-height: 1; display: none;" id="result-score">0 pts</div>
+    
+    <div class="fact-box" id="result-fact" style="display:none; max-width:600px; margin: 20px auto;">
+        <strong>Did you know?</strong><br><span id="fact-text">Fact</span>
+    </div>
+
+    <div id="result-actions" style="width:100%; max-width:800px; margin-top:20px;"></div>
+  </div>
+
+  <script>
+    // --- GLOBAL ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+    let activeGame = null; 
+
+    // --- FACTS & IMAGES (For Catch) ---
+    const panadolFacts = [
+        "Panadol with Optizorb dissolves 5X faster because it contains innovative Optizorb technology.",
+        "Two small film-coated tablets are proven to be much easier to swallow than one large non-coated tablet.",
+        "Adding caffeine significantly boosts the efficacy of the fast-absorbing formula!",
+        "89% of Egyptian consumers have tried this trusted brand!"
+    ];
+    const badImg = new Image(); badImg.src = 'assets/not_panadol.png'; // <-- Add your asset
+    const goodImgs = ['assets/pack1.png', 'assets/pack2.png'].map(src => { let i = new Image(); i.src = src; return i; }); // <-- Add your assets
+
+    // --- NAVIGATION ---
+    function goToHub() { activeGame = null; resetGames(); showScreen('screen-hub'); }
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function startGame(game) { 
+      activeGame = game; 
+      showScreen('screen-' + activeGame); 
+      if (activeGame === 'buzzer') initBuzzer(); 
+      else initCatch(); 
+    }
+    function resetGames() { clearInterval(buzzerTimerId); cancelAnimationFrame(catchLoopId); clearInterval(catchTimerId); clearTimeout(catchSpawnId); }
+
+    // --- KEYBOARD LISTENER ---
+    window.addEventListener('keydown', (e) => {
+        let key = e.key.toLowerCase();
+        if (activeGame === 'buzzer') {
+            if (buzzerState === 'waiting_buzz') {
+                if (key === 'e') handleBuzz(1);
+                if (key === 't') handleBuzz(2);
+            } else if (buzzerState === 'waiting_answer') {
+                if (key === 'e') handleAnswer(true);
+                if (key === 't') handleAnswer(false);
+            }
+        } else if (activeGame === 'catch') {
+            if (key === 'e') catchKeys.e = true;
+            if (key === 't') catchKeys.t = true;
+        }
+    });
+    window.addEventListener('keyup', (e) => {
+        let key = e.key.toLowerCase();
+        if (activeGame === 'catch') {
+            if (key === 'e') catchKeys.e = false;
+            if (key === 't') catchKeys.t = false;
+        }
+    });
+
+    // --- BUZZER LOGIC ---
+    let buzzerState = 'idle', buzzerScore1 = 0, buzzerScore2 = 0, buzzerLevel = 0, activeBuzzer = 0, buzzerTime = 10, buzzerTimerId;
+    const buzzerQuestions = [
+      { q: "Haleon is the maker of Panadol.", a: true },
+      { q: "The recommended daily water intake is 500ml.", a: false },
+      { q: "Panadol with Optizorb dissolves 5X faster.", a: true }
+    ];
+
+    function initBuzzer() { buzzerScore1 = 0; buzzerScore2 = 0; buzzerLevel = 0; nextBuzzerLevel(); }
+    
+    function nextBuzzerLevel() {
+        if (buzzerLevel >= buzzerQuestions.length) { endBuzzer(); return; }
+        buzzerState = 'waiting_buzz'; buzzerTime = 10;
+        document.getElementById('ui-p1').className = 'buzzer-btn-visual'; document.getElementById('ui-p2').className = 'buzzer-btn-visual';
+        document.getElementById('buzzer-dialog').style.display = 'none';
+        document.getElementById('buzzer-level').textContent = `LEVEL ${buzzerLevel + 1}`;
+        document.getElementById('buzzer-question').textContent = buzzerQuestions[buzzerLevel].q;
+        document.getElementById('buzzer-timer').textContent = '10s';
+        
+        clearInterval(buzzerTimerId);
+        buzzerTimerId = setInterval(() => {
+            buzzerTime--; document.getElementById('buzzer-timer').textContent = buzzerTime + 's';
+            if (buzzerTime <= 0) { clearInterval(buzzerTimerId); buzzerLevel++; nextBuzzerLevel(); }
+        }, 1000);
+    }
+
+    function handleBuzz(player) {
+        buzzerState = 'waiting_answer'; activeBuzzer = player; clearInterval(buzzerTimerId);
+        document.getElementById('ui-p' + player).classList.add('active-p' + player);
+        document.getElementById('buzzer-announcement').textContent = `Player ${player} Buzzed!`;
+        document.getElementById('buzzer-dialog').style.display = 'block';
+    }
+
+    function handleAnswer(answer) {
+        buzzerState = 'idle';
+        let isCorrect = (answer === buzzerQuestions[buzzerLevel].a);
+        if (isCorrect) {
+            if (activeBuzzer === 1) buzzerScore1 += 100; else buzzerScore2 += 100;
+        }
+        buzzerLevel++; nextBuzzerLevel();
+    }
+
+    function endBuzzer() {
+        showScreen('screen-result'); 
+        document.getElementById('result-fact').style.display = 'none';
+        document.getElementById('result-score').style.display = 'none';
+        document.getElementById('result-title').textContent = "Battle Over!";
+        document.getElementById('result-icon').textContent = "🏆";
+        launchConfetti(3000);
+        
+        const actionsDiv = document.getElementById('result-actions');
+        actionsDiv.innerHTML = `
+          <div style="font-size:2rem; font-weight:800; margin-bottom:20px;">
+            <span style="color:var(--green);">Player 1: ${buzzerScore1}</span> &nbsp;|&nbsp; 
+            <span style="color:#60a5fa;">Player 2: ${buzzerScore2}</span>
+          </div>
+          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
+        `;
+    }
+
+    // --- CATCH LOGIC ---
+    let catchScore = 0, catchLives = 3, catchTime = 60, catchItems = [], catchSpeed = 1, catchKeys = {e: false, t: false};
+    let catchLoopId, catchTimerId, catchSpawnId, catchBasket = { x: 350, y: 520, w: 100, h: 60, emoji: '🧺' };
+    const cvs = document.getElementById('catch-canvas'); const ctx = cvs.getContext('2d');
+
+    function initCatch() {
+        cvs.width = 800; cvs.height = 600; catchBasket.x = 350;
+        catchScore = 0; catchLives = 3; catchTime = 60; catchItems = []; catchSpeed = 1;
+        document.getElementById('catch-score-hud').textContent = '0 pts';
+        
+        clearInterval(catchTimerId); clearTimeout(catchSpawnId); cancelAnimationFrame(catchLoopId);
+        catchTimerId = setInterval(() => {
+            catchTime--; catchSpeed += 0.05;
+            document.getElementById('catch-timer-hud').textContent = catchTime + 's';
+            if (catchTime <= 0) endCatch(true);
+        }, 1000);
+        spawnCatchItem();
+        catchLoopId = requestAnimationFrame(catchLoop);
+    }
+
+    function spawnCatchItem() {
+        if(catchTime <= 0 || catchLives <= 0) return;
+        const isGood = Math.random() > 0.35;
+        const imgObj = isGood ? goodImgs[Math.floor(Math.random() * goodImgs.length)] : badImg;
+        catchItems.push({ x: Math.random() * 700 + 50, y: -50, size: 60, dy: (Math.random() * 2 + 4) * catchSpeed, img: imgObj, isGood: isGood });
+        catchSpawnId = setTimeout(spawnCatchItem, Math.max(400, 1000 - (60 - catchTime)*10));
+    }
+
+    function catchLoop() {
+        if (catchKeys.e) catchBasket.x = Math.max(0, catchBasket.x - 12);
+        if (catchKeys.t) catchBasket.x = Math.min(800 - catchBasket.w, catchBasket.x + 12);
+
+        ctx.clearRect(0, 0, 800, 600);
+        ctx.font = '60px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(catchBasket.emoji, catchBasket.x + catchBasket.w/2, catchBasket.y + catchBasket.h/2);
+
+        for (let i = catchItems.length - 1; i >= 0; i--) {
+            let item = catchItems[i]; item.y += item.dy;
+            if (item.img && item.img.complete) ctx.drawImage(item.img, item.x - item.size/2, item.y - item.size/2, item.size, item.size);
+            
+            const hit = (item.x > catchBasket.x && item.x < catchBasket.x + catchBasket.w && item.y > catchBasket.y - 20 && item.y < catchBasket.y + catchBasket.h);
+            if (hit) {
+                if (item.isGood) { catchScore += 10; document.getElementById('catch-score-hud').textContent = catchScore + ' pts'; } 
+                else { catchLives--; catchScore -= 10; if(catchLives <= 0) endCatch(false); }
+                catchItems.splice(i, 1); continue;
+            }
+            if (item.y > 620) { if (item.isGood) { catchLives--; if(catchLives <= 0) endCatch(false); } catchItems.splice(i, 1); }
+        }
+        if(catchLives > 0 && catchTime > 0) catchLoopId = requestAnimationFrame(catchLoop);
+    }
+
+    function endCatch(survived) {
+        cancelAnimationFrame(catchLoopId); clearInterval(catchTimerId); clearTimeout(catchSpawnId);
+        showScreen('screen-result'); 
+        if (catchScore < 0) catchScore = 0;
+        
+        document.getElementById('result-title').textContent = survived ? "Time's Up!" : "Out of Lives!";
+        document.getElementById('result-icon').textContent = survived ? "⏱️" : "💔";
+        
+        document.getElementById('result-score').style.display = 'block';
+        document.getElementById('result-score').textContent = catchScore + " pts";
+        
+        document.getElementById('result-fact').style.display = 'block';
+        document.getElementById('fact-text').textContent = panadolFacts[Math.floor(Math.random() * panadolFacts.length)];
+        
+        if (catchScore > 0) launchConfetti(3000);
+
+        const actionsDiv = document.getElementById('result-actions');
+        actionsDiv.innerHTML = `<button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>`;
+    }
+
+    // --- QR CODE LOGIC ---
+    function processPoints() {
+        const actionsDiv = document.getElementById('result-actions');
+        
+        if (activeGame === 'buzzer') {
+            actionsDiv.innerHTML = "Processing...";
+
+            // Create two side-by-side QR codes
+            const qr1 = qrcode(0, 'L'); qr1.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore1, nonce: Date.now() })); qr1.make();
+            const qr2 = qrcode(0, 'L'); qr2.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore2, nonce: Date.now() + 1 })); qr2.make();
+            
+            actionsDiv.innerHTML = `
+                <div style="display:flex; justify-content:center; gap:50px; margin-bottom:20px;">
+                    <div style="background:var(--surface2); padding:20px; border-radius:16px; border:2px solid var(--border);">
+                        <h3 style="margin-bottom:10px; color:var(--green);">Player 1: ${buzzerScore1} pts</h3>
+                        <div style="background:white; padding:10px; border-radius:10px;">${qr1.createImgTag(5)}</div>
+                    </div>
+                    <div style="background:var(--surface2); padding:20px; border-radius:16px; border:2px solid var(--border);">
+                        <h3 style="margin-bottom:10px; color:#60a5fa;">Player 2: ${buzzerScore2} pts</h3>
+                        <div style="background:white; padding:10px; border-radius:10px;">${qr2.createImgTag(5)}</div>
+                    </div>
+                </div>
+                <p style="color:var(--muted); font-size:1rem;">Scan your QR with your Haleon app to collect points.</p>
+                <button class="btn-secondary" style="margin-top:20px;" onclick="goToHub()">Start New Game</button>
+            `;
+        } 
+        else if (activeGame === 'catch') {
+            actionsDiv.innerHTML = "Processing...";
+
+            if (uid) {
+                window.location.href = `index.html?rewardGame=catch&rewardPts=${catchScore}`;
+            } else {
+                const payload = JSON.stringify({ type: "game_reward", gameId: "catch", points: catchScore, nonce: Date.now() });
+                const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
+                actionsDiv.innerHTML = `
+                  <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
+                    ${qr.createImgTag(6)}
+                  </div>
+                  <p style="color:var(--muted); font-size:1rem;">Scan this QR with your Haleon app to collect points.</p>
+                  <button class="btn-secondary" style="margin-top:20px;" onclick="goToHub()">Start New Game</button>
+                `;
+            }
+        }
+    }
+
+    // --- CONFETTI ---
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas"); const ctx = canvas.getContext("2d");
+      canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      const pieces = []; const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"];
+      for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
+      const end = Date.now() + duration;
+      (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs; });
+        if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
+      })();
+    }
+  </script>
+</body>
+</html>

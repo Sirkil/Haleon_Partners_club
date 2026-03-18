@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Panadol Challenge</title>
+  <title>Centrum Challenge</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -26,10 +26,10 @@
   <div class="toast" id="toast"></div>
 
   <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; z-index: 20;">
-    <div style="font-size: 5rem; margin-bottom: 20px;">🎮</div>
-    <div class="auth-title">Panadol Challenge</div>
+    <div style="font-size: 5rem; margin-bottom: 20px;">⚡</div>
+    <div class="auth-title">Centrum Challenge</div>
     <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
-      Play the interactive Panadol game.<br>
+      Play the interactive Centrum game.<br>
       Once you finish, tap the claim button to earn 100 pts!
     </p>
     <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
@@ -55,7 +55,7 @@
       <button class="btn-primary" style="width: auto; padding: 8px 14px; margin-top: 0; font-size: 0.9rem;" onclick="finishGame()">✓ Claim 100 Pts</button>
     </div>
     <div class="iframe-wrap">
-      <iframe src="https://mitohype.com/panadol-ksa/" allow="autoplay; fullscreen"></iframe>
+      <iframe src="https://strikeads.net/games/Centrum/energy/" allow="autoplay; fullscreen"></iframe>
     </div>
   </div>
 
@@ -94,7 +94,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
     const exhausted = urlParams.get('exhausted') === 'true';
-    const GAME_ID = 'mitohype';
+    const GAME_ID = 'centrum'; // Unique ID for Centrum
     
     let currentMode = '';
     let score = 100;
@@ -133,10 +133,14 @@
       launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = `
-        <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-        <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
-      `;
+      if (currentMode === 'challenge') {
+        actionsDiv.innerHTML = `<button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>`;
+      } else {
+        actionsDiv.innerHTML = `
+          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
+          <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
+        `;
+      }
     }
 
     function processPoints() {

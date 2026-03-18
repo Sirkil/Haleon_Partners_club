@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Station 2: Knowledge & Memory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+  <style>
+    body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+    .station-container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    
+    /* Stacked Cards for Station 2 */
+    .cards-column { display: flex; flex-direction: column; gap: 30px; width: 100%; align-items: center; margin-top: 40px; }
+    .station-card { width: 100%; max-width: 600px; background: var(--surface2); border: 2px solid var(--border); border-radius: 24px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+    .station-card:hover { border-color: var(--green); transform: translateY(-8px); box-shadow: 0 12px 24px rgba(46, 231, 1, 0.15); }
+    .station-card-icon { font-size: 5rem; margin-bottom: 20px; }
+    .station-card-title { font-size: 1.8rem; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+
+    /* Memory Grid */
+    .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 100%; max-width: 600px; margin: 30px auto; perspective: 1000px; }
+    .memory-card { width: 100%; aspect-ratio: 1/1; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.5s; }
+    .memory-card.flipped { transform: rotateY(180deg); }
+    .memory-card-face { position: absolute; inset: 0; border-radius: 16px; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; font-size: 3rem; border: 2px solid var(--border); }
+    .memory-card-front { background: var(--surface2); transform: rotateY(180deg); }
+    .memory-card-back { background: linear-gradient(135deg, #1a2820, #0d1a12); border-color: rgba(74,222,128,0.3); color: var(--green); font-size: 2.5rem; font-weight: 900; }
+    .matched .memory-card-front { border-color: var(--green); background: rgba(74,222,128,0.1); }
+
+    /* Rx Options */
+    .rx-option { width: 100%; max-width: 600px; background: var(--surface); border: 2px solid var(--border); color: var(--text); padding: 20px; border-radius: 16px; margin: 10px auto; font-family: 'Poppins', sans-serif; font-size: 1.2rem; cursor: pointer; transition: 0.2s; text-align: left; display: block; }
+    .rx-option:hover { border-color: var(--green); }
+    .rx-option.correct { background: rgba(74, 222, 128, 0.15); border-color: var(--green); color: var(--green); }
+    .rx-option.wrong { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #ef4444; }
+
+    .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
+
+  <div class="station-container screen active" id="screen-hub">
+    <div style="color:var(--green); font-weight:800; font-size:1.2rem; letter-spacing:3px; margin-bottom:10px;">STATION 2</div>
+    <div class="auth-title" style="font-size: 3rem;">Knowledge & Memory</div>
+    <div class="cards-column">
+      <div class="station-card" onclick="startGame('memory')">
+        <div class="station-card-icon">🧠</div>
+        <div class="station-card-title">Memory Challenge</div>
+        <p style="color:var(--muted);">Find all matching pairs before time runs out!</p>
+      </div>
+      <div class="station-card" onclick="startGame('rx')">
+        <div class="station-card-icon">📋</div>
+        <div class="station-card-title">Fever Challenge</div>
+        <p style="color:var(--muted);">Read the scenario and prescribe the right treatment.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="station-container screen" id="screen-memory">
+    <button class="btn-secondary" style="align-self:flex-start; width:auto; padding:10px 20px;" onclick="goToHub()">← Exit Game</button>
+    <div style="width:100%; display:flex; justify-content:space-around; align-items:center; margin-top:20px; max-width:600px; background:var(--surface2); padding:15px; border-radius:16px; border:1px solid var(--border);">
+      <div style="text-align:center;">
+        <div style="font-size:0.8rem; color:var(--muted); text-transform:uppercase;">Time Left</div>
+        <div style="font-size:2rem; font-weight:800; color:var(--green);" id="mem-timer">60s</div>
+      </div>
+      <div style="width:1px; height:50px; background:var(--border);"></div>
+      <div style="text-align:center;">
+        <div style="font-size:0.8rem; color:var(--muted); text-transform:uppercase;">Matches</div>
+        <div style="font-size:2rem; font-weight:800;" id="mem-matches">0 / 8</div>
+      </div>
+    </div>
+    <div class="memory-grid" id="memory-grid"></div>
+  </div>
+
+  <div class="station-container screen" id="screen-rx">
+    <button class="btn-secondary" style="align-self:flex-start; width:auto; padding:10px 20px;" onclick="goToHub()">← Exit Game</button>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:24px; padding:40px; text-align:center; margin-top:30px; max-width:800px;">
+      <div style="color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:15px;">Patient Case</div>
+      <div style="font-size:1.4rem; line-height:1.6;">A 32-year-old pregnant woman in her second trimester presents with a mild tension headache and a slight fever of 37.8°C. What is the safest recommended treatment?</div>
+    </div>
+    <div style="width:100%; margin-top:30px;" id="rx-options">
+      <button class="rx-option" onclick="checkRxAnswer(0, this)">1. Ibuprofen 400mg</button>
+      <button class="rx-option" onclick="checkRxAnswer(1, this)">2. Paracetamol 500mg</button> 
+      <button class="rx-option" onclick="checkRxAnswer(2, this)">3. Aspirin 500mg</button>
+      <button class="rx-option" onclick="checkRxAnswer(3, this)">4. Naproxen 250mg</button>
+    </div>
+  </div>
+
+  <div class="station-container screen" id="screen-result" style="text-align: center;">
+    <div style="font-size: 5rem; margin-bottom: 10px;" id="res-icon">🏆</div>
+    <div class="auth-title" style="font-size: 3rem;" id="result-title">Game Over</div>
+    <div style="font-size: 3.5rem; font-weight: 800; color: var(--green); margin-bottom: 10px; line-height: 1; display: none;" id="result-score">0 pts</div>
+    <div id="result-actions" style="width:100%; max-width:800px; margin-top:20px;"></div>
+  </div>
+
+  <script>
+    // --- GLOBAL ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+    let activeGame = null; 
+    let finalScore = 0;
+
+    function goToHub() { activeGame = null; resetGames(); showScreen('screen-hub'); }
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    
+    function startGame(game) { 
+      activeGame = game; 
+      showScreen('screen-' + activeGame); 
+      if (activeGame === 'memory') initMemory(); 
+      else initRx(); 
+    }
+    
+    function resetGames() { clearInterval(memTimerId); }
+
+    // --- MEMORY LOGIC ---
+    const memIcons = ['💊', '🏃', '🌿', '💧', '🧠', '🦷', '❤️', '🍎'];
+    let memDeck = [], memFirst = null, memSecond = null, memLock = false, memMatches = 0, memTime = 60, memTimerId;
+
+    function initMemory() {
+        memDeck = [...memIcons, ...memIcons].sort(() => Math.random() - 0.5);
+        const grid = document.getElementById('memory-grid'); grid.innerHTML = '';
+        memDeck.forEach(icon => {
+            const card = document.createElement('div'); card.className = 'memory-card'; card.dataset.icon = icon;
+            card.innerHTML = `<div class="memory-card-face memory-card-front">${icon}</div><div class="memory-card-face memory-card-back">H</div>`;
+            card.addEventListener('click', () => flipMemCard(card)); grid.appendChild(card);
+        });
+        memTime = 60; memMatches = 0; document.getElementById('mem-matches').textContent = '0 / 8';
+        clearInterval(memTimerId); memTimerId = setInterval(() => {
+            memTime--; document.getElementById('mem-timer').textContent = memTime + 's';
+            if (memTime <= 0) { clearInterval(memTimerId); endSharedGame(false, 0, "Time's Up!"); }
+        }, 1000);
+    }
+
+    function flipMemCard(card) {
+        if (memLock || card === memFirst || card.classList.contains('matched')) return;
+        card.classList.add('flipped');
+        if (!memFirst) { memFirst = card; return; }
+        memSecond = card;
+        if (memFirst.dataset.icon === memSecond.dataset.icon) {
+            memFirst.classList.add('matched'); memSecond.classList.add('matched'); memMatches++;
+            document.getElementById('mem-matches').textContent = `${memMatches} / 8`;
+            memFirst = null; memSecond = null;
+            if (memMatches === 8) { clearInterval(memTimerId); setTimeout(() => endSharedGame(true, 100 + (memTime * 5), "Memory Master!"), 500); }
+        } else {
+            memLock = true;
+            setTimeout(() => { memFirst.classList.remove('flipped'); memSecond.classList.remove('flipped'); memFirst = null; memSecond = null; memLock = false; }, 1000);
+        }
+    }
+
+    // --- RX / FEVER LOGIC ---
+    const rxCorrect = 1;
+    function initRx() {
+        document.querySelectorAll('.rx-option').forEach(b => { b.disabled = false; b.classList.remove('correct', 'wrong'); });
+    }
+    function checkRxAnswer(idx, btn) {
+        document.querySelectorAll('.rx-option').forEach(b => b.disabled = true);
+        if (idx === rxCorrect) { btn.classList.add('correct'); setTimeout(() => endSharedGame(true, 100, "Perfect Prescription!"), 1500); } 
+        else { btn.classList.add('wrong'); document.querySelectorAll('.rx-option')[rxCorrect].classList.add('correct'); setTimeout(() => endSharedGame(false, 0, "Incorrect Treatment"), 2000); }
+    }
+
+    // --- SHARED END GAME ---
+    function endSharedGame(isWin, pts, msg) {
+        finalScore = pts; showScreen('screen-result');
+        document.getElementById('result-title').textContent = msg;
+        document.getElementById('res-icon').textContent = isWin ? "🏆" : "⏱️";
+        
+        document.getElementById('result-score').style.display = 'block';
+        document.getElementById('result-score').textContent = finalScore + " pts";
+        document.getElementById('result-score').style.color = isWin ? "var(--green)" : "#ef4444";
+        
+        if (isWin) launchConfetti(3000);
+        
+        const actionsDiv = document.getElementById('result-actions');
+        actionsDiv.innerHTML = `<button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>`;
+    }
+
+    // --- QR CODE LOGIC ---
+    function processPoints() {
+        const actionsDiv = document.getElementById('result-actions');
+        actionsDiv.innerHTML = "Processing...";
+
+        if (uid) {
+            window.location.href = `index.html?rewardGame=${activeGame}&rewardPts=${finalScore}`;
+        } else {
+            const payload = JSON.stringify({ type: "game_reward", gameId: activeGame, points: finalScore, nonce: Date.now() });
+            const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
+            actionsDiv.innerHTML = `
+              <div style="background:white; padding:15px; display:inline-block; border-radius:12px; margin-bottom:10px;">
+                ${qr.createImgTag(6)}
+              </div>
+              <p style="color:var(--muted); font-size:1rem;">Scan this QR with your Haleon app to collect points.</p>
+              <button class="btn-secondary" style="margin-top:20px;" onclick="goToHub()">Start New Game</button>
+            `;
+        }
+    }
+
+    // --- CONFETTI ---
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas"); const ctx = canvas.getContext("2d");
+      canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      const pieces = []; const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"];
+      for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
+      const end = Date.now() + duration;
+      (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs; });
+        if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
+      })();
+    }
+  </script>
+</body>
+</html>
