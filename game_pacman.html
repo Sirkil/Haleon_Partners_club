@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Panadol Maze</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+  <style>
+    body { overflow: hidden; touch-action: none; background: var(--bg); }
+    
+    /* Centered, Enlarged, and Responsive Container */
+    .game-container { 
+      width: 100%; 
+      max-width: 100%; 
+      margin: 0 auto; 
+      padding: 10px; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; /* Centers everything horizontally */
+      position: relative; 
+    }
+    
+    .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; width: 100%; max-width: 400px; }
+    .mode-card:hover { border-color: var(--green); }
+    
+    #screen-game { width: 100%; max-width: 800px; justify-content: flex-start; padding-top: 20px; }
+
+    .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--surface2); padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border); z-index: 10; width: 100%; }
+    .hud-val { font-size: 1.5rem; font-weight: 800; color: var(--green); }
+    
+    /* Enlarged Canvas Wrapper */
+    #game-canvas-wrap { 
+        position: relative; 
+        width: 100%; 
+        aspect-ratio: 19/11; /* Changed to match the wider layout */
+        background: #000; 
+        border: 4px solid #0055ff; /* Classic blue border */
+        border-radius: 12px; 
+        overflow: hidden; 
+        box-shadow: 0 8px 30px rgba(0,0,0,0.6); 
+    }
+    
+    #maze-canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+    /* DOM Sprites for perfect GIF animation */
+    .sprite {
+        position: absolute;
+        z-index: 10;
+        display: none; /* Hidden until game starts */
+        object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
+
+  <div class="game-container" id="screen-start" style="text-align: center;">
+    <div style="font-size: 5rem; margin-bottom: 20px;">🟡</div>
+    <div class="auth-title">Panadol Maze</div>
+    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5; max-width: 400px;">
+      Navigate the maze, collect all the Panadol packs for points, and avoid the pain ghosts!<br>
+      <strong>Swipe the screen</strong> or use <strong>Arrow Keys</strong> to move.
+    </p>
+    <button class="btn-primary" style="max-width: 400px;" onclick="proceedFromStart()">Start Game</button>
+    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px; max-width: 400px;" onclick="goBack()">← Back to App</button>
+  </div>
+
+  <div class="game-container" id="screen-mode" style="display: none;">
+    <button class="btn-secondary" style="margin-bottom: 20px; align-self: center; max-width: 400px;" onclick="goBack()">← Exit Game</button>
+    <div class="auth-title" style="text-align: center;">Select Mode</div>
+    
+    <div class="mode-card" onclick="startGame('test')">
+      <h3 style="color:var(--text); font-size:1.3rem;">Test Mode</h3>
+      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
+    </div>
+    
+    <div class="mode-card" onclick="startGame('challenge')">
+      <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
+      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Compete for real points.</p>
+    </div>
+  </div>
+
+  <div class="game-container" id="screen-game" style="display: none;">
+    <button class="btn-secondary" style="margin-bottom: 10px; align-self: center; width: 100%;" onclick="goBack()">← Exit</button>
+    
+    <div class="hud">
+      <div><div style="font-size:0.7rem; color:var(--muted);">SCORE</div><div class="hud-val" id="hud-score">0</div></div>
+      <div><div style="font-size:0.7rem; color:var(--muted);">TIME</div><div class="hud-val" id="hud-timer" style="color:var(--text);">60s</div></div>
+    </div>
+
+    <div id="game-canvas-wrap">
+      <canvas id="maze-canvas"></canvas>
+      <img id="player-sprite" src="assets/pac_man.gif" class="sprite" alt="PacMan">
+      <img id="ghost-sprite-0" src="assets/ghost-pacman.gif" class="sprite" alt="Ghost">
+      <img id="ghost-sprite-1" src="assets/ghost-pacman.gif" class="sprite" alt="Ghost">
+    </div>
+    
+    <p style="text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 15px;">Swipe anywhere to move!</p>
+  </div>
+
+  <div class="game-container" id="screen-result" style="display: none; text-align: center;">
+    <div style="font-size: 5rem; margin-bottom: 10px;" id="result-icon">🏆</div>
+    <div class="auth-title" id="result-title">Game Over</div>
+    <div style="font-size: 3.5rem; font-weight: 800; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">0 pts</div>
+    <div id="result-actions" style="width: 100%; max-width: 400px;"></div>
+  </div>
+
+  <script>
+    // --- SETUP & ASSETS ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+    const GAME_ID = 'pacman';
+    let currentMode = '';
+    let score = 0, timeLeft = 60, timerId, gameLoopId;
+
+    // Panadol Points are drawn on the canvas (PNG)
+    const imgPanadol = new Image(); imgPanadol.src = 'assets/pack1.png';
+
+    // --- MAP & ENGINE ---
+    const cvs = document.getElementById('maze-canvas');
+    const ctx = cvs.getContext('2d');
+    const cols = 19; const rows = 11; // Matches the new map exactly
+    let ts = 40; // Internal tile size
+
+    // 0 = Empty, 1 = Wall, 2 = Panadol Pellet
+    const initialMap = [
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,1],
+      [1,2,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,2,1],
+      [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+      [1,2,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,2,1],
+      [1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],
+      [1,1,1,1,2,1,1,1,0,0,0,1,1,1,2,1,1,1,1],
+      [1,0,0,1,2,1,0,1,0,0,0,1,0,1,2,1,0,0,1],
+      [1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],
+      [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+    let map = [];
+    
+    let player = { r: 9, c: 9, dr: 0, dc: 0, nextDr: 0, nextDc: 0, x: 0, y: 0 };
+    let ghosts = [];
+
+    window.onload = () => { if (!uid) document.getElementById('btn-exit-start').style.display = 'none'; };
+    function goBack() { if (uid) window.location.href = 'index.html'; else location.reload(); }
+
+    function proceedFromStart() {
+      document.getElementById('screen-start').style.display = 'none';
+      document.getElementById('screen-mode').style.display = 'flex';
+    }
+
+    function initCanvas() {
+      cvs.width = cols * ts;  
+      cvs.height = rows * ts; 
+    }
+
+    function startGame(mode) {
+      currentMode = mode;
+      document.getElementById('screen-mode').style.display = 'none';
+      document.getElementById('screen-game').style.display = 'flex';
+      
+      initCanvas();
+      
+      // Show DOM Sprites
+      document.getElementById('player-sprite').style.display = 'block';
+      document.getElementById('ghost-sprite-0').style.display = 'block';
+      document.getElementById('ghost-sprite-1').style.display = 'block';
+
+      // Reset State
+      score = 0; timeLeft = 60; map = JSON.parse(JSON.stringify(initialMap));
+      player = { r: 9, c: 9, dr: 0, dc: 0, nextDr: 0, nextDc: 0, x: 9*ts, y: 9*ts };
+      ghosts = [
+        { r: 7, c: 8, dr: -1, dc: 0, x: 8*ts, y: 7*ts, speed: 0.05 },
+        { r: 7, c: 10, dr: -1, dc: 0, x: 10*ts, y: 7*ts, speed: 0.05 }
+      ];
+      
+      document.getElementById('hud-score').textContent = score;
+      clearInterval(timerId); cancelAnimationFrame(gameLoopId);
+      
+      timerId = setInterval(() => {
+        timeLeft--; document.getElementById('hud-timer').textContent = timeLeft + 's';
+        if (timeLeft <= 0) endGame(true);
+      }, 1000);
+
+      gameLoopId = requestAnimationFrame(loop);
+    }
+
+    // --- CONTROLS (Swipe & Keyboard) ---
+    
+    // Stop screen from scrolling when user swipes on mobile
+    document.addEventListener('touchmove', e => {
+      if (document.getElementById('screen-game').style.display === 'flex') {
+        e.preventDefault(); 
+      }
+    }, { passive: false });
+
+    window.addEventListener('keydown', (e) => {
+      if(e.key === 'ArrowUp') setDir(0, -1); if(e.key === 'ArrowDown') setDir(0, 1);
+      if(e.key === 'ArrowLeft') setDir(-1, 0); if(e.key === 'ArrowRight') setDir(1, 0);
+    });
+
+    let touchStartX = 0, touchStartY = 0;
+    window.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, {passive: true});
+
+    window.addEventListener('touchend', e => {
+      let dx = e.changedTouches[0].screenX - touchStartX;
+      let dy = e.changedTouches[0].screenY - touchStartY;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (Math.abs(dx) > 30) setDir(dx > 0 ? 1 : -1, 0); // Left/Right
+      } else {
+        if (Math.abs(dy) > 30) setDir(0, dy > 0 ? 1 : -1); // Up/Down
+      }
+    }, {passive: true});
+
+    function setDir(dc, dr) { player.nextDc = dc; player.nextDr = dr; }
+
+    // --- GAME LOOP ---
+    function loop() {
+      update(); draw();
+      if(timeLeft > 0) gameLoopId = requestAnimationFrame(loop);
+    }
+
+function update() {
+      // Move Player Smoothly
+      let targetX = player.c * ts; 
+      let targetY = player.r * ts;
+      
+      // Calculate distance to the target tile
+      let dist = Math.abs(player.x - targetX) + Math.abs(player.y - targetY);
+      
+      // Check if we have arrived at the target tile
+      if (dist < 2) { 
+        player.x = targetX; 
+        player.y = targetY;
+        
+        // 1. Check if the NEXT desired direction is a valid move (not a wall)
+        if (map[player.r + player.nextDr] && map[player.r + player.nextDr][player.c + player.nextDc] !== 1) {
+          player.dr = player.nextDr; 
+          player.dc = player.nextDc;
+        }
+        
+        // 2. Check if the CURRENT direction is hitting a wall
+        if (map[player.r + player.dr] && map[player.r + player.dr][player.c + player.dc] === 1) {
+          player.dr = 0; 
+          player.dc = 0;
+        } else {
+          // 3. Move logical grid position
+          player.c += player.dc; 
+          player.r += player.dr;
+        }
+        
+        // 4. Eat Panadol Pellet
+        if (map[player.r] && map[player.r][player.c] === 2) {
+          map[player.r][player.c] = 0; 
+          score += 10;
+          document.getElementById('hud-score').textContent = score;
+        }
+      } else {
+        // Move towards target. 
+        // CHANGED: 0.1 multiplier = 4 pixels per frame. 
+        // Perfectly divides into our 40px tile size, preventing overshoot!
+        player.x += player.dc * ts * 0.1; 
+        player.y += player.dr * ts * 0.1;
+      }
+
+      // Move Ghosts
+      ghosts.forEach(g => {
+        let gtx = g.c * ts; let gty = g.r * ts;
+        let gdist = Math.abs(g.x - gtx) + Math.abs(g.y - gty);
+        if (gdist < 2) {
+          g.x = gtx; g.y = gty;
+          let possibleMoves = [];
+          
+          // Added safe array checks to prevent ghost crashes at edges
+          if (map[g.r-1] && map[g.r-1][g.c] !== 1 && g.dr !== 1) possibleMoves.push({dr:-1, dc:0});
+          if (map[g.r+1] && map[g.r+1][g.c] !== 1 && g.dr !== -1) possibleMoves.push({dr:1, dc:0});
+          if (map[g.r] && map[g.r][g.c-1] !== 1 && g.dc !== 1) possibleMoves.push({dr:0, dc:-1});
+          if (map[g.r] && map[g.r][g.c+1] !== 1 && g.dc !== -1) possibleMoves.push({dr:0, dc:1});
+          
+          if(possibleMoves.length > 0) {
+            let move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+            g.dr = move.dr; g.dc = move.dc;
+          } else { 
+            g.dr *= -1; g.dc *= -1; 
+          } 
+          g.c += g.dc; g.r += g.dr;
+        } else {
+          g.x += g.dc * ts * g.speed; g.y += g.dr * ts * g.speed;
+        }
+
+        // Collision Check (Hit by Ghost)
+        if (Math.abs(player.x - g.x) < ts/1.5 && Math.abs(player.y - g.y) < ts/1.5) {
+          endGame(false); 
+        }
+      });
+    }
+
+    function draw() {
+      // Draw Static Maze & Items on Canvas
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cvs.width, cvs.height);
+      for(let r=0; r<rows; r++) {
+        for(let c=0; c<cols; c++) {
+          if(map[r][c] === 1) { 
+            ctx.fillStyle = '#000';
+            ctx.fillRect(c*ts, r*ts, ts, ts);
+            ctx.strokeStyle = '#0055ff'; // Blue border styling
+            ctx.lineWidth = 2;
+            ctx.strokeRect(c*ts, r*ts, ts, ts);
+          } else if (map[r][c] === 2) { 
+            if (imgPanadol.complete && imgPanadol.naturalWidth !== 0) {
+              ctx.drawImage(imgPanadol, c*ts + ts*0.1, r*ts + ts*0.1, ts*0.8, ts*0.8);
+            } else {
+              ctx.fillStyle = '#fff'; // White dots fallback
+              ctx.beginPath(); 
+              ctx.arc(c*ts + ts/2, r*ts + ts/2, ts*0.15, 0, Math.PI*2); 
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      // Dynamic canvas variables for proper sprite scaling
+      const cvsW = cols * ts;
+      const cvsH = rows * ts;
+
+      // Update HTML Sprites (GIFs) overlaid on top of the Canvas
+      const pSprite = document.getElementById('player-sprite');
+      pSprite.style.left = (player.x / cvsW * 100) + '%';
+      pSprite.style.top = (player.y / cvsH * 100) + '%';
+      pSprite.style.width = (ts / cvsW * 100) + '%';
+      pSprite.style.height = (ts / cvsH * 100) + '%';
+
+      // Rotate Pacman based on direction
+      let angle = 0;
+      if (player.dc === 1) angle = 0;
+      else if (player.dc === -1) angle = 180;
+      else if (player.dr === 1) angle = 90;
+      else if (player.dr === -1) angle = -90;
+      pSprite.style.transform = `rotate(${angle}deg)`;
+
+      // Update Ghost HTML Sprites
+      ghosts.forEach((g, i) => {
+        const gSprite = document.getElementById('ghost-sprite-' + i);
+        gSprite.style.left = (g.x / cvsW * 100) + '%';
+        gSprite.style.top = (g.y / cvsH * 100) + '%';
+        gSprite.style.width = (ts / cvsW * 100) + '%';
+        gSprite.style.height = (ts / cvsH * 100) + '%';
+      });
+    }
+
+    // --- GAME OVER & REWARDS ---
+    function endGame(survived) {
+      clearInterval(timerId); cancelAnimationFrame(gameLoopId);
+      
+      // Hide sprites
+      document.getElementById('player-sprite').style.display = 'none';
+      document.getElementById('ghost-sprite-0').style.display = 'none';
+      document.getElementById('ghost-sprite-1').style.display = 'none';
+
+      document.getElementById('screen-game').style.display = 'none';
+      document.getElementById('screen-result').style.display = 'flex';
+      
+      document.getElementById('result-title').textContent = survived ? "Time's Up!" : "Caught!";
+      document.getElementById('result-icon').textContent = survived ? "⏱️" : "👻";
+      document.getElementById('result-score').textContent = score + " pts";
+      
+      if (score > 0) launchConfetti(3000);
+      
+      const actionsDiv = document.getElementById('result-actions');
+      if (currentMode === 'challenge') {
+        actionsDiv.innerHTML = `<button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>`;
+      } else {
+        actionsDiv.innerHTML = `
+          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
+          <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
+        `;
+      }
+    }
+
+    function processPoints() {
+      if (score === 0 && currentMode === 'test') { goBack(); return; }
+      const actionsDiv = document.getElementById('result-actions');
+      actionsDiv.innerHTML = "Processing...";
+
+      if (uid) {
+        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
+      } else {
+        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
+        const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
+        actionsDiv.innerHTML = `
+          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">${qr.createImgTag(5)}</div>
+          <p style="color:var(--muted); font-size:0.9rem;">Scan this QR with your Haleon app to collect points.</p>
+          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
+        `;
+      }
+    }
+
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas"); if(!canvas) return; const ctx = canvas.getContext("2d"); canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight; const pieces = []; const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"]; for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 }); const end = Date.now() + duration; (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs; }); if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } })();
+    }
+  </script>
+</body>
+</html>
