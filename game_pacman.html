@@ -120,8 +120,23 @@
     let currentMode = '';
     let score = 0, timeLeft = 60, timerId, gameLoopId;
 
-    // Panadol Points are drawn on the canvas (PNG)
-    const imgPanadol = new Image(); imgPanadol.src = 'assets/pack1.png';
+    // Load multiple image assets for the Panadol packs
+    const panadolSrcs = [
+      'assets/Centrum_energy_pack.png',
+      'assets/CENTRUM_MEN.jpg',
+      'assets/CENTRUM_WOMEN.jpg',
+      'assets/Cold & Flu Day Pack.png',
+      'assets/panadol_extra.png',
+      'assets/parodontax.png',
+      'assets/SENSODYNE.png',
+      'assets/Voltaren-50gm-pack.png',
+    ];
+    
+    const panadolImgs = panadolSrcs.map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
 
     // --- MAP & ENGINE ---
     const cvs = document.getElementById('maze-canvas');
@@ -230,7 +245,7 @@
       if(timeLeft > 0) gameLoopId = requestAnimationFrame(loop);
     }
 
-function update() {
+    function update() {
       // Move Player Smoothly
       let targetX = player.c * ts; 
       let targetY = player.r * ts;
@@ -267,8 +282,6 @@ function update() {
         }
       } else {
         // Move towards target. 
-        // CHANGED: 0.1 multiplier = 4 pixels per frame. 
-        // Perfectly divides into our 40px tile size, preventing overshoot!
         player.x += player.dc * ts * 0.1; 
         player.y += player.dr * ts * 0.1;
       }
@@ -317,8 +330,12 @@ function update() {
             ctx.lineWidth = 2;
             ctx.strokeRect(c*ts, r*ts, ts, ts);
           } else if (map[r][c] === 2) { 
-            if (imgPanadol.complete && imgPanadol.naturalWidth !== 0) {
-              ctx.drawImage(imgPanadol, c*ts + ts*0.1, r*ts + ts*0.1, ts*0.8, ts*0.8);
+            // Select image from array based on stable index (r and c)
+            const imgIdx = (r * cols + c) % panadolImgs.length;
+            const imgToDraw = panadolImgs[imgIdx];
+            
+            if (imgToDraw.complete && imgToDraw.naturalWidth !== 0) {
+              ctx.drawImage(imgToDraw, c*ts + ts*0.1, r*ts + ts*0.1, ts*0.8, ts*0.8);
             } else {
               ctx.fillStyle = '#fff'; // White dots fallback
               ctx.beginPath(); 
