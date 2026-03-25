@@ -2,107 +2,329 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prescription Challenge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Centrum Rx Challenge</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;}
-    .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
-    .mode-card:hover { border-color: var(--green); }
+    :root {
+      /* Centrum Brand Colors */
+      --bg: #FFFDF8;
+      --text: #333333;
+      --surface: #f9f9f9;
+      --surface2: #ffffff;
+      --border: #eeeeee;
+      --muted: #888888;
+      
+      --c-pink: #E91E63;
+      --c-orange: #FF9800;
+      --c-yellow: #FFC107;
+      --c-green: #4CAF50;
+      --c-blue: #2196F3;
+      --c-purple: #9C27B0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      overflow-x: hidden; 
+      touch-action: manipulation;
+    }
+
+    .game-container { 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      position: relative;
+    }
+
+    .game-container-narrow {
+      max-width: 500px;
+    }
     
-    .scenario-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 20px; }
-    .scenario-text { font-size: 1.1rem; line-height: 1.5; color: var(--text); }
+    .auth-title {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #000000;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    /* Unified Black Button Style */
+    .btn-centrum {
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+      width: 100%;
+    }
+    .btn-centrum:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+    }
+    .btn-centrum:active {
+      transform: translateY(2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--border);
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      border-color: #000000;
+      color: #000000;
+    }
+
+    /* Specific Rx Game Styles */
+    .mode-card { 
+      background: var(--surface2); 
+      border: 2px solid var(--border); 
+      border-radius: 24px; 
+      padding: 24px; 
+      margin-bottom: 20px; 
+      text-align: center; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+      width: 100%;
+    }
+    .mode-card:hover { 
+      border-color: var(--c-orange); 
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    }
+
+    /* Game Header / HUD */
+    .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; }
+    .basket-hud { display: flex; align-items: center; gap: 15px; }
+    .case-counter { font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
+    .score-display { font-weight: 800; color: var(--c-green); font-size: 1.1rem; background: var(--surface2); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); }
     
-    .rx-option { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 16px; border-radius: 12px; margin-bottom: 12px; font-family: 'Poppins', sans-serif; font-size: 1rem; cursor: pointer; transition: 0.2s; text-align: left; }
-    .rx-option:hover { border-color: var(--green); }
-    .rx-option.correct { background: rgba(74, 222, 128, 0.15); border-color: var(--green); color: var(--green); }
-    .rx-option.wrong { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #ef4444; }
+    .scenario-card { 
+      background: var(--surface2); 
+      border: 2px solid var(--border); 
+      border-radius: 24px; 
+      padding: 30px; 
+      text-align: center; 
+      margin-bottom: 20px; 
+      box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+      width: 100%;
+    }
+    .scenario-text { 
+      font-size: 1.1rem; 
+      line-height: 1.6; 
+      color: var(--text); 
+      font-weight: 600;
+    }
+    
+    .rx-option { 
+      width: 100%; 
+      background: var(--surface2); 
+      border: 2px solid var(--border); 
+      color: var(--text); 
+      padding: 16px 20px; 
+      border-radius: 50px; 
+      margin-bottom: 12px; 
+      font-family: 'Poppins', sans-serif; 
+      font-size: 1.05rem; 
+      font-weight: 600;
+      cursor: pointer; 
+      transition: all 0.2s; 
+      text-align: left; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .rx-option:hover:not(:disabled) { 
+      border-color: #000000; 
+      transform: translateY(-2px);
+    }
+    .rx-option.correct { 
+      background: rgba(76, 175, 80, 0.1); 
+      border-color: var(--c-green); 
+      color: var(--c-green); 
+    }
+    .rx-option.wrong { 
+      background: rgba(233, 30, 99, 0.1); 
+      border-color: var(--c-pink); 
+      color: var(--c-pink); 
+    }
+
+    /* Explanation Dialog */
+    .custom-msg-dialog {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: 0.3s;
+    }
+    .custom-msg-dialog.show { opacity: 1; pointer-events: all; }
+    .custom-msg-box {
+      background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; 
+      padding: 24px; text-align: center; width: 90%; max-width: 340px; transform: scale(0.8); transition: 0.3s;
+    }
+    .custom-msg-dialog.show .custom-msg-box { transform: scale(1); }
+
+    .toast {
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text);
+      color: var(--bg);
+      padding: 15px 30px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 10000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center;">
-    <div style="font-size: 5rem; margin-bottom: 20px;">📋</div>
+  <div class="game-container game-container-narrow" id="screen-start">
+    <img src="assets/Centrum_logo.png" alt="Centrum" style="max-width: 280px; margin-bottom: 30px;">
     <div class="auth-title">Rx Challenge</div>
-    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
-      Read the patient case and suggest the correct treatment scenario.<br>
-      Correct: +50 pts. Wrong: 0 pts.
+    <p style="color: var(--muted); margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem; text-align: center;">
+      Read the patient case and suggest the correct recommendation.<br>
+      Correct: +20 pts. Wrong: 0 pts.
     </p>
-    <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
-    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px;" onclick="goBack()">← Back to App</button>
-  </div>
+    <button class="btn-centrum" style="max-width: 300px; margin: 0 auto;" onclick="proceedFromStart()">Start Game</button>
+    <button class="btn-outline" id="btn-exit-start" style="margin-top: 20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">← Back to App</button>
+    
+    </div>
 
-  <div class="game-container" id="screen-mode" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center;">Select Mode</div>
+  <div class="game-container game-container-narrow" id="screen-mode" style="display: none;">
+    <div style="width: 100%; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; min-height: 50px;">
+      <button class="btn-outline" style="position: absolute; left: 0; width: auto; padding: 10px 20px;" onclick="goBack()">← Back</button>
+      <img src="assets/Centrum_logo.png" alt="Centrum" style="height: 45px;">
+    </div>
+
+    <div class="auth-title" style="margin-bottom: 30px;">Select Mode</div>
     <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.3rem;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:0.9rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
+      <h3 style="color:var(--text); font-size:1.4rem; font-weight: 800;">Test Mode</h3>
+      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
     </div>
     <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.9rem; margin-top:8px;">Play for real. Points are automatically recorded.</p>
+      <h3 style="color:var(--c-orange); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
+      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for real. Points are automatically recorded.</p>
     </div>
   </div>
 
-  <div class="game-container" id="screen-game" style="display: none; justify-content: flex-start; padding-top: 40px;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
+  <div class="game-container game-container-narrow" id="screen-game" style="display: none; justify-content: flex-start; padding-top: 20px;">
+    
+    <div class="game-header">
+      <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.85rem; margin: 0;" onclick="goBack()">← Exit</button>
+      <div class="basket-hud">
+        <div class="case-counter" id="case-counter">Case 1 / 6</div>
+        <div class="score-display" id="hud-score">0 pts</div>
+      </div>
+    </div>
+
     <div class="scenario-card">
-      <div style="color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">Patient Case</div>
-      <div class="scenario-text">A 32-year-old pregnant woman in her second trimester presents with a mild tension headache and a slight fever of 37.8°C. What is the safest recommended treatment?</div>
+      <div style="color: var(--c-orange); font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">Patient Case</div>
+      <div class="scenario-text" id="scenario-text">Loading...</div>
     </div>
     
-    <div id="options-container">
-      <button class="rx-option" onclick="checkAnswer(0, this)">1. Ibuprofen 400mg</button>
-      <button class="rx-option" onclick="checkAnswer(1, this)">2. Paracetamol 500mg</button> <button class="rx-option" onclick="checkAnswer(2, this)">3. Aspirin 500mg</button>
-      <button class="rx-option" onclick="checkAnswer(3, this)">4. Naproxen 250mg</button>
+    <div id="options-container" style="width: 100%;">
+      </div>
+  </div>
+
+  <div class="custom-msg-dialog" id="feedback-dialog">
+    <div class="custom-msg-box">
+      <div style="font-size: 3rem; margin-bottom: 10px;" id="feedback-icon">✅</div>
+      <div class="auth-title" style="font-size: 1.6rem; margin-bottom: 8px;" id="feedback-title">Correct!</div>
+      <p id="feedback-text" style="color: var(--muted); font-size: 1rem; line-height: 1.5; margin-bottom: 20px;">Explanation goes here.</p>
+      <button class="btn-centrum" onclick="nextCase()">Continue →</button>
     </div>
   </div>
 
-  <div class="game-container" id="screen-result" style="display: none; text-align: center;">
-    <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+  <div class="game-container game-container-narrow" id="screen-result" style="display: none; text-align: center;">
+    <img src="assets/Centrum_logo.png" alt="Centrum" style="max-width: 200px; margin-bottom: 20px;">
     <div class="auth-title">Challenge Over</div>
-    <div style="font-size: 3.5rem; font-weight:800; color: var(--green); margin-bottom: 20px;" id="result-score">0 pts</div>
-    <div id="result-actions"></div>
+    <div style="font-size: 3.5rem; font-weight:900; color: var(--c-green); margin-bottom: 30px;" id="result-score">0 pts</div>
+    <div id="result-actions" style="width: 100%;"></div>
   </div>
 
   <script>
-    function launchConfetti(duration) {
-      const canvas = document.getElementById("confetti-canvas");
-      if(!canvas) return;
-      const ctx = canvas.getContext("2d");
-      canvas.style.display = "block";
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const pieces = [];
-      const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"];
-      for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
-      const end = Date.now() + duration;
-      (function frame() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pieces.forEach((p) => {
-          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color;
-          ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore();
-          p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs;
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-        else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
-      })();
-    }
+    // --- GAME DATA ---
+    const allCases = [
+      {
+        scenario: "A 50-year-old male comes to the pharmacy seeking a daily multivitamin. He wants to maintain heart health, support his immunity, and keep his energy levels up.",
+        options: ["Centrum Men", "Centrum Women", "Centrum Silver", "Centrum Energy"],
+        correctIndex: 0,
+        explanation: "Centrum Men – tailored for men’s daily health needs including heart and immune support."
+      },
+      {
+        scenario: "A 35-year-old male wants a daily multivitamin to cover essential nutrients and support overall wellness. He is generally healthy and moderately active.",
+        options: ["Centrum Men", "Centrum Women", "Centrum Silver", "Centrum Energy"],
+        correctIndex: 0,
+        explanation: "Centrum Men – daily multivitamin formulated for adult men."
+      },
+      {
+        scenario: "A 28-year-old female asks for a daily multivitamin to support bone health, immunity, and overall wellness.",
+        options: ["Centrum Men", "Centrum Women", "Centrum Silver", "Centrum Energy"],
+        correctIndex: 1,
+        explanation: "Centrum Women – formulated for women’s daily nutritional needs."
+      },
+      {
+        scenario: "A 40-year-old female wants a daily multivitamin for long-term preventive health while managing a busy lifestyle.",
+        options: ["Centrum Men", "Centrum Women", "Centrum Silver", "Centrum Energy"],
+        correctIndex: 1,
+        explanation: "Centrum Women – tailored for adult women’s daily health support."
+      },
+      {
+        scenario: "A 30-year-old pharmacist reports feeling constantly fatigued despite a balanced diet and wants a supplement to boost daily energy.",
+        options: ["Centrum Men", "Centrum Women", "Centrum Silver", "Centrum Energy"],
+        correctIndex: 3,
+        explanation: "Centrum Energy – designed specifically to support energy metabolism and reduce fatigue."
+      },
+      {
+        scenario: "A 45-year-old office worker complains of low energy during the day and wants a daily supplement to maintain alertness and vitality.",
+        options: ["Centrum Men", "Centrum Women", "Centrum Silver", "Centrum Energy"],
+        correctIndex: 3,
+        explanation: "Centrum Energy – helps boost energy levels for adults experiencing fatigue."
+      }
+    ];
+
+    let gameCases = [];
+    let currentCaseIndex = 0;
+    let score = 0;
 
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
     const exhausted = urlParams.get('exhausted') === 'true';
     const GAME_ID = 'prescription';
-    
     let currentMode = '';
-    let score = 0;
-    const correctIndex = 1; // Option 2 (Paracetamol)
 
     window.onload = () => {
       if (!uid) document.getElementById('btn-exit-start').style.display = 'none';
@@ -119,6 +341,17 @@
       else startGame('challenge');
     }
 
+    // Shuffle helper function
+    function shuffleArray(array) {
+      let currentIndex = array.length, randomIndex;
+      while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+      }
+      return array;
+    }
+
     function startGame(mode) {
       if (exhausted && mode === 'challenge') {
         showToast("You've already completed this game. Playing in Test Mode.");
@@ -128,24 +361,75 @@
       }
       document.getElementById('screen-mode').style.display = 'none';
       document.getElementById('screen-game').style.display = 'flex';
+
+      // Randomize the 6 cases
+      gameCases = shuffleArray([...allCases]);
+      currentCaseIndex = 0;
+      score = 0;
+
+      loadCase();
     }
 
-    function checkAnswer(index, btn) {
-      const options = document.querySelectorAll('.rx-option');
-      options.forEach(b => b.disabled = true); // Lock all buttons
+    function loadCase() {
+      document.getElementById('case-counter').textContent = `Case ${currentCaseIndex + 1} / ${gameCases.length}`;
+      document.getElementById('hud-score').textContent = `${score} pts`;
 
-      if (index === correctIndex) {
+      const currentCase = gameCases[currentCaseIndex];
+      document.getElementById('scenario-text').textContent = currentCase.scenario;
+
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      currentCase.options.forEach((optText, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'rx-option';
+        btn.textContent = `${['A', 'B', 'C', 'D'][index]}) ${optText}`;
+        btn.onclick = () => checkAnswer(index, btn);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedIndex, btn) {
+      const options = document.querySelectorAll('.rx-option');
+      options.forEach(b => b.disabled = true); 
+
+      const currentCase = gameCases[currentCaseIndex];
+      const isCorrect = (selectedIndex === currentCase.correctIndex);
+
+      const titleEl = document.getElementById('feedback-title');
+      const iconEl = document.getElementById('feedback-icon');
+
+      if (isCorrect) {
         btn.classList.add('correct');
-        score = 50;
-        showToast("Correct! +50 pts");
+        score += 20;
+        document.getElementById('hud-score').textContent = `${score} pts`;
+        
+        titleEl.textContent = "Correct! +20 pts";
+        titleEl.style.color = "var(--c-green)";
+        iconEl.textContent = "✅";
       } else {
         btn.classList.add('wrong');
-        options[correctIndex].classList.add('correct'); // highlight correct answer
-        score = 0;
-        showToast("Incorrect! 0 pts");
+        options[currentCase.correctIndex].classList.add('correct'); // highlight correct answer
+        
+        titleEl.textContent = "Incorrect";
+        titleEl.style.color = "var(--c-pink)";
+        iconEl.textContent = "❌";
       }
 
-      setTimeout(finishGame, 2000);
+      // Show dialog with explanation
+      document.getElementById('feedback-text').textContent = currentCase.explanation;
+      document.getElementById('feedback-dialog').classList.add('show');
+    }
+
+    function nextCase() {
+      document.getElementById('feedback-dialog').classList.remove('show');
+      currentCaseIndex++;
+
+      if (currentCaseIndex < gameCases.length) {
+        setTimeout(loadCase, 300); // Slight delay for smooth transition
+      } else {
+        setTimeout(finishGame, 300);
+      }
     }
 
     function finishGame() {
@@ -153,21 +437,26 @@
       document.getElementById('screen-result').style.display = 'flex';
       document.getElementById('result-score').textContent = score + " pts";
 
-      // Trigger the confetti
-      launchConfetti(3000); 
+      if (score > 0) launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = `
-        <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-        <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
-      `;
+      if (currentMode === 'challenge') {
+          actionsDiv.innerHTML = `
+            <button class="btn-centrum" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>
+          `;
+      } else {
+          actionsDiv.innerHTML = `
+            <button class="btn-centrum" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>
+            <button class="btn-outline" style="margin-top:20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">Play for fun (Exit)</button>
+          `;
+      }
     }
 
     function processPoints() {
       if (score === 0 && currentMode === 'test') { goBack(); return; }
 
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "Processing...";
+      actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600;'>Processing...</p>";
 
       if (uid) {
         window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
@@ -177,19 +466,47 @@
         qr.addData(payload);
         qr.make();
         actionsDiv.innerHTML = `
-          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
-            ${qr.createImgTag(5)}
+          <div style="background:var(--surface2); padding:25px; border-radius:24px; border:2px solid var(--border); display:inline-block; margin-bottom:20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+            <div style="background:white; padding:15px; border-radius:16px; border: 1px solid var(--border);">
+                ${qr.createImgTag(6)}
+            </div>
           </div>
-          <p style="color:var(--muted); font-size:0.9rem;">Scan this QR with your Haleon app to collect points.</p>
-          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
+          <p style="color:var(--muted); font-size:1.1rem; margin-bottom: 30px; font-weight: 500;">Scan this QR with your App to collect points.</p>
+          <button class="btn-outline" style="max-width: 300px; margin: 0 auto;" onclick="location.reload()">Start New Game</button>
         `;
       }
     }
 
     function showToast(msg) {
-      const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show");
+      const toast = document.getElementById("toast"); 
+      toast.textContent = msg; 
+      toast.classList.add("show");
       setTimeout(() => toast.classList.remove("show"), 1500);
     }
+
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+      canvas.style.display = "block";
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const pieces = [];
+      const colors = ["#E91E63", "#FF9800", "#FFC107", "#4CAF50", "#2196F3", "#9C27B0"]; 
+      for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 6 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 8 });
+      const end = Date.now() + duration;
+      (function frame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((p) => {
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color;
+          ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore();
+          p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rs;
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+        else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
+      })();
+    }
   </script>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>

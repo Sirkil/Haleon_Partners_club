@@ -3,103 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Catch & Win</title>
+  <title>Panadol Catch & Win</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    body { overflow: hidden; touch-action: none; }
-    .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; position: relative; }
-    .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
-    .mode-card:hover { border-color: var(--green); }
+    :root {
+      /* Panadol Brand Colors */
+      --bg: #E8EEF5; 
+      --text: #1E293B;
+      --surface: #E2E8F0;
+      --surface2: #F4F7FA; 
+      --border: #CBD5E1;
+      --muted: #64748B;
+      
+      --c-blue: #002A6C; 
+      --c-light: #0055A5;
+      --c-green: #10B981;
+      --c-red: #E11D48;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background: var(--bg); color: var(--text); overflow: hidden; touch-action: none; }
+
+    .game-container { max-width: 800px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+    .game-container-narrow { max-width: 500px; }
     
-    .catch-hud { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; pointer-events: none; }
-    .catch-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 8px 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    .lives-box { display: flex; flex-direction: column; gap: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 10px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    .heart { color: #f472b6; font-size: 1.2rem; transition: opacity 0.3s; }
+    .auth-title { font-size: 3rem; font-weight: 800; color: var(--c-blue); margin-bottom: 10px; text-align: center; }
+
+    .btn-panadol { background: var(--c-blue); color: #ffffff; border: none; padding: 15px 30px; font-size: 1.2rem; font-weight: 700; border-radius: 50px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 8px 15px rgba(0, 42, 108, 0.2); width: 100%; text-align: center; }
+    .btn-panadol:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(0, 42, 108, 0.3); }
+    .btn-panadol:active { transform: translateY(2px); }
+
+    .btn-outline { background: var(--surface2); color: var(--text); border: 2px solid var(--border); padding: 12px 24px; font-size: 1rem; font-weight: 600; border-radius: 50px; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .btn-outline:hover { border-color: var(--c-blue); color: var(--c-blue); }
+
+    .mode-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 24px; padding: 24px; margin-bottom: 20px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.03); width: 100%; }
+    .mode-card:hover { border-color: var(--c-light); transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0, 85, 165, 0.1); }
+
+    /* Canvas & HUD Overlays */
+    .catch-hud { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; pointer-events: none; }
+    .catch-pill { background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; padding: 6px 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .lives-box { display: flex; flex-direction: row; gap: 5px; background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; padding: 8px 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .heart { color: var(--c-red); font-size: 1.1rem; transition: opacity 0.3s; }
     .heart.lost { opacity: 0.2; }
     
     #catch-canvas { display: block; width: 100%; height: 100%; background: var(--bg); position: absolute; top: 0; left: 0; z-index: 1; border-radius: 0; }
     
-    .float-text { position: absolute; font-weight: 800; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 5; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-    .float-good { color: var(--green); }
-    .float-bad { color: #ef4444; }
+    .float-text { position: absolute; font-weight: 800; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 5; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .float-good { color: var(--c-green); }
+    .float-bad { color: var(--c-red); }
     @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-50px) scale(1.2); opacity: 0; } }
+
+    .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: var(--text); color: #ffffff; padding: 15px 30px; border-radius: 50px; font-weight: 600; font-size: 1.1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; z-index: 20;">
-    <div style="font-size: 5rem; margin-bottom: 20px;">🧺</div>
+  <div class="game-container game-container-narrow" id="screen-start" style="z-index: 20;">
+    <img src="assets/Panadol_logo.png" alt="Panadol" style="max-width: 260px; margin-bottom: 20px;">
     <div class="auth-title">Catch & Win</div>
-    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
-      drag to catch good items (+10 pts).<br>
+    <p style="color: var(--muted); margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem; text-align: center;">
+      Drag to catch good items (+10 pts).<br>
       Avoid bad items or missing good ones (-10 pts & lose 1 life).<br>
-      You have 60 seconds and 3 lives!
+      You have 60 seconds!
     </p>
-    <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
-    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px;" onclick="goBack()">← Back to App</button>
+    <button class="btn-panadol" style="max-width: 300px; margin: 0 auto;" onclick="proceedFromStart()">Start Game</button>
+    <button class="btn-outline" id="btn-exit-start" style="margin-top: 20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">← Back to App</button>
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none; z-index: 20;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center;">Select Mode</div>
+  <div class="game-container game-container-narrow" id="screen-mode" style="display: none; z-index: 20;">
+    <div style="width: 100%; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; min-height: 70px;">
+      <button class="btn-outline" style="position: absolute; left: 0; width: auto; padding: 10px 20px;" onclick="goBack()">← Back</button>
+      <img src="assets/Panadol_logo.png" alt="Panadol" style="height: 65px;">
+    </div>
+    
+    <div class="auth-title" style="margin-bottom: 30px; color: var(--text);">Select Mode</div>
     <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.3rem;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
+      <h3 style="color:var(--text); font-size:1.4rem; font-weight: 800;">Test Mode</h3>
+      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
     </div>
     <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Compete for real points.</p>
+      <h3 style="color:var(--c-light); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
+      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Compete for real points.</p>
     </div>
   </div>
 
   <div id="screen-game" style="display: none; position: fixed; inset: 0;">
-    <button class="btn-secondary" style="position:absolute; top:80px; left:20px; z-index: 10; width: auto; padding: 8px 16px;" onclick="goBack()">← Exit</button>
+    
     <div class="catch-hud">
-      <div class="catch-pill"><span style="color:var(--muted);font-size:0.8rem;">Time</span> <span id="hud-time">60s</span></div>
-      <div class="catch-pill" style="color:var(--green); font-size:1.2rem;" id="hud-score">0</div>
-      <div class="lives-box">
-        <div class="heart" id="life-3">❤️</div>
-        <div class="heart" id="life-2">❤️</div>
-        <div class="heart" id="life-1">❤️</div>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start; pointer-events: auto;">
+        <button class="btn-outline" style="padding: 6px 14px; font-size: 0.9rem; background: var(--surface2);" onclick="goBack()">← Exit</button>
+        <div class="catch-pill" style="pointer-events: none;">
+          <span style="color:var(--muted);font-size:0.85rem;">Time</span> 
+          <span id="hud-time" style="color: var(--c-blue);">60s</span>
+        </div>
       </div>
+
+      <img src="assets/Panadol_logo.png" alt="Panadol" style="height: 50px; margin-top: 5px;">
+      
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+        <div class="lives-box">
+          <div class="heart" id="life-3">❤️</div>
+          <div class="heart" id="life-2">❤️</div>
+          <div class="heart" id="life-1">❤️</div>
+        </div>
+        <div class="catch-pill" style="color:var(--c-light); font-size:1.2rem; min-width: 70px; justify-content: center;" id="hud-score">0</div>
+      </div>
+
     </div>
+
     <canvas id="catch-canvas"></canvas>
   </div>
 
-  <div class="game-container" id="screen-result" style="display: none; text-align: center; z-index: 20;">
-    <div style="font-size: 4rem; margin-bottom: 10px;" id="result-icon">🏆</div>
+  <div class="game-container game-container-narrow" id="screen-result" style="display: none; text-align: center; z-index: 20;">
+    <img src="assets/Panadol_logo.png" alt="Panadol" style="max-width: 200px; margin-bottom: 20px;">
     <div class="auth-title" id="result-title">Time's Up!</div>
-    <div style="font-size: 3.5rem; font-weight: 800; color: var(--green); margin-bottom: 30px; line-height: 1;" id="result-score">0 pts</div>
-    <div id="result-actions"></div>
+    <div style="font-size: 3.5rem; font-weight: 900; color: var(--c-light); margin-bottom: 30px; line-height: 1;" id="result-score">0 pts</div>
+    <div id="result-actions" style="width: 100%;"></div>
   </div>
 
   <script>
     function launchConfetti(duration) {
-      const canvas = document.getElementById("confetti-canvas");
-      if(!canvas) return;
-      const ctx = canvas.getContext("2d");
-      canvas.style.display = "block";
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const pieces = [];
-      const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"];
-      for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
-      const end = Date.now() + duration;
-      (function frame() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pieces.forEach((p) => {
-          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color;
-          ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore();
-          p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs;
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-        else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
-      })();
+      const canvas = document.getElementById("confetti-canvas"); if(!canvas) return; const ctx = canvas.getContext("2d"); canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight; const pieces = []; 
+      const colors = ["#002A6C", "#0055A5", "#FFFFFF", "#38BDF8", "#E11D48"]; 
+      for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 6 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 8 }); const end = Date.now() + duration; (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rs; }); if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } })();
     }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -108,292 +140,137 @@
     const GAME_ID = 'catch';
     
     let currentMode = '';
-    
-    let score = 0;
-    let lives = 3;
-    let timeLeft = 60;
-    let gameLoopId;
-    let timerId;
-    let spawnTimerId;
+    let score = 0; let lives = 3; let timeLeft = 60; let gameLoopId; let timerId; let spawnTimerId;
     
     const canvas = document.getElementById('catch-canvas');
     const ctx = canvas.getContext('2d');
     let cw, ch;
 
-    // ---------------------------------------------------------
-    // 🛠️ IMAGE ASSETS SETUP
-    // ---------------------------------------------------------
+    const badImg = new Image(); badImg.src = 'assets/not_panadol.png';
+    const goodImageSrcs = ['assets/pack1.png', 'assets/pack2.png', 'assets/pack3.png', 'assets/pack4.png'];
+    const goodImgs = goodImageSrcs.map(src => { let img = new Image(); img.src = src; return img; });
 
-    const badImg = new Image();
-    badImg.src = 'assets/not_panadol.png';
-
-    const goodImageSrcs = [
-        'assets/pack1.png', 
-        'assets/pack2.png',
-        'assets/pack3.png',
-        'assets/pack4.png', 
-    ];
-    
-    const goodImgs = goodImageSrcs.map(src => {
-        let img = new Image();
-        img.src = src;
-        return img;
-    });
-
-    // ---------------------------------------------------------
-    
     let basket = { x: 0, y: 0, w: 80, h: 60, emoji: '🧺' };
-    let items = [];
-    let speedMultiplier = 1;
+    let items = []; let speedMultiplier = 1; let keys = { a: false, l: false }; const basketSpeed = 10; 
 
-    let keys = { a: false, l: false };
-    const basketSpeed = 10; 
-
-    window.addEventListener('keydown', (e) => {
-      if (e.key.toLowerCase() === 'a') keys.a = true;
-      if (e.key.toLowerCase() === 'l') keys.l = true;
-    });
-
-    window.addEventListener('keyup', (e) => {
-      if (e.key.toLowerCase() === 'a') keys.a = false;
-      if (e.key.toLowerCase() === 'l') keys.l = false;
-    });
-
-    function resizeCanvas() {
-      cw = window.innerWidth > 600 ? 600 : window.innerWidth;
-      ch = window.innerHeight;
-      canvas.width = cw;
-      canvas.height = ch;
-      canvas.style.left = (window.innerWidth - cw) / 2 + 'px';
-      basket.y = ch - 100;
-      if(basket.x === 0) basket.x = cw / 2 - basket.w / 2;
-    }
+    window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'a') keys.a = true; if (e.key.toLowerCase() === 'l') keys.l = true; });
+    window.addEventListener('keyup', (e) => { if (e.key.toLowerCase() === 'a') keys.a = false; if (e.key.toLowerCase() === 'l') keys.l = false; });
     window.addEventListener('resize', resizeCanvas);
 
-    window.onload = () => {
-      if (!uid) document.getElementById('btn-exit-start').style.display = 'none';
-    };
+    function resizeCanvas() { cw = window.innerWidth > 600 ? 600 : window.innerWidth; ch = window.innerHeight; canvas.width = cw; canvas.height = ch; canvas.style.left = (window.innerWidth - cw) / 2 + 'px'; basket.y = ch - 100; if(basket.x === 0) basket.x = cw / 2 - basket.w / 2; }
+    
+    window.onload = () => { if (!uid) document.getElementById('btn-exit-start').style.display = 'none'; };
 
-    function goBack() { 
-      if (uid) window.location.href = 'index.html'; 
-      else location.reload(); 
-    }
+    function goBack() { if (uid) window.location.href = 'index.html'; else location.reload(); }
 
-    function proceedFromStart() {
-      document.getElementById('screen-start').style.display = 'none';
-      if (uid) document.getElementById('screen-mode').style.display = 'flex';
-      else startGame('challenge');
-    }
+    function proceedFromStart() { document.getElementById('screen-start').style.display = 'none'; if (uid) document.getElementById('screen-mode').style.display = 'flex'; else startGame('challenge'); }
 
     function startGame(mode) {
-      if (exhausted && mode === 'challenge') {
-        showToast("You've already completed this game. Playing in Test Mode.");
-        currentMode = 'test';
-      } else {
-        currentMode = mode;
-      }
-      document.getElementById('screen-mode').style.display = 'none';
-      document.getElementById('screen-game').style.display = 'block';
-      
-      resizeCanvas();
-      initGame();
+      if (exhausted && mode === 'challenge') { showToast("You've already completed this game. Playing in Test Mode."); currentMode = 'test'; } else { currentMode = mode; }
+      document.getElementById('screen-mode').style.display = 'none'; document.getElementById('screen-game').style.display = 'block';
+      resizeCanvas(); initGame();
     }
 
     function initGame() {
       score = 0; lives = 3; timeLeft = 60; items = []; speedMultiplier = 1; keys = { a: false, l: false };
-      updateHUD();
-      document.querySelectorAll('.heart').forEach(h => h.classList.remove('lost'));
+      updateHUD(); document.querySelectorAll('.heart').forEach(h => h.classList.remove('lost'));
+      canvas.addEventListener('touchmove', handleTouch, {passive: false}); canvas.addEventListener('mousemove', handleMouse);
       
-      canvas.addEventListener('touchmove', handleTouch, {passive: false});
-      canvas.addEventListener('mousemove', handleMouse);
-      
-      timerId = setInterval(() => {
-        timeLeft--;
-        speedMultiplier += 0.05; 
-        updateHUD();
-        if (timeLeft <= 0) endGame(true);
-      }, 1000);
-
-      spawnItem();
-      gameLoopId = requestAnimationFrame(gameLoop);
+      timerId = setInterval(() => { timeLeft--; speedMultiplier += 0.05; updateHUD(); if (timeLeft <= 0) endGame(true); }, 1000);
+      spawnItem(); gameLoopId = requestAnimationFrame(gameLoop);
     }
 
-    function handleTouch(e) {
-      e.preventDefault();
-      const touchX = e.touches[0].clientX - (window.innerWidth - cw)/2;
-      basket.x = Math.max(0, Math.min(touchX - basket.w/2, cw - basket.w));
-    }
-    function handleMouse(e) {
-      const mouseX = e.clientX - (window.innerWidth - cw)/2;
-      basket.x = Math.max(0, Math.min(mouseX - basket.w/2, cw - basket.w));
-    }
+    function handleTouch(e) { e.preventDefault(); const touchX = e.touches[0].clientX - (window.innerWidth - cw)/2; basket.x = Math.max(0, Math.min(touchX - basket.w/2, cw - basket.w)); }
+    function handleMouse(e) { const mouseX = e.clientX - (window.innerWidth - cw)/2; basket.x = Math.max(0, Math.min(mouseX - basket.w/2, cw - basket.w)); }
 
     function spawnItem() {
       if(timeLeft <= 0 || lives <= 0) return;
-      
       const isGood = Math.random() > 0.35; 
-      
-      let imgObj;
-      if (isGood) {
-          imgObj = goodImgs[Math.floor(Math.random() * goodImgs.length)];
-      } else {
-          imgObj = badImg;
-      }
-      
-      items.push({
-        x: Math.random() * (cw - 60) + 30, 
-        y: -50,
-        size: 50, 
-        dy: (Math.random() * 2 + 3) * speedMultiplier,
-        img: imgObj,
-        isGood: isGood
-      });
-      
+      let imgObj = isGood ? goodImgs[Math.floor(Math.random() * goodImgs.length)] : badImg;
+      items.push({ x: Math.random() * (cw - 60) + 30, y: -50, size: 50, dy: (Math.random() * 2 + 3) * speedMultiplier, img: imgObj, isGood: isGood });
       const nextSpawn = Math.max(400, 1000 - (60 - timeLeft)*10);
       spawnTimerId = setTimeout(spawnItem, nextSpawn);
     }
 
     function spawnFloatingText(x, y, text, isGood) {
-      const el = document.createElement('div');
-      el.className = `float-text ${isGood ? 'float-good' : 'float-bad'}`;
-      el.textContent = text;
-      el.style.left = (x + (window.innerWidth - cw)/2) + 'px';
-      el.style.top = y + 'px';
-      document.getElementById('screen-game').appendChild(el);
-      setTimeout(() => el.remove(), 800);
+      const el = document.createElement('div'); el.className = `float-text ${isGood ? 'float-good' : 'float-bad'}`; el.textContent = text; el.style.left = (x + (window.innerWidth - cw)/2) + 'px'; el.style.top = y + 'px'; document.getElementById('screen-game').appendChild(el); setTimeout(() => el.remove(), 800);
     }
 
     function updateHUD() {
-      document.getElementById('hud-time').textContent = timeLeft + 's';
-      document.getElementById('hud-score').textContent = score;
-      document.getElementById('hud-time').style.color = timeLeft <= 10 ? '#ef4444' : 'var(--muted)';
-      
-      if(lives < 3) document.getElementById('life-3').classList.add('lost');
-      if(lives < 2) document.getElementById('life-2').classList.add('lost');
-      if(lives < 1) document.getElementById('life-1').classList.add('lost');
+      document.getElementById('hud-time').textContent = timeLeft + 's'; document.getElementById('hud-score').textContent = score;
+      document.getElementById('hud-time').style.color = timeLeft <= 10 ? 'var(--c-red)' : 'var(--c-blue)';
+      if(lives < 3) document.getElementById('life-3').classList.add('lost'); if(lives < 2) document.getElementById('life-2').classList.add('lost'); if(lives < 1) document.getElementById('life-1').classList.add('lost');
     }
 
     function mistake(x, y) {
-      lives--;
-      score -= 10;
-      spawnFloatingText(x, y, "-10", false);
-      updateHUD();
-      
-      canvas.style.opacity = '0.5';
-      setTimeout(() => canvas.style.opacity = '1', 100);
-
+      lives--; score -= 10; spawnFloatingText(x, y, "-10", false); updateHUD();
+      canvas.style.opacity = '0.5'; setTimeout(() => canvas.style.opacity = '1', 100);
       if(lives <= 0) endGame(false);
     }
 
     function gameLoop() {
-      if (keys.a) {
-        basket.x = Math.max(0, basket.x - basketSpeed);
-      }
-      if (keys.l) {
-        basket.x = Math.min(cw - basket.w, basket.x + basketSpeed);
-      }
-
+      if (keys.a) basket.x = Math.max(0, basket.x - basketSpeed); if (keys.l) basket.x = Math.min(cw - basket.w, basket.x + basketSpeed);
       ctx.clearRect(0, 0, cw, ch);
-      
-      ctx.font = '50px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(basket.emoji, basket.x + basket.w/2, basket.y + basket.h/2);
+      ctx.font = '50px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(basket.emoji, basket.x + basket.w/2, basket.y + basket.h/2);
 
       for (let i = items.length - 1; i >= 0; i--) {
-        let item = items[i];
-        item.y += item.dy;
-        
-        if (item.img && item.img.complete) {
-            ctx.drawImage(item.img, item.x - item.size/2, item.y - item.size/2, item.size, item.size);
-        }
-
-        const hitX = item.x > basket.x && item.x < basket.x + basket.w;
-        const hitY = item.y > basket.y - 20 && item.y < basket.y + basket.h;
+        let item = items[i]; item.y += item.dy;
+        if (item.img && item.img.complete) ctx.drawImage(item.img, item.x - item.size/2, item.y - item.size/2, item.size, item.size);
+        const hitX = item.x > basket.x && item.x < basket.x + basket.w; const hitY = item.y > basket.y - 20 && item.y < basket.y + basket.h;
 
         if (hitX && hitY) {
-          if (item.isGood) {
-            score += 10;
-            spawnFloatingText(item.x, item.y, "+10", true);
-            updateHUD();
-          } else {
-            mistake(item.x, item.y);
-          }
-          items.splice(i, 1);
-          continue;
+          if (item.isGood) { score += 10; spawnFloatingText(item.x, item.y, "+10", true); updateHUD(); } else { mistake(item.x, item.y); }
+          items.splice(i, 1); continue;
         }
-
-        if (item.y > ch + 20) {
-          if (item.isGood) {
-            mistake(item.x, ch - 50); 
-          }
-          items.splice(i, 1);
-        }
+        if (item.y > ch + 20) { if (item.isGood) mistake(item.x, ch - 50); items.splice(i, 1); }
       }
-
-      if(lives > 0 && timeLeft > 0) {
-        gameLoopId = requestAnimationFrame(gameLoop);
-      }
+      if(lives > 0 && timeLeft > 0) gameLoopId = requestAnimationFrame(gameLoop);
     }
 
     function endGame(survived) {
-      cancelAnimationFrame(gameLoopId);
-      clearInterval(timerId);
-      clearTimeout(spawnTimerId);
-      
-      canvas.removeEventListener('touchmove', handleTouch);
-      canvas.removeEventListener('mousemove', handleMouse);
-
+      cancelAnimationFrame(gameLoopId); clearInterval(timerId); clearTimeout(spawnTimerId);
+      canvas.removeEventListener('touchmove', handleTouch); canvas.removeEventListener('mousemove', handleMouse);
       if (score < 0) score = 0;
-
-      document.getElementById('screen-game').style.display = 'none';
-      document.getElementById('screen-result').style.display = 'flex';
+      document.getElementById('screen-game').style.display = 'none'; document.getElementById('screen-result').style.display = 'flex';
       
       document.getElementById('result-title').textContent = survived ? "Time's Up!" : "Out of Lives!";
-      document.getElementById('result-icon').textContent = survived ? "⏱️" : "💔";
       document.getElementById('result-score').textContent = score + " pts";
-
       if (score > 0) launchConfetti(3000);
 
       const actionsDiv = document.getElementById('result-actions');
-      
       if (currentMode === 'challenge') {
-        actionsDiv.innerHTML = `
-          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-        `;
+        actionsDiv.innerHTML = `<button class="btn-panadol" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>`;
       } else {
         actionsDiv.innerHTML = `
-          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-          <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
+          <button class="btn-panadol" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>
+          <button class="btn-outline" style="margin-top:20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">Play for fun (Exit)</button>
         `;
       }
     }
 
     function processPoints() {
       if (score === 0 && currentMode === 'test') { goBack(); return; }
-
-      const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "Processing...";
-
+      const actionsDiv = document.getElementById('result-actions'); actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600;'>Processing...</p>";
       if (uid) {
         window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
       } else {
         const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
         const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
+        
         actionsDiv.innerHTML = `
-          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
-            ${qr.createImgTag(5)}
+          <div style="background:var(--surface2); padding:25px; border-radius:24px; border:2px solid var(--border); display:inline-block; margin-bottom:20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+            <div style="background:#ffffff; padding:15px; border-radius:16px; border: 1px solid var(--border);">
+                ${qr.createImgTag(6)}
+            </div>
           </div>
-          <p style="color:var(--muted); font-size:0.9rem;">Scan this QR with your Haleon app to collect points.</p>
-          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
+          <p style="color:var(--muted); font-size:1.1rem; margin-bottom: 30px; font-weight: 500;">Scan this QR with your App to collect points.</p>
+          <button class="btn-outline" style="max-width: 300px; margin: 0 auto;" onclick="location.reload()">Start New Game</button>
         `;
       }
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 1500);
-    }
+    function showToast(msg) { const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 1500); }
   </script>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>

@@ -2,42 +2,98 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Build Your Basket</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+    body { touch-action: none; overflow: hidden; background: var(--bg); }
+    .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; position: relative;}
     .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
     .mode-card:hover { border-color: var(--green); }
-    .med-grid { display: grid; grid-template-columns: 140px 140px; justify-content: center; gap: 16px; margin-top: 20px; }
-    .med-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px 12px; position: relative; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .med-card-icon { font-size: 3.5rem; margin-bottom: 8px; line-height: 1; }
-    .med-card-title { font-weight: 600; font-size: 0.95rem; }
-    .add-btn { position: absolute; bottom: -10px; right: -10px; width: 36px; height: 36px; background: var(--green); color: #000; border: none; border-radius: 50%; font-size: 1.5rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; box-shadow: 0 4px 8px rgba(0,0,0,0.3); line-height: 0; padding-bottom: 2px; }
-    .add-btn:active { transform: scale(0.9); }
-    .cart-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--surface); border-top: 1px solid var(--border); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+    
+    /* Top Header/HUD */
+    .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; }
+    .basket-hud { display: flex; align-items: center; gap: 15px; }
+    .case-counter { font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
+    .score-display { font-weight: 800; color: var(--green); font-size: 1.1rem; background: var(--surface2); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); }
+
+    /* Case Scenario & Question Cards */
+    .case-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 10px; font-size: 0.95rem; line-height: 1.5; color: var(--text); box-shadow: 0 4px 10px rgba(0,0,0,0.02); text-align: center; }
+    .question-card { background: var(--surface); border: 1px dashed var(--green); border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 0.9rem; font-weight: 600; color: var(--green); text-align: center; }
+
+    /* Options Area */
+    .options-zone { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 130px; margin-bottom: 15px; }
+    
+    /* Draggable Item Card */
+    .drag-item { 
+      width: 46%; 
+      background: var(--surface2); 
+      border: 2px solid var(--border); 
+      border-radius: 12px; 
+      padding: 10px; 
+      text-align: center; 
+      font-size: 0.85rem; 
+      font-weight: 600; 
+      cursor: grab; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      touch-action: none; 
+      z-index: 10;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      transition: border-color 0.2s;
+    }
+    .drag-item img { max-width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; pointer-events: none; }
+    
+    /* Shopping Cart Drop Zone */
+    .cart-zone { 
+      width: 100%; 
+      min-height: 140px; 
+      border: 3px dashed var(--muted); 
+      border-radius: 16px; 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 10px; 
+      justify-content: center; 
+      align-items: center; 
+      padding: 10px; 
+      background: rgba(0,0,0,0.02); 
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .cart-zone.drag-over { border-color: var(--green); background: rgba(74, 222, 128, 0.1); }
+    .cart-empty-text { position: absolute; color: var(--muted); font-size: 1.2rem; font-weight: 600; pointer-events: none; }
+    
+    /* When inside cart, adjust size slightly */
+    .cart-zone .drag-item { width: 40%; padding: 5px; }
+    .cart-zone .drag-item img { height: 40px; }
+
+    .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 15px 30px; border-radius: 50px; font-weight: 600; font-size: 1.1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; width: 90%; max-width: 400px;}
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center;">
+  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; z-index: 20;">
     <div style="font-size: 5rem; margin-bottom: 20px;">🛒</div>
     <div class="auth-title">Build Basket</div>
     <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
-      Read the patient case and select the right medications for their basket.<br>
-      Correct items: +50 pts. Wrong items: -25 pts.
+      Read the patient case, then <strong>drag and drop</strong> the correct medications into their basket.<br>
+      +10 pts for correct items, -10 pts for wrong ones.
     </p>
     <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
     <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px;" onclick="goBack()">← Back to App</button>
+    
+    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;">
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 20px;" onclick="goBack()">← Exit Game</button>
+  <div class="game-container" id="screen-mode" style="display: none; z-index: 20;">
+    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
     <div class="auth-title" style="text-align: center;">Select Mode</div>
     <div class="mode-card" onclick="startGame('test')">
       <h3 style="color:var(--text); font-size:1.3rem;">Test Mode</h3>
@@ -45,53 +101,35 @@
     </div>
     <div class="mode-card" onclick="startGame('challenge')">
       <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Compete for real points.</p>
+      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Compete for real points (Max 100 pts).</p>
     </div>
   </div>
 
-  <div class="game-container" id="screen-case" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center;">Patient Case</div>
-    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:16px; padding:24px; font-size:1.05rem; line-height:1.6; text-align: center;">
-      "A 45-year-old patient comes in complaining of severe joint pain and a slight fever. They are looking for immediate relief."
+  <div class="game-container" id="screen-game" style="display: none; justify-content: flex-start; padding-top: 20px;">
+    
+    <div class="game-header">
+      <button class="btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.85rem; margin: 0;" onclick="goBack()">← Exit</button>
+      <div class="basket-hud">
+        <div class="case-counter" id="case-counter">Case 1 / 5</div>
+        <div class="score-display" id="hud-score">0 pts</div>
+      </div>
     </div>
-    <button class="btn-primary" style="margin-top: 24px;" onclick="showMeds()">Proceed to Shelf →</button>
+
+    <div class="case-card" id="case-text">Loading case...</div>
+    
+    <div class="question-card" id="question-text">Loading question...</div>
+
+    <div class="options-zone" id="options-zone">
+      </div>
+
+    <div class="cart-zone" id="cart-zone">
+      <div class="cart-empty-text" id="cart-empty-text">🛒 Drop items here</div>
+    </div>
+
+    <button class="btn-primary" id="btn-confirm" onclick="confirmBasket()" style="width: 100%; margin-top: auto;">Confirm Basket</button>
   </div>
 
-  <div class="game-container" id="screen-meds" style="display: none; padding-bottom: 80px; justify-content: flex-start; padding-top: 40px;">
-    <div class="auth-title" style="text-align: center; margin-bottom: 10px;">Build Basket</div>
-    <div class="med-grid">
-      <div class="med-card">
-        <div class="med-card-icon">💊</div>
-        <div class="med-card-title">Panadol Joint</div>
-        <button class="add-btn" onclick="addToCart(true, 'Panadol Joint')">+</button>
-      </div>
-      <div class="med-card">
-        <div class="med-card-icon">🌡️</div>
-        <div class="med-card-title">Panadol Extra</div>
-        <button class="add-btn" onclick="addToCart(true, 'Panadol Extra')">+</button>
-      </div>
-      <div class="med-card">
-        <div class="med-card-icon">🧴</div>
-        <div class="med-card-title">Antacid</div>
-        <button class="add-btn" onclick="addToCart(false, 'Antacid')">+</button>
-      </div>
-      <div class="med-card">
-        <div class="med-card-icon">💧</div>
-        <div class="med-card-title">Eye Drops</div>
-        <button class="add-btn" onclick="addToCart(false, 'Eye Drops')">+</button>
-      </div>
-    </div>
-    <div class="cart-bar">
-      <div>
-        <div style="font-size: 0.8rem; color: var(--muted);">Items in cart:</div>
-        <div style="font-weight:800; font-size:1.4rem; color:var(--green);" id="cart-count">0</div>
-      </div>
-      <button class="btn-primary" style="width: auto; padding: 10px 28px;" onclick="finishGame()">Finish</button>
-    </div>
-  </div>
-
-  <div class="game-container" id="screen-result" style="display: none; text-align: center; justify-content: center;">
+  <div class="game-container" id="screen-result" style="display: none; text-align: center; justify-content: center; z-index: 20;">
     <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
     <div class="auth-title" id="result-title">Game Over</div>
     <div style="font-weight:800; font-size: 3.5rem; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">0 pts</div>
@@ -99,6 +137,324 @@
   </div>
 
   <script>
+    // --- GAME DATA ---
+    const cases = [
+      {
+        scenario: "A 35-year-old pharmacist feels unusually tired after several sleepless nights and also complains of mild tension headaches. No fever or other health issues.",
+        question: "Which products would you include in the patient’s basket?",
+        options: [
+          { id: "o1", name: "Panadol Advance", img: "assets/Panadol advance.png", isCorrect: false },
+          { id: "o2", name: "Panadol Extra", img: "assets/panadol_extra.png", isCorrect: true },
+          { id: "o3", name: "Centrum Energy", img: "assets/Centrum_energy_pack.png", isCorrect: true },
+          { id: "o4", name: "Centrum Women", img: "assets/CENTRUM_WOMEN.jpg", isCorrect: false }
+        ]
+      },
+      {
+        scenario: "A 40-year-old patient comes in with seasonal flu: fever, body aches, headache, and nasal congestion. They also mention feeling generally low on energy during recovery.",
+        question: "Which products would you include in the patient’s basket?",
+        options: [
+          { id: "o1", name: "Panadol Cold & Flu", img: "assets/Cold & Flu Day Pack.png", isCorrect: true },
+          { id: "o2", name: "Panadol Extra", img: "assets/panadol_extra.png", isCorrect: false },
+          { id: "o3", name: "Centrum Energy", img: "assets/Centrum_energy_pack.png", isCorrect: true },
+          { id: "o4", name: "Centrum Men", img: "assets/CENTRUM_MEN.jpg", isCorrect: false }
+        ]
+      },
+      {
+        scenario: "A 45-year-old man wants a daily routine to maintain overall wellness. He reports feeling slightly tired and wants to support immunity and heart health.",
+        question: "Which products would you include in the patient’s basket?",
+        options: [
+          { id: "o1", name: "Centrum Men", img: "assets/CENTRUM_MEN.jpg", isCorrect: true },
+          { id: "o2", name: "Centrum Energy", img: "assets/Centrum_energy_pack.png", isCorrect: true },
+          { id: "o3", name: "Panadol Advance", img: "assets/Panadol advance.png", isCorrect: false },
+          { id: "o4", name: "Panadol Cold & Flu", img: "assets/Cold & Flu Day Pack.png", isCorrect: false }
+        ]
+      },
+      {
+        scenario: "A 38-year-old woman complains of mild menstrual cramps and occasional fatigue. She wants to support bone and immune health daily.",
+        question: "Which products would you include in the patient’s basket?",
+        options: [
+          { id: "o1", name: "Panadol Advance", img: "assets/Panadol advance.png", isCorrect: true },
+          { id: "o2", name: "Centrum Women", img: "assets/CENTRUM_WOMEN.jpg", isCorrect: true },
+          { id: "o3", name: "Panadol Cold & Flu", img: "assets/Cold & Flu Day Pack.png", isCorrect: false },
+          { id: "o4", name: "Centrum Men", img: "assets/CENTRUM_MEN.jpg", isCorrect: false }
+        ]
+      },
+      {
+        scenario: "A 30-year-old mother has a mild cold: headache, mild fever, and nasal congestion. She also reports feeling very fatigued from caring for her young children.",
+        question: "Which products would you include in the patient’s basket?",
+        options: [
+          { id: "o1", name: "Panadol Cold & Flu", img: "assets/Cold & Flu Day Pack.png", isCorrect: true },
+          { id: "o2", name: "Centrum Energy", img: "assets/Centrum_energy_pack.png", isCorrect: true },
+          { id: "o3", name: "Panadol Extra", img: "assets/panadol_extra.png", isCorrect: false },
+          { id: "o4", name: "Centrum Women", img: "assets/CENTRUM_WOMEN.jpg", isCorrect: false }
+        ]
+      }
+    ];
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+    const exhausted = urlParams.get('exhausted') === 'true';
+    const GAME_ID = 'basket';
+    
+    let currentMode = '';
+    let totalScore = 0;
+    let currentCaseIndex = 0;
+    
+    // Drag State
+    let activeItem = null;
+    let initialX = 0, initialY = 0;
+
+    window.onload = () => {
+      if (!uid) document.getElementById('btn-exit-start').style.display = 'none';
+      document.addEventListener('mousemove', dragMove);
+      document.addEventListener('mouseup', dragEnd);
+      document.addEventListener('touchmove', dragMove, {passive: false});
+      document.addEventListener('touchend', dragEnd, {passive: false});
+    };
+
+    function goBack() { 
+      if (uid) window.location.href = 'index.html'; 
+      else location.reload(); 
+    }
+
+    function proceedFromStart() {
+      document.getElementById('screen-start').style.display = 'none';
+      if (uid) {
+        document.getElementById('screen-mode').style.display = 'flex';
+      } else {
+        startGame('challenge');
+      }
+    }
+
+    function startGame(mode) {
+      if (exhausted && mode === 'challenge') {
+        showToast("You've already completed this game. Playing in Test Mode.");
+        currentMode = 'test';
+      } else {
+        currentMode = mode;
+      }
+      document.getElementById('screen-mode').style.display = 'none';
+      document.getElementById('screen-game').style.display = 'flex';
+      
+      totalScore = 0;
+      currentCaseIndex = 0;
+      loadCase();
+    }
+
+    function loadCase() {
+      if (currentCaseIndex >= cases.length) {
+        finishGame();
+        return;
+      }
+
+      const caseData = cases[currentCaseIndex];
+      document.getElementById('case-counter').textContent = `Case ${currentCaseIndex + 1} / ${cases.length}`;
+      document.getElementById('hud-score').textContent = totalScore + " pts";
+      
+      document.getElementById('case-text').textContent = caseData.scenario;
+      document.getElementById('question-text').textContent = caseData.question;
+      
+      const optionsZone = document.getElementById('options-zone');
+      const cartZone = document.getElementById('cart-zone');
+      
+      // Clear zones
+      optionsZone.innerHTML = '';
+      
+      // Remove previously appended items from cart but keep the empty text
+      const itemsInCart = cartZone.querySelectorAll('.drag-item');
+      itemsInCart.forEach(item => item.remove());
+      updateCartText();
+
+      // Generate new items
+      caseData.options.forEach(opt => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'drag-item';
+        itemEl.dataset.correct = opt.isCorrect;
+        itemEl.dataset.name = opt.name;
+        
+        itemEl.innerHTML = `
+          <img src="${opt.img}" alt="${opt.name}" onerror="this.src='assets/logo1.png'">
+          <div>${opt.name}</div>
+        `;
+        
+        // Add drag start listeners
+        itemEl.addEventListener('mousedown', dragStart);
+        itemEl.addEventListener('touchstart', dragStart, {passive: false});
+        
+        optionsZone.appendChild(itemEl);
+      });
+    }
+
+    // --- DRAG AND DROP LOGIC ---
+    function dragStart(e) {
+      if(e.target.closest('.drag-item')) {
+        activeItem = e.target.closest('.drag-item');
+        const evt = e.touches ? e.touches[0] : e;
+        
+        const rect = activeItem.getBoundingClientRect();
+        
+        // Convert to fixed position to drag smoothly over everything
+        activeItem.style.position = 'fixed';
+        activeItem.style.left = rect.left + 'px';
+        activeItem.style.top = rect.top + 'px';
+        activeItem.style.zIndex = 1000;
+        activeItem.style.margin = 0;
+
+        initialX = evt.clientX - rect.left;
+        initialY = evt.clientY - rect.top;
+      }
+    }
+
+    function dragMove(e) {
+      if(!activeItem) return;
+      e.preventDefault(); // Stop screen from scrolling
+      const evt = e.touches ? e.touches[0] : e;
+      activeItem.style.left = (evt.clientX - initialX) + 'px';
+      activeItem.style.top = (evt.clientY - initialY) + 'px';
+
+      // Highlight cart if hovering
+      const cartRect = document.getElementById('cart-zone').getBoundingClientRect();
+      const itemRect = activeItem.getBoundingClientRect();
+      const itemCX = itemRect.left + itemRect.width/2;
+      const itemCY = itemRect.top + itemRect.height/2;
+
+      if (itemCX > cartRect.left && itemCX < cartRect.right && itemCY > cartRect.top && itemCY < cartRect.bottom) {
+        document.getElementById('cart-zone').classList.add('drag-over');
+      } else {
+        document.getElementById('cart-zone').classList.remove('drag-over');
+      }
+    }
+
+    function dragEnd(e) {
+      if(!activeItem) return;
+      
+      const cart = document.getElementById('cart-zone');
+      const optionsZone = document.getElementById('options-zone');
+      cart.classList.remove('drag-over');
+
+      const cartRect = cart.getBoundingClientRect();
+      const itemRect = activeItem.getBoundingClientRect();
+      
+      const itemCX = itemRect.left + itemRect.width/2;
+      const itemCY = itemRect.top + itemRect.height/2;
+
+      // Reset positioning so it flows naturally in the flexbox
+      activeItem.style.position = 'static';
+      activeItem.style.left = 'auto';
+      activeItem.style.top = 'auto';
+      activeItem.style.zIndex = '10';
+      activeItem.style.margin = '0';
+
+      // Check if dropped inside the cart
+      if (itemCX > cartRect.left && itemCX < cartRect.right && itemCY > cartRect.top && itemCY < cartRect.bottom) {
+        cart.appendChild(activeItem);
+      } else {
+        // Dropped outside, return to options
+        optionsZone.appendChild(activeItem);
+      }
+      
+      updateCartText();
+      activeItem = null;
+    }
+
+    function updateCartText() {
+      const cart = document.getElementById('cart-zone');
+      const emptyText = document.getElementById('cart-empty-text');
+      const hasItems = cart.querySelectorAll('.drag-item').length > 0;
+      emptyText.style.display = hasItems ? 'none' : 'block';
+    }
+
+    // --- CONFIRM BASKET & SCORING ---
+    function confirmBasket() {
+      const cart = document.getElementById('cart-zone');
+      const itemsInCart = cart.querySelectorAll('.drag-item');
+      
+      if(itemsInCart.length === 0) {
+        showToast("Add items to the basket first!");
+        return;
+      }
+
+      let casePoints = 0;
+      let feedbackHTML = "";
+
+      itemsInCart.forEach(item => {
+        const isCorrect = item.dataset.correct === 'true';
+        if (isCorrect) {
+          casePoints += 10;
+          feedbackHTML += `<div style="color:var(--green); margin-bottom:5px;">✅ ${item.dataset.name} (+10)</div>`;
+        } else {
+          casePoints -= 10;
+          feedbackHTML += `<div style="color:#ef4444; margin-bottom:5px;">❌ ${item.dataset.name} (-10)</div>`;
+        }
+      });
+
+      // Update total score
+      totalScore += casePoints;
+      
+      // Ensure score doesn't drop below zero visually
+      if (totalScore < 0) totalScore = 0;
+      
+      document.getElementById('hud-score').textContent = totalScore + " pts";
+
+      // Show summary for this case
+      showToast(`Case Score: ${casePoints > 0 ? '+'+casePoints : casePoints} pts`);
+
+      // Proceed to next case after short delay
+      currentCaseIndex++;
+      setTimeout(loadCase, 1500);
+    }
+
+   function finishGame() {
+      document.getElementById('screen-game').style.display = 'none';
+      document.getElementById('screen-result').style.display = 'flex';
+      
+      document.getElementById('result-score').textContent = totalScore + " pts";
+
+      if(totalScore > 0) launchConfetti(3000); 
+
+      const actionsDiv = document.getElementById('result-actions');
+      if (currentMode === 'challenge') {
+        actionsDiv.innerHTML = `
+          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
+        `;
+      } else {
+        actionsDiv.innerHTML = `
+          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
+          <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
+        `;
+      }
+    }
+
+    function processPoints() {
+      if (totalScore === 0 && currentMode === 'test') { goBack(); return; }
+      
+      const actionsDiv = document.getElementById('result-actions');
+      actionsDiv.innerHTML = "Processing...";
+
+      if (uid) {
+        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${totalScore}`;
+      } else {
+        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: totalScore, nonce: Date.now() });
+        const qr = qrcode(0, 'L');
+        qr.addData(payload);
+        qr.make();
+        actionsDiv.innerHTML = `
+          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
+            ${qr.createImgTag(5)}
+          </div>
+          <p style="color:var(--muted); font-size:0.9rem;">Scan this QR with your Haleon app to collect points.</p>
+          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
+        `;
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast"); 
+      toast.innerHTML = msg; // allow HTML for the feedback breakdown
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2000);
+    }
+
     function launchConfetti(duration) {
       const canvas = document.getElementById("confetti-canvas");
       if(!canvas) return;
@@ -121,101 +477,7 @@
         else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
       })();
     }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const uid = urlParams.get('uid');
-    const exhausted = urlParams.get('exhausted') === 'true';
-    const GAME_ID = 'basket';
-    
-    let currentMode = '';
-    let score = 0;
-    let items = 0;
-
-    window.onload = () => {
-      if (!uid) document.getElementById('btn-exit-start').style.display = 'none';
-    };
-
-    function goBack() { 
-      if (uid) window.location.href = 'index.html'; 
-      else location.reload(); 
-    }
-
-    function proceedFromStart() {
-      document.getElementById('screen-start').style.display = 'none';
-      if (uid) {
-        document.getElementById('screen-mode').style.display = 'flex';
-      } else {
-        startGame('challenge'); // Standalone mode skips right to game
-      }
-    }
-
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') {
-        showToast("You've already completed this game. Playing in Test Mode.");
-        currentMode = 'test';
-      } else {
-        currentMode = mode;
-      }
-      document.getElementById('screen-mode').style.display = 'none';
-      document.getElementById('screen-case').style.display = 'flex';
-    }
-
-    function showMeds() {
-      document.getElementById('screen-case').style.display = 'none';
-      document.getElementById('screen-meds').style.display = 'flex';
-    }
-
-    function addToCart(isCorrect, name) {
-      items++;
-      document.getElementById('cart-count').textContent = items;
-      if (isCorrect) score += 50;
-      else score -= 25;
-      showToast(name + " added to cart!");
-    }
-
-   function finishGame() {
-      // Hide the game and show the results screen
-      document.getElementById('screen-meds').style.display = 'none';
-      document.getElementById('screen-result').style.display = 'flex';
-      document.getElementById('result-score').textContent = score + " pts";
-
-      // Trigger the confetti
-      launchConfetti(3000); 
-
-      // Show the consistent two-button view
-      const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = `
-        <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-        <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
-      `;
-    }
-
-    function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; }
-      const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "Processing...";
-
-      if (uid) {
-        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
-      } else {
-        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
-        const qr = qrcode(0, 'L');
-        qr.addData(payload);
-        qr.make();
-        actionsDiv.innerHTML = `
-          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
-            ${qr.createImgTag(5)}
-          </div>
-          <p style="color:var(--muted); font-size:0.9rem;">Scan this QR with your Haleon app to collect points.</p>
-          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
-        `;
-      }
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 1500);
-    }
   </script>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>

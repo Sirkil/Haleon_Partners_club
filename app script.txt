@@ -1,0 +1,113 @@
+/**
+ * ════════════════════════════════════════════════════════════
+ *  HALEON PARTNERS CLUB — Google Apps Script
+ *  Receives POST from the app and upserts a row in Sheets
+ *
+ *  HOW TO DEPLOY:
+ *  1. Open Google Sheets → Extensions → Apps Script
+ *  2. Paste this entire file, save
+ *  3. Click Deploy → New Deployment → Web App
+ *  4. Execute as: Me
+ *     Who has access: Anyone
+ *  5. Copy the Web App URL → paste into app.js SHEETS_WEBHOOK
+ * ════════════════════════════════════════════════════════════
+ */
+
+// ── Column order in the sheet ──────────
+const COLUMNS = [
+  'UID', 'Member ID', 'Name', 'Email', 'Phone', 'Pharmacy',
+  'Score', 'Tier', 'Quizzes Completed', 'Badges', 'Badges Count', 'Last Updated'
+];
+
+function doPost(e) {
+  try {
+    const data    = JSON.parse(e.postData.contents);
+    const sheet   = getOrCreateSheet();
+    upsertRow(sheet, data);
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Allow CORS preflight (GET returns OK)
+function doGet(e) {
+  return ContentService
+    .createTextOutput('Haleon Partners Club — Sheets Webhook OK')
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+// ────────────────────────────────────────
+function getOrCreateSheet() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  let   sheet = ss.getSheetByName('Members');
+
+  if (!sheet) {
+    sheet = ss.insertSheet('Members');
+    // Write header row
+    sheet.getRange(1, 1, 1, COLUMNS.length).setValues([COLUMNS]);
+    sheet.getRange(1, 1, 1, COLUMNS.length)
+      .setBackground('#1a4a2e')
+      .setFontColor('#ffffff')
+      .setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function upsertRow(sheet, data) {
+  const values = sheet.getDataRange().getValues();
+  const uidCol = 0; // Column A = UID
+
+  // Search for existing row (skip header row index 0)
+  let rowIndex = -1;
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][uidCol] === data.uid) {
+      rowIndex = i + 1; // Sheets rows are 1-indexed
+      break;
+    }
+  }
+
+  const rowData = [
+    data.uid               || '',
+    data.memberId          || '',
+    data.name              || '',
+    data.email             || '',
+    data.phone             || '',
+    data.pharmacy          || '',
+    data.score             || 0,
+    data.tier              || 'Student',
+    data.quizzesCompleted  || 0,
+    data.badges            || '',
+    data.badgesCount       || 0,
+    data.lastUpdated       || new Date().toISOString(),
+  ];
+
+  if (rowIndex > 0) {
+    // Update existing row
+    sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
+  } else {
+    // Append new row
+    sheet.appendRow(rowData);
+
+    // Auto-resize columns on first few rows
+    if (sheet.getLastRow() <= 5) {
+      sheet.autoResizeColumns(1, COLUMNS.length);
+    }
+  }
+
+  // Apply tier colour coding
+  const lastRow  = rowIndex > 0 ? rowIndex : sheet.getLastRow();
+  const tierCell = sheet.getRange(lastRow, 8); // Column H = Tier
+  const tierColors = {
+    'Student':              '#d0d8d0',
+    'Community Pharmacist': '#b0bac4',
+    'Pharmacy Owner':       '#d4b84a',
+  };
+  const color = tierColors[data.tier] || '#ffffff';
+  tierCell.setBackground(color);
+}

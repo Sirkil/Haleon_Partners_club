@@ -5,66 +5,218 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Panadol Challenge</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    body { overflow: hidden; touch-action: none; }
-    .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; position: relative; }
-    .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
-    .mode-card:hover { border-color: var(--green); }
+    :root {
+      /* Panadol Brand Colors */
+      --bg: #E8EEF5; /* Replaced white with a soft clinical blue-grey */
+      --text: #1E293B;
+      --surface: #E2E8F0;
+      --surface2: #F4F7FA; /* Replaced pure white with off-white */
+      --border: #CBD5E1;
+      --muted: #64748B;
+      
+      --c-blue: #002A6C; 
+      --c-light: #0055A5;
+      --c-green: #10B981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      overflow-x: hidden; 
+      touch-action: none;
+    }
+
+    .game-container { 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      position: relative;
+    }
+
+    .game-container-narrow {
+      max-width: 500px;
+    }
     
+    .auth-title {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--c-blue);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    /* Panadol Button Style */
+    .btn-panadol {
+      background: var(--c-blue);
+      color: #ffffff;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 15px rgba(0, 42, 108, 0.2);
+      width: 100%;
+      text-align: center;
+    }
+    .btn-panadol:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px rgba(0, 42, 108, 0.3);
+    }
+    .btn-panadol:active:not(:disabled) {
+      transform: translateY(2px);
+    }
+    .btn-panadol:disabled {
+      background: #cbd5e1;
+      color: #64748B;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--border);
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .btn-outline:hover {
+      border-color: var(--c-blue);
+      color: var(--c-blue);
+    }
+
+    /* Mode Selection Styles */
+    .mode-card { 
+      background: var(--surface2); 
+      border: 2px solid var(--border); 
+      border-radius: 24px; 
+      padding: 24px; 
+      margin-bottom: 20px; 
+      text-align: center; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+      width: 100%;
+    }
+    .mode-card:hover { 
+      border-color: var(--c-light); 
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 85, 165, 0.1);
+    }
+
+    /* Iframe & Game view specifics */
     .iframe-wrap { flex: 1; width: 100%; background: #000; position: relative; overflow: hidden; }
     .iframe-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
     
-    /* Header for the iframe view */
-    .embed-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .embed-header { 
+      display: grid; 
+      grid-template-columns: 1fr auto 1fr; 
+      align-items: center; 
+      padding: 10px 16px; 
+      background: var(--surface2); 
+      border-bottom: 2px solid var(--border); 
+      flex-shrink: 0; 
+      width: 100%;
+      min-height: 80px; /* Increased to accommodate larger logo */
+      gap: 10px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text);
+      color: #ffffff;
+      padding: 15px 30px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 10000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; z-index: 20;">
-    <div style="font-size: 5rem; margin-bottom: 20px;">🎮</div>
-    <div class="auth-title">Panadol Challenge</div>
-    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
+  <div class="game-container game-container-narrow" id="screen-start" style="z-index: 20;">
+    <img src="assets/Panadol_logo.png" alt="Panadol" style="max-width: 260px; margin-bottom: 20px;">
+    <div class="auth-title">Play & Earn</div>
+    <p style="color: var(--muted); margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem; text-align: center;">
       Play the interactive Panadol game.<br>
       Once you finish, tap the claim button to earn 100 pts!
     </p>
-    <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
-    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px;" onclick="goBack()">← Back to App</button>
+    <button class="btn-panadol" style="max-width: 300px; margin: 0 auto;" onclick="proceedFromStart()">Start Game</button>
+    <button class="btn-outline" id="btn-exit-start" style="margin-top: 20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">← Back to App</button>
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none; z-index: 20;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center;">Select Mode</div>
+  <div class="game-container game-container-narrow" id="screen-mode" style="display: none; z-index: 20;">
+    <div style="width: 100%; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; min-height: 70px;">
+      <button class="btn-outline" style="position: absolute; left: 0; width: auto; padding: 10px 20px;" onclick="goBack()">← Back</button>
+      <img src="assets/Panadol_logo.png" alt="Panadol" style="height: 65px;">
+    </div>
+
+    <div class="auth-title" style="margin-bottom: 30px; color: var(--text);">Select Mode</div>
     <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.3rem;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
+      <h3 style="color:var(--text); font-size:1.4rem; font-weight: 800;">Test Mode</h3>
+      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
     </div>
     <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Compete for real points (100 pts).</p>
+      <h3 style="color:var(--c-light); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
+      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Compete for real points (100 pts).</p>
     </div>
   </div>
 
   <div class="game-container" id="screen-game" style="display: none; padding: 0; max-width: 100%; width: 100%; height: 100dvh; max-height: 100dvh; justify-content: flex-start; overflow: hidden; position: fixed; inset: 0; z-index: 50;">
     <div class="embed-header">
-      <button class="btn-secondary" style="width: auto; padding: 8px 14px; font-size: 0.9rem;" onclick="goBack()">← Exit</button>
-      <button class="btn-primary" id="btn-claim" style="width: auto; padding: 8px 14px; margin-top: 0; font-size: 0.9rem;" onclick="finishGame()">✓ Claim 100 Pts</button>
+      <div style="text-align: left;">
+        <button class="btn-outline" style="width: auto; padding: 8px 16px; font-size: 0.95rem; border-color: transparent;" onclick="goBack()">← Exit</button>
+      </div>
+      <div style="text-align: center;">
+        <img src="assets/Panadol_logo.png" alt="Panadol" style="height: 65px; vertical-align: middle;">
+      </div>
+      <div style="text-align: right;">
+        <button id="btn-claim" class="btn-panadol" style="width: auto; padding: 8px 16px; font-size: 0.95rem;" onclick="finishGame()" disabled>Wait (30s)</button>
+      </div>
     </div>
     <div class="iframe-wrap">
       <iframe src="https://mitohype.com/panadol-ksa/" allow="autoplay; fullscreen"></iframe>
     </div>
   </div>
 
-  <div class="game-container" id="screen-result" style="display: none; text-align: center; z-index: 20;">
-    <div style="font-size: 4rem; margin-bottom: 10px;" id="result-icon">🏆</div>
+  <div class="game-container game-container-narrow" id="screen-result" style="display: none; text-align: center; z-index: 20;">
+    <img src="assets/Panadol_logo.png" alt="Panadol" style="max-width: 200px; margin-bottom: 20px;">
     <div class="auth-title" id="result-title">Game Complete!</div>
-    <div style="font-size: 3.5rem; font-weight: 800; color: var(--green); margin-bottom: 10px; line-height: 1;" id="result-score">100 pts</div>
-    <div style="color:var(--muted); font-size: 0.95rem; margin-bottom: 24px;">Hope you enjoyed the game!</div>
-    <div id="result-actions"></div>
+    <div style="font-size: 3.5rem; font-weight: 900; color: var(--c-green); margin-bottom: 10px; line-height: 1;" id="result-score">100 pts</div>
+    <div style="color:var(--muted); font-size: 1.1rem; margin-bottom: 30px; font-weight: 500;">Hope you enjoyed the game!</div>
+    <div id="result-actions" style="width: 100%;"></div>
   </div>
 
   <script>
@@ -76,15 +228,15 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       const pieces = [];
-      const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"];
-      for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
+      const colors = ["#002A6C", "#0055A5", "#FFFFFF", "#38BDF8", "#E11D48"]; 
+      for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 6 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 8 });
       const end = Date.now() + duration;
       (function frame() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         pieces.forEach((p) => {
           ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color;
           ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore();
-          p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs;
+          p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rs;
         });
         if (Date.now() < end) requestAnimationFrame(frame);
         else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
@@ -94,16 +246,18 @@
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
     const exhausted = urlParams.get('exhausted') === 'true';
-    const GAME_ID = 'mitohype';
+    const GAME_ID = 'mitohype'; 
     
     let currentMode = '';
     let score = 100;
+    let countdownInterval;
 
     window.onload = () => {
       if (!uid) document.getElementById('btn-exit-start').style.display = 'none';
     };
 
     function goBack() { 
+      if (countdownInterval) clearInterval(countdownInterval);
       if (uid) window.location.href = 'index.html'; 
       else location.reload(); 
     }
@@ -124,60 +278,63 @@
       document.getElementById('screen-mode').style.display = 'none';
       document.getElementById('screen-game').style.display = 'flex';
 
-      // Countdown logic for the claim button
+      let claimTimer = 30;
       const claimBtn = document.getElementById('btn-claim');
       claimBtn.disabled = true;
-      claimBtn.style.opacity = '0.5';
-      claimBtn.style.cursor = 'not-allowed';
-      
-      let countdown = 30;
-      claimBtn.textContent = `Wait ${countdown}s...`;
+      claimBtn.textContent = `Wait (${claimTimer}s)`;
 
-      const timer = setInterval(() => {
-        countdown--;
-        if (countdown > 0) {
-          claimBtn.textContent = `Wait ${countdown}s...`;
+      countdownInterval = setInterval(() => {
+        claimTimer--;
+        if (claimTimer > 0) {
+          claimBtn.textContent = `Wait (${claimTimer}s)`;
         } else {
-          clearInterval(timer);
+          clearInterval(countdownInterval);
           claimBtn.disabled = false;
-          claimBtn.style.opacity = '1';
-          claimBtn.style.cursor = 'pointer';
-          claimBtn.textContent = '✓ Claim 100 Pts';
+          claimBtn.textContent = 'Claim Pts';
         }
       }, 1000);
     }
 
    function finishGame() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      
       document.getElementById('screen-game').style.display = 'none';
       document.getElementById('screen-result').style.display = 'flex';
       
-      // Trigger the confetti
       launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = `
-        <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-        <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
-      `;
+      if (currentMode === 'challenge') {
+        actionsDiv.innerHTML = `<button class="btn-panadol" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>`;
+      } else {
+        actionsDiv.innerHTML = `
+          <button class="btn-panadol" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>
+          <button class="btn-outline" style="margin-top:20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">Play for fun (Exit)</button>
+        `;
+      }
     }
 
     function processPoints() {
       if (score === 0 && currentMode === 'test') { goBack(); return; }
 
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "Processing...";
+      actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600;'>Processing...</p>";
 
       if (uid) {
         window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
       } else {
         const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
         const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
+        
+        // Ensure QR code remains pure white for scanability
         actionsDiv.innerHTML = `
-          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
-            ${qr.createImgTag(5)}
+          <div style="background:var(--surface2); padding:25px; border-radius:24px; border:2px solid var(--border); display:inline-block; margin-bottom:20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+            <div style="background:#ffffff; padding:15px; border-radius:16px; border: 1px solid var(--border);">
+                ${qr.createImgTag(6)}
+            </div>
           </div>
-          <p style="color:var(--muted); font-size:0.9rem;">Scan this QR with your Haleon app to collect points.</p>
-          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
+          <p style="color:var(--muted); font-size:1.1rem; margin-bottom: 30px; font-weight: 500;">Scan this QR with your App to collect points.</p>
+          <button class="btn-outline" style="max-width: 300px; margin: 0 auto;" onclick="location.reload()">Start New Game</button>
         `;
       }
     }
@@ -187,5 +344,6 @@
       setTimeout(() => toast.classList.remove("show"), 1500);
     }
   </script>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>

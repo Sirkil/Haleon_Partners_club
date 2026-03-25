@@ -71,7 +71,7 @@
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center;">
+<div class="game-container" id="screen-start" style="text-align: center; justify-content: center;">
     <div style="font-size: 5rem; margin-bottom: 20px;">🎡</div>
     <div class="auth-title">Spin to Win</div>
     <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
@@ -80,6 +80,8 @@
     </p>
     <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
     <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px;" onclick="goBack()">← Back to App</button>
+
+    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;">
   </div>
 
   <div class="game-container" id="screen-mode" style="display: none;">
@@ -370,5 +372,6 @@
       setTimeout(() => toast.classList.remove("show"), 2000);
     }
   </script>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>

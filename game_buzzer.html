@@ -3,110 +3,304 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buzzer Battle</title>
+  <title>Centrum Buzzer Battle</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;}
-    .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
-    .mode-card:hover { border-color: var(--green); }
+    :root {
+      /* Centrum Brand Colors */
+      --bg: #FFFDF8;
+      --text: #333333;
+      --surface: #f9f9f9;
+      --surface2: #ffffff;
+      --border: #eeeeee;
+      --muted: #888888;
+      
+      --c-pink: #E91E63;
+      --c-orange: #FF9800;
+      --c-yellow: #FFC107;
+      --c-green: #4CAF50;
+      --c-blue: #2196F3;
+      --c-purple: #9C27B0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      overflow-x: hidden; 
+    }
+
+    .game-container { 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+    }
     
-    .buzzer-area { display: flex; flex-direction: column; gap: 20px; margin-top: 30px; }
-    .buzzer { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 800; padding: 40px; border-radius: 20px; border: none; cursor: pointer; transition: transform 0.1s; }
-    .buzzer:active { transform: scale(0.95); }
-    #btn-a { background: var(--green); color: #000; }
-    #btn-b { background: #60a5fa; color: #000; }
+    .auth-title {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #000000;
+      margin-bottom: 10px;
+    }
+
+    /* Unified Black Button Style */
+    .btn-centrum {
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+      width: 100%;
+    }
+    .btn-centrum:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+    }
+    .btn-centrum:active {
+      transform: translateY(2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--border);
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      border-color: #000000;
+      color: #000000;
+    }
+
+    /* Buzzer Areas */
+    .buzzer-area { 
+      display: flex; 
+      gap: 30px; 
+      justify-content: center; 
+      margin-top: 40px; 
+      width: 100%; 
+      flex-wrap: wrap; 
+    }
     
-    .dialog-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 20px; display: none; text-align: center; animation: dialogPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .answer-btn { flex: 1; padding: 15px; font-size: 1.1rem; border-radius: 10px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
-    .answer-btn:hover { border-color: var(--green); }
+    .buzzer-btn-visual { 
+      flex: 1; 
+      min-width: 250px; 
+      max-width: 350px; 
+      padding: 60px 20px; 
+      border-radius: 30px; 
+      font-size: 2.5rem; 
+      font-weight: 900; 
+      text-align: center; 
+      border: 4px solid var(--border); 
+      background: var(--surface); 
+      color: var(--text); 
+      cursor: pointer; 
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+    
+    .buzzer-btn-visual:active { 
+      transform: scale(0.95); 
+    }
+    
+    .buzzer-btn-visual.active-p1 { 
+      border-color: var(--c-pink); 
+      background: rgba(233, 30, 99, 0.1); 
+      color: var(--c-pink);
+      box-shadow: 0 0 30px rgba(233, 30, 99, 0.3);
+    }
+    
+    .buzzer-btn-visual.active-p2 { 
+      border-color: var(--c-blue); 
+      background: rgba(33, 150, 243, 0.1); 
+      color: var(--c-blue);
+      box-shadow: 0 0 30px rgba(33, 150, 243, 0.3);
+    }
+
+    .dialog-box { 
+      background: var(--surface2); 
+      border: 2px solid var(--border); 
+      border-radius: 24px; 
+      padding: 30px; 
+      margin-top: 30px; 
+      display: none; 
+      text-align: center; 
+      width: 100%; 
+      max-width: 800px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      animation: dialogPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+    }
+
+    .question-box {
+      background: var(--surface2); 
+      border: 2px solid var(--border); 
+      border-radius: 24px; 
+      padding: 40px 30px; 
+      width: 100%; 
+      margin-top: 20px; 
+      font-size: 1.5rem; 
+      font-weight: 600; 
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+    }
+
+    /* Option Button styling for 2x2 grid */
+    .option-btn {
+      font-size: 1rem;
+      padding: 12px 20px;
+      white-space: normal;
+      height: 100%;
+      text-align: left;
+      display: flex;
+      align-items: center;
+    }
+
+    .toast {
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text);
+      color: var(--bg);
+      padding: 15px 30px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 10000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .toast.show { opacity: 1; }
+
+    @keyframes dialogPop {
+      0% { transform: translateY(20px) scale(0.9); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
   </style>
 </head>
 <body>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center;">
-    <div style="font-size: 5rem; margin-bottom: 20px;">🚨</div>
-    <div class="auth-title">Buzzer Battle</div>
-    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
-      Read the question and be the first to buzz in! You have 10 seconds.<br>
-      Correct answers: +100 pts.
+  <div class="game-container" id="screen-start" style="text-align: center;">
+    <img src="assets/Centrum_logo.png" alt="Centrum" style="max-width: 280px; margin-bottom: 30px;">
+    
+    <div class="auth-title">Nutrition Battle</div>
+    <p style="color: var(--muted); margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem;">
+      2 Players. Read the question and be the first to buzz in!
     </p>
-    <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
-    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px;" onclick="goBack()">← Back to App</button>
-  </div>
-
-  <div class="game-container" id="screen-mode" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center;">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.3rem;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:0.9rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.9rem; margin-top:8px;">Compete for real points (max 300 pts).</p>
-    </div>
+    <button id="btn-start" class="btn-centrum" style="max-width: 300px; margin: 0 auto;" onclick="startGame()">Start Game</button>
+    <button class="btn-outline" id="btn-exit-start" style="margin-top: 20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">← Back to App</button>
   </div>
 
   <div class="game-container" id="screen-game" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
     
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div style="color: var(--muted); font-weight: 600; letter-spacing: 2px;" id="level-display">LEVEL 1</div>
-      <div id="buzzer-timer" style="font-size: 1.5rem; font-weight: 800; color: var(--green);">10s</div>
+    <div style="width: 100%; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; min-height: 50px;">
+      <button class="btn-outline" style="position: absolute; left: 0; width: auto; padding: 10px 20px;" onclick="goBack()">← Exit Game</button>
+      <img src="assets/Centrum_logo.png" alt="Centrum" style="height: 45px;">
+    </div>
+    
+    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+      <div style="font-size:1.5rem; font-weight:800; color:var(--c-orange); letter-spacing: 2px;" id="buzzer-level">LEVEL 1</div>
+      <div style="font-size:2.5rem; font-weight:900;" id="buzzer-timer">15s</div>
     </div>
 
-    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:16px; padding:24px; margin-top:20px; text-align:center;">
-      <p style="font-size: 1.2rem; font-weight:600;" id="question-text">Question goes here</p>
+    <div class="question-box" id="buzzer-question">
+      Question goes here
     </div>
     
     <div class="buzzer-area">
-      <button id="btn-a" class="buzzer" onclick="handleBuzz('A')">Player A<br><span style="font-size:1rem;font-weight:400">(Press 'a' or Tap)</span></button>
-      <button id="btn-b" class="buzzer" onclick="handleBuzz('B')">Player B<br><span style="font-size:1rem;font-weight:400">(Press 'b' or Tap)</span></button>
+      <div class="buzzer-btn-visual" id="ui-p1" onclick="handleTouchBuzz(1)">Player 1</div>
+      <div class="buzzer-btn-visual" id="ui-p2" onclick="handleTouchBuzz(2)">Player 2</div>
     </div>
 
-    <div class="dialog-box" id="dialog-box">
-      <h3 id="turn-announcement" style="color:var(--green); margin-bottom: 20px;"></h3>
-      <div style="display: flex; gap: 10px;">
-        <button id="btn-true" class="answer-btn" onclick="checkAnswer(true)">True (t)</button>
-        <button id="btn-false" class="answer-btn" onclick="checkAnswer(false)">False (f)</button>
+    <div class="dialog-box" id="buzzer-dialog">
+      <h3 id="buzzer-announcement" style="font-size: 2rem; margin-bottom: 25px; font-weight: 800;">Player 1 Buzzed!</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <button class="btn-centrum option-btn" id="btn-opt-0" onclick="handleAnswer(0)">A) Option 1</button>
+        <button class="btn-centrum option-btn" id="btn-opt-1" onclick="handleAnswer(1)">B) Option 2</button>
+        <button class="btn-centrum option-btn" id="btn-opt-2" onclick="handleAnswer(2)">C) Option 3</button>
+        <button class="btn-centrum option-btn" id="btn-opt-3" onclick="handleAnswer(3)">D) Option 4</button>
       </div>
     </div>
   </div>
 
   <div class="game-container" id="screen-result" style="display: none; text-align: center;">
-    <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
-    <div class="auth-title">Battle Over</div>
-    <div style="font-size: 3.5rem; font-weight:800; color: var(--green); margin-bottom: 20px;" id="result-score">0 pts</div>
-    <div id="result-actions"></div>
+    <img src="assets/Centrum_logo.png" alt="Centrum" style="max-width: 200px; margin-bottom: 20px;">
+    <div class="auth-title">Battle Over!</div>
+    <div id="result-actions" style="width:100%; margin-top:30px;"></div>
   </div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
-    const exhausted = urlParams.get('exhausted') === 'true';
-    const GAME_ID = 'buzzer';
     
-    let currentMode = '';
-    let score = 0;
-    let currentLevel = 0;
-    let buzzerLocked = false;
-    let activePlayer = '';
-    let levelTimer = null;
-    let timeRemaining = 10;
+    let buzzerState = 'idle';
+    let buzzerScore1 = 0;
+    let buzzerScore2 = 0;
+    let buzzerLevel = 0;
+    let activeBuzzer = 0;
+    let buzzerTime = 15;
+    let buzzerTimerId;
 
-    const levels = [
-      { q: "Haleon is the maker of Panadol.", a: true },
-      { q: "The recommended daily water intake is 500ml.", a: false },
-      { q: "Vitamin C is synthesized by the body via sunlight.", a: false }
+    const buzzerQuestions = [
+      { 
+        q: "Which of the following ingredients differentiates the Centrum Energy SKU?", 
+        options: ["Omega-3", "Ginseng & Ginkgo Biloba", "Collagen", "Probiotics"], 
+        a: 1 
+      },
+      { 
+        q: "What is the primary positioning of the Centrum Energy SKU?", 
+        options: ["Bone strength support", "Digestive health", "Fighting fatigue & supporting mental/physical energy", "Weight loss"], 
+        a: 2 
+      },
+      { 
+        q: "Which of the following is a key benefit of the Centrum Women SKU?", 
+        options: ["Muscle mass increase", "Skin, hair & nail health", "Joint lubrication", "Blood thinning"], 
+        a: 1 
+      },
+      { 
+        q: "What additional benefit is emphasized in the Centrum Men SKU?", 
+        options: ["Eye lubrication", "Heart function support", "Liver detoxification", "Gut microbiome balance"], 
+        a: 1 
+      },
+      { 
+        q: "Which pair represents the main SKUs in the Centrum Core range?", 
+        options: ["Kids & Teens", "Energy & Immunity", "Adults & 50+ (Silver)", "Prenatal & Postnatal"], 
+        a: 2 
+      }
     ];
 
     window.onload = () => {
-      if (!uid) document.getElementById('btn-exit-start').style.display = 'none';
+      if (!uid) {
+        const exitBtn = document.getElementById('btn-exit-start');
+        if (exitBtn) exitBtn.style.display = 'none';
+      }
     };
 
     function goBack() { 
@@ -114,140 +308,211 @@
       else location.reload(); 
     }
 
-    function proceedFromStart() {
+    function startGame() {
       document.getElementById('screen-start').style.display = 'none';
-      if (uid) document.getElementById('screen-mode').style.display = 'flex';
-      else startGame('challenge');
-    }
-
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') {
-        showToast("You've already completed this game. Playing in Test Mode.");
-        currentMode = 'test';
-      } else {
-        currentMode = mode;
-      }
-      document.getElementById('screen-mode').style.display = 'none';
       document.getElementById('screen-game').style.display = 'flex';
-      setupLevel();
+      initBuzzer();
     }
 
-    function setupLevel() {
-      if (currentLevel >= levels.length) { finishGame(); return; }
-      
-      buzzerLocked = false;
-      document.getElementById('dialog-box').style.display = 'none';
-      document.getElementById('level-display').textContent = `LEVEL ${currentLevel + 1}`;
-      document.getElementById('question-text').textContent = levels[currentLevel].q;
-      
-      // Reset Timer
-      timeRemaining = 10;
-      const timerEl = document.getElementById('buzzer-timer');
-      timerEl.textContent = timeRemaining + 's';
-      timerEl.style.color = 'var(--green)';
-
-      if(levelTimer) clearInterval(levelTimer);
-      levelTimer = setInterval(() => {
-        timeRemaining--;
-        timerEl.textContent = timeRemaining + 's';
-        if(timeRemaining <= 3) timerEl.style.color = '#ef4444';
-        
-        if(timeRemaining <= 0) {
-          clearInterval(levelTimer);
-          buzzerLocked = true;
-          showToast("Time's up! No one buzzed.");
-          currentLevel++;
-          setTimeout(setupLevel, 1500);
+    function initBuzzer() { 
+      buzzerScore1 = 0; 
+      buzzerScore2 = 0; 
+      buzzerLevel = 0; 
+      nextBuzzerLevel(); 
+    }
+    
+    function nextBuzzerLevel() {
+        if (buzzerLevel >= buzzerQuestions.length) { 
+          endBuzzer(); 
+          return; 
         }
-      }, 1000);
+
+        buzzerState = 'waiting_buzz'; 
+        buzzerTime = 15;
+        
+        document.getElementById('ui-p1').className = 'buzzer-btn-visual'; 
+        document.getElementById('ui-p2').className = 'buzzer-btn-visual';
+        document.getElementById('buzzer-dialog').style.display = 'none';
+        
+        const qData = buzzerQuestions[buzzerLevel];
+        document.getElementById('buzzer-level').textContent = `QUESTION ${buzzerLevel + 1}`;
+        document.getElementById('buzzer-question').textContent = qData.q;
+        
+        document.getElementById('btn-opt-0').textContent = "A) " + qData.options[0];
+        document.getElementById('btn-opt-1').textContent = "B) " + qData.options[1];
+        document.getElementById('btn-opt-2').textContent = "C) " + qData.options[2];
+        document.getElementById('btn-opt-3').textContent = "D) " + qData.options[3];
+
+        const timerEl = document.getElementById('buzzer-timer');
+        timerEl.textContent = '15s';
+        timerEl.style.color = 'var(--text)';
+        
+        clearInterval(buzzerTimerId);
+        buzzerTimerId = setInterval(() => {
+            buzzerTime--; 
+            timerEl.textContent = buzzerTime + 's';
+            
+            if (buzzerTime <= 5) timerEl.style.color = 'var(--c-pink)';
+
+            if (buzzerTime <= 0) { 
+              clearInterval(buzzerTimerId); 
+              showToast("Time's up! No one buzzed.");
+              buzzerLevel++; 
+              setTimeout(nextBuzzerLevel, 1500); 
+            }
+        }, 1000);
+    }
+
+    // Touch Support
+    function handleTouchBuzz(player) {
+      if (buzzerState === 'waiting_buzz') handleBuzz(player);
     }
 
     function handleBuzz(player) {
-      if (buzzerLocked) return;
-      buzzerLocked = true;
-      clearInterval(levelTimer); // Pause the timer!
-      
-      activePlayer = player;
-      document.getElementById('turn-announcement').innerText = `Player ${player} buzzed!`;
-      document.getElementById('dialog-box').style.display = 'block';
+        if (buzzerState !== 'waiting_buzz') return;
+        
+        buzzerState = 'waiting_answer'; 
+        activeBuzzer = player; 
+        clearInterval(buzzerTimerId);
+        
+        document.getElementById('ui-p' + player).classList.add('active-p' + player);
+        
+        const announcement = document.getElementById('buzzer-announcement');
+        announcement.textContent = `Player ${player} Buzzed!`;
+        announcement.style.color = player === 1 ? 'var(--c-pink)' : 'var(--c-blue)';
+        
+        document.getElementById('buzzer-dialog').style.display = 'block';
     }
 
-    function checkAnswer(userAnswer) {
-      document.getElementById('dialog-box').style.display = 'none';
-      const isCorrect = (userAnswer === levels[currentLevel].a);
-      
-      if (isCorrect) {
-        showToast(`Correct! Player ${activePlayer} wins the round.`);
-        if (activePlayer === 'A') score += 100;
-      } else {
-        showToast(`Wrong! Player ${activePlayer} loses the round.`);
-      }
-
-      currentLevel++;
-      setTimeout(setupLevel, 1500);
-    }
-
-    document.addEventListener('keydown', (event) => {
-      if (document.getElementById('screen-game').style.display !== 'none') {
-        if (!buzzerLocked) {
-          if (event.key.toLowerCase() === 'a') handleBuzz('A');
-          if (event.key.toLowerCase() === 'b') handleBuzz('B');
-        } else if (document.getElementById('dialog-box').style.display === 'block') {
-          if (event.key.toLowerCase() === 't') checkAnswer(true);
-          if (event.key.toLowerCase() === 'f') checkAnswer(false);
+    function handleAnswer(selectedIndex) {
+        if (buzzerState !== 'waiting_answer') return;
+        
+        buzzerState = 'idle';
+        document.getElementById('buzzer-dialog').style.display = 'none';
+        
+        let isCorrect = (selectedIndex === buzzerQuestions[buzzerLevel].a);
+        
+        if (isCorrect) {
+            showToast(`Correct! Player ${activeBuzzer} wins the round.`);
+            if (activeBuzzer === 1) buzzerScore1 += 20; 
+            else buzzerScore2 += 20;
+        } else {
+            showToast(`Wrong! Player ${activeBuzzer} missed it.`);
         }
-      }
+        
+        buzzerLevel++; 
+        setTimeout(nextBuzzerLevel, 1500);
+    }
+
+    // Global Keyboard Listener mapped for the entire flow
+    window.addEventListener('keydown', (e) => {
+        let key = e.key.toLowerCase();
+
+        // 1. Start Screen (Press E or T to Start Game)
+        if (document.getElementById('screen-start').style.display !== 'none') {
+            if (key === 'e' || key === 't') {
+                const startBtn = document.getElementById('btn-start');
+                if (startBtn) startBtn.click();
+            }
+            return;
+        }
+
+        // 2. Result Screens (Press E or T to Collect Points or Start New Game)
+        if (document.getElementById('screen-result').style.display !== 'none') {
+            if (key === 'e' || key === 't') {
+                const collectBtn = document.getElementById('btn-collect');
+                const newGameBtn = document.getElementById('btn-new-game');
+                
+                if (collectBtn) collectBtn.click();
+                else if (newGameBtn) newGameBtn.click();
+            }
+            return;
+        }
+
+        // 3. Gameplay Screen
+        if (document.getElementById('screen-game').style.display !== 'none') {
+            if (buzzerState === 'waiting_buzz') {
+                if (key === 'e') handleBuzz(1); // Player 1 buzz
+                if (key === 't') handleBuzz(2); // Player 2 buzz
+            } else if (buzzerState === 'waiting_answer') {
+                if (key === 'e') handleAnswer(0); // Option A
+                if (key === 's') handleAnswer(1); // Option B
+                if (key === 'p') handleAnswer(2); // Option C
+                if (key === 't') handleAnswer(3); // Option D
+            }
+        }
     });
 
-    function finishGame() {
-      document.getElementById('screen-game').style.display = 'none';
-      document.getElementById('screen-result').style.display = 'flex';
-      document.getElementById('result-score').textContent = score + " pts";
-
-     // Trigger the confetti
-      if (score > 0) launchConfetti(3000); 
-
-      // Give them a button to collect points instead of kicking them out instantly
-      const actionsDiv = document.getElementById('result-actions');
-      if (currentMode === 'challenge') {
+    function endBuzzer() {
+        document.getElementById('screen-game').style.display = 'none';
+        document.getElementById('screen-result').style.display = 'flex';
+        
+        if (buzzerScore1 > 0 || buzzerScore2 > 0) launchConfetti(3000);
+        
+        const actionsDiv = document.getElementById('result-actions');
         actionsDiv.innerHTML = `
-          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
+          <div style="font-size:1.8rem; font-weight:800; margin-bottom:40px; background: var(--surface2); padding: 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: flex; justify-content: center; gap: 15px;">
+            <span style="color:var(--c-pink);">Player 1: ${buzzerScore1}</span> 
+            <span style="color:var(--muted);">|</span> 
+            <span style="color:var(--c-blue);">Player 2: ${buzzerScore2}</span>
+          </div>
+          <button id="btn-collect" class="btn-centrum" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>
         `;
-      } else {
-        actionsDiv.innerHTML = `
-          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-          <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
-        `;
-      }
     }
 
     function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; }
+        const actionsDiv = document.getElementById('result-actions');
+        actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600;'>Processing...</p>";
 
-      const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "Processing...";
-
-      if (uid) {
-        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
-      } else {
-        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
-        const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
+        const qr1 = qrcode(0, 'L'); 
+        qr1.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore1, nonce: Date.now() })); 
+        qr1.make();
+        
+        const qr2 = qrcode(0, 'L'); 
+        qr2.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore2, nonce: Date.now() + 1 })); 
+        qr2.make();
+        
         actionsDiv.innerHTML = `
-          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">${qr.createImgTag(5)}</div>
-          <p style="color:var(--muted); font-size:0.9rem;">Scan this QR with your Haleon app to collect points.</p>
-          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
+            <div style="display:flex; justify-content:center; gap:20px; margin-bottom:30px; flex-wrap: wrap;">
+                <div style="background:var(--surface2); padding:25px; border-radius:24px; border:2px solid var(--border); flex: 1; min-width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom:15px; color:var(--c-pink); font-size: 1.5rem;">Player 1: ${buzzerScore1} pts</h3>
+                    <div style="background:white; padding:15px; border-radius:16px; display:inline-block; border: 1px solid var(--border);">${qr1.createImgTag(6)}</div>
+                </div>
+                <div style="background:var(--surface2); padding:25px; border-radius:24px; border:2px solid var(--border); flex: 1; min-width: 250px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom:15px; color:var(--c-blue); font-size: 1.5rem;">Player 2: ${buzzerScore2} pts</h3>
+                    <div style="background:white; padding:15px; border-radius:16px; display:inline-block; border: 1px solid var(--border);">${qr2.createImgTag(6)}</div>
+                </div>
+            </div>
+            <p style="color:var(--muted); font-size:1.1rem; margin-bottom: 30px; font-weight: 500;">Scan your QR with your App to collect points.</p>
+            <button id="btn-new-game" class="btn-outline" style="max-width: 300px; margin: 0 auto;" onclick="location.reload()">Start New Game</button>
         `;
-      }
     }
 
     function showToast(msg) {
-      const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 1500);
+      const toast = document.getElementById("toast"); 
+      toast.textContent = msg; 
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2000);
     }
 
     function launchConfetti(duration) {
-      const canvas = document.getElementById("confetti-canvas"); if(!canvas) return; const ctx = canvas.getContext("2d"); canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight; const pieces = []; const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"]; for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 }); const end = Date.now() + duration; (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs; }); if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } })();
+      const canvas = document.getElementById("confetti-canvas"); 
+      if(!canvas) return; 
+      const ctx = canvas.getContext("2d"); 
+      canvas.style.display = "block"; 
+      canvas.width = window.innerWidth; 
+      canvas.height = window.innerHeight; 
+      const pieces = []; 
+      const colors = ["#E91E63", "#FF9800", "#FFC107", "#4CAF50", "#2196F3", "#9C27B0"]; 
+      for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 6 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 8 }); 
+      const end = Date.now() + duration; 
+      (function frame() { 
+        ctx.clearRect(0, 0, canvas.width, canvas.height); 
+        pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rs; }); 
+        if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } 
+      })();
     }
   </script>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>
