@@ -52,7 +52,7 @@
   <div class="game-container" id="screen-game" style="display: none; padding: 0; max-width: 100%; width: 100%; height: 100dvh; max-height: 100dvh; justify-content: flex-start; overflow: hidden; position: fixed; inset: 0; z-index: 50;">
     <div class="embed-header">
       <button class="btn-secondary" style="width: auto; padding: 8px 14px; font-size: 0.9rem;" onclick="goBack()">← Exit</button>
-      <button class="btn-primary" style="width: auto; padding: 8px 14px; margin-top: 0; font-size: 0.9rem;" onclick="finishGame()">✓ Claim 100 Pts</button>
+      <button class="btn-primary" id="btn-claim" style="width: auto; padding: 8px 14px; margin-top: 0; font-size: 0.9rem;" onclick="finishGame()">✓ Claim 100 Pts</button>
     </div>
     <div class="iframe-wrap">
       <iframe src="https://mitohype.com/panadol-ksa/" allow="autoplay; fullscreen"></iframe>
@@ -123,6 +123,28 @@
       }
       document.getElementById('screen-mode').style.display = 'none';
       document.getElementById('screen-game').style.display = 'flex';
+
+      // Countdown logic for the claim button
+      const claimBtn = document.getElementById('btn-claim');
+      claimBtn.disabled = true;
+      claimBtn.style.opacity = '0.5';
+      claimBtn.style.cursor = 'not-allowed';
+      
+      let countdown = 30;
+      claimBtn.textContent = `Wait ${countdown}s...`;
+
+      const timer = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+          claimBtn.textContent = `Wait ${countdown}s...`;
+        } else {
+          clearInterval(timer);
+          claimBtn.disabled = false;
+          claimBtn.style.opacity = '1';
+          claimBtn.style.cursor = 'pointer';
+          claimBtn.textContent = '✓ Claim 100 Pts';
+        }
+      }, 1000);
     }
 
    function finishGame() {

@@ -57,7 +57,33 @@
       } else {
         window.showView('view-login');
       }
-    });
+    }
+    //     onAuthStateChanged(auth, async user => {
+    //   const overlay = document.getElementById('loading-overlay');
+    //   if (overlay) overlay.style.display = 'none';
+
+    //   if (user) {
+    //     try {
+    //       const snap = await getDoc(doc(db, 'users', user.uid));
+    //       if (snap.exists()) {
+    //         // Check if they just arrived from register.html
+    //         const params = new URLSearchParams(window.location.search);
+    //         const isNewRegistration = params.get('registered') === 'true';
+            
+    //         // Pass the isNewRegistration flag to trigger the welcome dialog
+    //         window.bootApp(user.uid, snap.data(), isNewRegistration);
+    //       } else {
+    //         window.showView('view-login');
+    //       }
+    //     } catch (err) {
+    //       console.error('Firestore error on session restore:', err);
+    //       window.showView('view-login');
+    //     }
+    //   } else {
+    //     window.showView('view-login');
+    //   }
+    // }
+  );
   </script>
 </head>
 <body>
@@ -85,7 +111,8 @@
 
     <div class="auth-error" id="login-error"></div>
     <button class="btn-primary" id="btn-login" onclick="doLogin()">LOGIN</button>
-    <div class="auth-switch">No account? <a onclick="showView('view-register')">Register</a></div>
+    <div class="auth-switch">No account? <a href="https://www.haleonhealthpartner.com/en-eg/news-events/events-and-webinars/haleon-partners-club-launch/" target="_blank">Register</a></div>
+    <!-- <div class="auth-switch">No account? <a href="register.html">Register</a></div> -->
   </div>
 
   <div class="view auth-view" id="view-forgot">
@@ -101,7 +128,7 @@
     <div class="auth-switch"><a onclick="showView('view-login')">← Back to Login</a></div>
   </div>
 
-  <div class="view auth-view" id="view-register">
+  <!-- <div class="view auth-view" id="view-register">
     <div class="auth-logo">
       <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" style="max-width: 200px;">
     </div>
@@ -114,7 +141,7 @@
     <div class="auth-error" id="reg-error"></div>
     <button class="btn-primary" id="btn-register" onclick="doRegister()">CREATE ACCOUNT</button>
     <div class="auth-switch">Have an account? <a onclick="showView('view-login')">Login</a></div>
-  </div>
+  </div> -->
 
   <div class="view home-view" id="view-home">
     <div class="top-navbar">
@@ -234,16 +261,23 @@
         </div>
         <div class="quiz-grid-card" onclick="openGame('game_spot.html', 'spot')">
           <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Spot the Opportunity.png" alt="Spot the Opportunity" style="width: 28px; height: 28px; object-fit: contain;">
+            <img src="assets/Buzzer Battle.png" alt="Spot the Opportunity" style="width: 28px; height: 28px; object-fit: contain;">
           </div>
           <div class="quiz-grid-label">Spot the Opportunity</div>
           <div class="quiz-grid-status" id="gstatus-spot">Play</div>
         </div>
         <div class="quiz-grid-card" onclick="openGame('game_centrum.html', 'spot')">
           <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Spot the Opportunity.png" alt="Centrum Game" style="width: 28px; height: 28px; object-fit: contain;">
+            <img src="assets/Buzzer Battle.png" alt="Centrum Game" style="width: 28px; height: 28px; object-fit: contain;">
           </div>
           <div class="quiz-grid-label">Centrum Game</div>
+          <div class="quiz-grid-status" id="gstatus-spot">Play</div>
+        </div>
+        <div class="quiz-grid-card" onclick="openGame('game_pacman.html', 'spot')">
+          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
+            <img src="assets/Buzzer Battle.png" alt="pacman" style="width: 28px; height: 28px; object-fit: contain;">
+          </div>
+          <div class="quiz-grid-label">Pacman</div>
           <div class="quiz-grid-status" id="gstatus-spot">Play</div>
         </div>
       </div>

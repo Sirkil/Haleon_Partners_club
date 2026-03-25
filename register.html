@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Haleon Partners Club</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 1. Initialize Firebase
+    const firebaseConfig = {
+      apiKey:            "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU",
+      authDomain:        "haleon-partners-club.firebaseapp.com",
+      projectId:         "haleon-partners-club",
+      storageBucket:     "haleon-partners-club.firebasestorage.app",
+      messagingSenderId: "1037867331058",
+      appId:             "1:1037867331058:web:0777855bac1c681ad88f6b"
+    };
+
+    const fbApp = initializeApp(firebaseConfig);
+    const auth  = getAuth(fbApp);
+    const db    = getFirestore(fbApp);
+
+    const SHEETS_WEBHOOK = "https://script.google.com/macros/s/AKfycbzXv_YPKLL1UUW00yZ07DvlCDgTB_bdf3Cqlb48QPVoG1e4BEeE5mPACs-9tnw7cYkw/exec";
+
+    // 2. Map Firebase error codes to friendly messages
+    function friendlyError(code) { 
+      const map = { 
+        "auth/email-already-in-use": "This email is already registered.", 
+        "auth/invalid-email": "Please enter a valid email address.", 
+        "auth/weak-password": "Password must be at least 6 characters."
+      }; 
+      return map[code] || "Something went wrong. Please try again."; 
+    }
+
+    // 3. Main Registration Function
+    window.doRegisterStandalone = async function() {
+      const name = document.getElementById("reg-name").value.trim(); 
+      const email = document.getElementById("reg-email").value.trim(); 
+      const phone = document.getElementById("reg-phone").value.trim(); 
+      const pharmacy = document.getElementById("reg-pharmacy").value.trim(); 
+      const pass = document.getElementById("reg-pass").value; 
+      const errEl = document.getElementById("reg-error"); 
+      const btn = document.getElementById("btn-register");
+      
+      errEl.textContent = ""; 
+      
+      if (!name || !email || !phone || !pharmacy || !pass) { 
+        errEl.textContent = "Please fill in all fields."; 
+        return; 
+      }
+      if (pass.length < 6) { 
+        errEl.textContent = "Password must be at least 6 characters."; 
+        return; 
+      }
+      
+      btn.textContent = "Creating account…"; 
+      btn.disabled = true;
+
+      try {
+        // Create user in Firebase Auth
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        const uid = cred.user.uid; 
+        const memberId = uid.slice(0, 8).toUpperCase();
+        
+        // Prepare Firestore Data
+        const profile = { name, email, phone, pharmacy, memberId };
+        const userData = { 
+          profile, 
+          score: 0, 
+          quizzesCompleted: 0, 
+          claimedBadges: [], 
+          answeredQuestions: [], 
+          gamesCompleted: {}, 
+          tier: "Student", 
+          createdAt: new Date().toISOString() 
+        };
+        
+        // Save to Firestore
+        await setDoc(doc(db, "users", uid), userData);
+        
+        // Sync to Google Sheets
+        const payload = { 
+          uid, name, email, phone, pharmacy, memberId, 
+          score: 0, quizzesCompleted: 0, tier: "Student", 
+          badges: "", badgesCount: 0, 
+          lastUpdated: new Date().toISOString() 
+        };
+        fetch(SHEETS_WEBHOOK, { 
+          method: "POST", mode: "no-cors", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify(payload) 
+        }).catch(() => {});
+
+        // Redirect to index.html with a special flag to trigger the welcome screen
+        window.location.href = "index.html?registered=true";
+
+      } catch (e) { 
+        errEl.textContent = friendlyError(e.code); 
+        btn.textContent = "CREATE ACCOUNT"; 
+        btn.disabled = false; 
+      } 
+    };
+  </script>
+</head>
+<body style="background: var(--bg);">
+  <div class="app">
+    <div class="view auth-view active" id="view-register">
+      <div class="auth-logo">
+        <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" style="max-width: 200px;">
+      </div>
+      <div class="auth-title">Create account.</div>
+      <div class="field"><input type="text"     id="reg-name"     placeholder="Full name" /></div>
+      <div class="field"><input type="email"    id="reg-email"    placeholder="Email address" /></div>
+      <div class="field"><input type="tel"      id="reg-phone"    placeholder="Phone number" /></div>
+      <div class="field"><input type="text"     id="reg-pharmacy" placeholder="Pharmacy name" /></div>
+      <div class="field"><input type="password" id="reg-pass"     placeholder="Password (min 6 chars)" /></div>
+      <div class="auth-error" id="reg-error"></div>
+      
+      <button class="btn-primary" id="btn-register" onclick="doRegisterStandalone()">CREATE ACCOUNT</button>
+      
+      <div class="auth-switch">Have an account? <a href="index.html">Login</a></div>
+    </div>
+  </div>
+</body>
+</html>

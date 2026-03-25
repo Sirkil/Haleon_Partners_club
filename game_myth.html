@@ -51,9 +51,9 @@
 
   <div class="game-container" id="screen-game" style="display: none;">
     <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
-    <div class="progress-text" id="q-progress">Question 1 of 4</div>
+    <div class="progress-text" id="q-progress">Question 1 of 8</div>
     <div class="question-card">
-      <div class="question-text" id="q-text">Antibiotics are effective against viral infections like the common cold.</div>
+      <div class="question-text" id="q-text">Loading...</div>
     </div>
     <div style="display: flex; gap: 15px;">
       <button class="btn-primary btn-myth" style="flex: 1; padding: 20px;" onclick="answer('myth')">Myth</button>
@@ -79,10 +79,14 @@
     let currentQ = 0;
 
     const questions = [
+      { text: "Panadol with Optizorb dissolves 5X faster because it contains innovative Optizorb technology.", answer: "fact" },
       { text: "Antibiotics are effective against viral infections like the common cold.", answer: "myth" },
-      { text: "Vitamin D is naturally synthesized by the body when exposed to sunlight.", answer: "fact" },
+      { text: "Two small film-coated tablets are proven to be much easier to swallow than one large non-coated tablet.", answer: "fact" },
+      { text: "Adding caffeine significantly boosts the efficacy of the fast-absorbing formula!", answer: "fact" },
       { text: "Cracking your knuckles causes arthritis.", answer: "myth" },
-      { text: "Adults should aim for 7 to 9 hours of sleep per night for optimal health.", answer: "fact" }
+      { text: "89% of Egyptian consumers have tried this trusted brand!", answer: "fact" },
+      { text: "79% of Egyptian consumers rely on it regularly. High trust!", answer: "fact" },
+      { text: "25% of Egyptian consumers select it as their absolute most often used brand. A true market leader!", answer: "fact" }
     ];
 
     window.onload = () => {
@@ -138,7 +142,7 @@
       document.getElementById('result-score').textContent = score + " pts";
 
       // Trigger the confetti
-      launchConfetti(3000); 
+      if (score > 0) launchConfetti(3000); 
 
       // Give them a button to collect points instead of kicking them out instantly
       const actionsDiv = document.getElementById('result-actions');
@@ -180,6 +184,10 @@
     function showToast(msg) {
       const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show");
       setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas"); if(!canvas) return; const ctx = canvas.getContext("2d"); canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight; const pieces = []; const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"]; for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 }); const end = Date.now() + duration; (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs; }); if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } })();
     }
   </script>
 </body>

@@ -12,7 +12,7 @@ const state = {
 
 const answeredSet = new Set();
 const tabOrder = ["home", "rewards", "scanner", "profile"];
-const TOTAL_GAMES = 10; // Updated games
+const TOTAL_GAMES = 11; // Updated games
 
 function makeQRUrl(data, size = 200) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
