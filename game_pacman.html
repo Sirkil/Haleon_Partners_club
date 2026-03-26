@@ -69,7 +69,7 @@
     <button class="btn-primary" style="max-width: 400px;" onclick="proceedFromStart()">Start Game</button>
     <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px; max-width: 400px;" onclick="goBack()">← Back to App</button>
 
-    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;">
+    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;" onerror="this.style.display='none'">
   </div>
 
   <div class="game-container" id="screen-mode" style="display: none;">
@@ -119,6 +119,10 @@
     const GAME_ID = 'pacman';
     let currentMode = '';
     let score = 0, timeLeft = 60, timerId, gameLoopId;
+    
+    // Variables for Win Condition
+    let totalPellets = 0;
+    let collectedPellets = 0;
 
     // Load multiple image assets for the Panadol packs
     const panadolSrcs = [
@@ -189,19 +193,30 @@
       document.getElementById('ghost-sprite-1').style.display = 'block';
 
       // Reset State
-      score = 0; timeLeft = 60; map = JSON.parse(JSON.stringify(initialMap));
+      score = 0; 
+      timeLeft = 60; 
+      map = JSON.parse(JSON.stringify(initialMap));
       player = { r: 9, c: 9, dr: 0, dc: 0, nextDr: 0, nextDc: 0, x: 9*ts, y: 9*ts };
       ghosts = [
         { r: 7, c: 8, dr: -1, dc: 0, x: 8*ts, y: 7*ts, speed: 0.05 },
         { r: 7, c: 10, dr: -1, dc: 0, x: 10*ts, y: 7*ts, speed: 0.05 }
       ];
       
+      // Calculate Total Pellets for Win Condition
+      totalPellets = 0;
+      collectedPellets = 0;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (map[r][c] === 2) totalPellets++;
+        }
+      }
+      
       document.getElementById('hud-score').textContent = score;
       clearInterval(timerId); cancelAnimationFrame(gameLoopId);
       
       timerId = setInterval(() => {
         timeLeft--; document.getElementById('hud-timer').textContent = timeLeft + 's';
-        if (timeLeft <= 0) endGame(true);
+        if (timeLeft <= 0) endGame(true, false);
       }, 1000);
 
       gameLoopId = requestAnimationFrame(loop);
@@ -250,38 +265,38 @@
       let targetX = player.c * ts; 
       let targetY = player.r * ts;
       
-      // Calculate distance to the target tile
       let dist = Math.abs(player.x - targetX) + Math.abs(player.y - targetY);
       
-      // Check if we have arrived at the target tile
       if (dist < 2) { 
         player.x = targetX; 
         player.y = targetY;
         
-        // 1. Check if the NEXT desired direction is a valid move (not a wall)
         if (map[player.r + player.nextDr] && map[player.r + player.nextDr][player.c + player.nextDc] !== 1) {
           player.dr = player.nextDr; 
           player.dc = player.nextDc;
         }
         
-        // 2. Check if the CURRENT direction is hitting a wall
         if (map[player.r + player.dr] && map[player.r + player.dr][player.c + player.dc] === 1) {
           player.dr = 0; 
           player.dc = 0;
         } else {
-          // 3. Move logical grid position
           player.c += player.dc; 
           player.r += player.dr;
         }
         
-        // 4. Eat Panadol Pellet
+        // Eat Panadol Pellet
         if (map[player.r] && map[player.r][player.c] === 2) {
           map[player.r][player.c] = 0; 
           score += 10;
+          collectedPellets++;
           document.getElementById('hud-score').textContent = score;
+          
+          // Win Condition Check
+          if (collectedPellets >= totalPellets) {
+             endGame(true, true); // true = survived, true = cleared board
+          }
         }
       } else {
-        // Move towards target. 
         player.x += player.dc * ts * 0.1; 
         player.y += player.dr * ts * 0.1;
       }
@@ -294,7 +309,6 @@
           g.x = gtx; g.y = gty;
           let possibleMoves = [];
           
-          // Added safe array checks to prevent ghost crashes at edges
           if (map[g.r-1] && map[g.r-1][g.c] !== 1 && g.dr !== 1) possibleMoves.push({dr:-1, dc:0});
           if (map[g.r+1] && map[g.r+1][g.c] !== 1 && g.dr !== -1) possibleMoves.push({dr:1, dc:0});
           if (map[g.r] && map[g.r][g.c-1] !== 1 && g.dc !== 1) possibleMoves.push({dr:0, dc:-1});
@@ -311,33 +325,31 @@
           g.x += g.dc * ts * g.speed; g.y += g.dr * ts * g.speed;
         }
 
-        // Collision Check (Hit by Ghost)
         if (Math.abs(player.x - g.x) < ts/1.5 && Math.abs(player.y - g.y) < ts/1.5) {
-          endGame(false); 
+          endGame(false, false); 
         }
       });
     }
 
     function draw() {
-      // Draw Static Maze & Items on Canvas
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cvs.width, cvs.height);
       for(let r=0; r<rows; r++) {
         for(let c=0; c<cols; c++) {
           if(map[r][c] === 1) { 
             ctx.fillStyle = '#000';
             ctx.fillRect(c*ts, r*ts, ts, ts);
-            ctx.strokeStyle = '#0055ff'; // Blue border styling
+            ctx.strokeStyle = '#0055ff'; 
             ctx.lineWidth = 2;
             ctx.strokeRect(c*ts, r*ts, ts, ts);
           } else if (map[r][c] === 2) { 
-            // Select image from array based on stable index (r and c)
             const imgIdx = (r * cols + c) % panadolImgs.length;
             const imgToDraw = panadolImgs[imgIdx];
             
             if (imgToDraw.complete && imgToDraw.naturalWidth !== 0) {
-              ctx.drawImage(imgToDraw, c*ts + ts*0.1, r*ts + ts*0.1, ts*0.8, ts*0.8);
+              // Increased size (ts*0.9) and reduced padding (ts*0.05) to make images more visible
+              ctx.drawImage(imgToDraw, c*ts + ts*0.05, r*ts + ts*0.05, ts*0.9, ts*0.9);
             } else {
-              ctx.fillStyle = '#fff'; // White dots fallback
+              ctx.fillStyle = '#fff'; 
               ctx.beginPath(); 
               ctx.arc(c*ts + ts/2, r*ts + ts/2, ts*0.15, 0, Math.PI*2); 
               ctx.fill();
@@ -346,18 +358,15 @@
         }
       }
 
-      // Dynamic canvas variables for proper sprite scaling
       const cvsW = cols * ts;
       const cvsH = rows * ts;
 
-      // Update HTML Sprites (GIFs) overlaid on top of the Canvas
       const pSprite = document.getElementById('player-sprite');
       pSprite.style.left = (player.x / cvsW * 100) + '%';
       pSprite.style.top = (player.y / cvsH * 100) + '%';
       pSprite.style.width = (ts / cvsW * 100) + '%';
       pSprite.style.height = (ts / cvsH * 100) + '%';
 
-      // Rotate Pacman based on direction
       let angle = 0;
       if (player.dc === 1) angle = 0;
       else if (player.dc === -1) angle = 180;
@@ -365,7 +374,6 @@
       else if (player.dr === -1) angle = -90;
       pSprite.style.transform = `rotate(${angle}deg)`;
 
-      // Update Ghost HTML Sprites
       ghosts.forEach((g, i) => {
         const gSprite = document.getElementById('ghost-sprite-' + i);
         gSprite.style.left = (g.x / cvsW * 100) + '%';
@@ -376,10 +384,9 @@
     }
 
     // --- GAME OVER & REWARDS ---
-    function endGame(survived) {
+    function endGame(survived, cleared) {
       clearInterval(timerId); cancelAnimationFrame(gameLoopId);
       
-      // Hide sprites
       document.getElementById('player-sprite').style.display = 'none';
       document.getElementById('ghost-sprite-0').style.display = 'none';
       document.getElementById('ghost-sprite-1').style.display = 'none';
@@ -387,8 +394,15 @@
       document.getElementById('screen-game').style.display = 'none';
       document.getElementById('screen-result').style.display = 'flex';
       
-      document.getElementById('result-title').textContent = survived ? "Time's Up!" : "Caught!";
-      document.getElementById('result-icon').textContent = survived ? "⏱️" : "👻";
+      // Update result text based on Win, Survive, or Lose
+      if (cleared) {
+        document.getElementById('result-title').textContent = "Maze Cleared!";
+        document.getElementById('result-icon').textContent = "🌟";
+      } else {
+        document.getElementById('result-title').textContent = survived ? "Time's Up!" : "Caught!";
+        document.getElementById('result-icon').textContent = survived ? "⏱️" : "👻";
+      }
+      
       document.getElementById('result-score').textContent = score + " pts";
       
       if (score > 0) launchConfetti(3000);
