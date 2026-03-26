@@ -13,7 +13,6 @@
     :root {
       --grid-columns: 4;             /* Number of columns */
       --card-gap: 10px;              /* Space between the cards */
-      --emoji-size: clamp(1.8rem, 10vw, 3.5rem); /* Responsive icon size */
     }
 
     .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;}
@@ -63,12 +62,17 @@
     .memory-card-face { 
       position: absolute; inset: 0; border-radius: 16px; 
       backface-visibility: hidden; display: flex; align-items: center; justify-content: center; 
-      font-size: var(--emoji-size); 
       border: 2px solid var(--border); box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+      overflow: hidden; /* Keeps images inside the rounded corners */
     }
     
-    .memory-card-front { background: var(--surface2); transform: rotateY(180deg); }
-    .memory-card-back { background: linear-gradient(135deg, #1a2820, #0d1a12); border-color: rgba(74, 222, 128, 0.3); color: var(--green); font-family: 'Poppins', sans-serif; font-weight: 900; font-size: clamp(2rem, 8vw, 3rem);}
+    /* Front: White background for clear product visibility */
+    .memory-card-front { background: #fff; transform: rotateY(180deg); }
+    
+    /* Back: Dark gradient + Haleon Logo */
+    .memory-card-back { background: linear-gradient(135deg, #1a2820, #0d1a12); border-color: rgba(74, 222, 128, 0.3); }
+    
+    /* When matched */
     .matched .memory-card-front { border-color: var(--green); background: rgba(74, 222, 128, 0.1); }
   </style>
 </head>
@@ -76,7 +80,7 @@
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-<div class="game-container" id="screen-start" style="text-align: center; justify-content: center;">
+  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center;">
     <div style="font-size: 5rem; margin-bottom: 20px;">🧠</div>
     <div class="auth-title">Memory Challenge</div>
     <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
@@ -86,7 +90,7 @@
     <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
     <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px;" onclick="goBack()">← Back to App</button>
 
-    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;">
+    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;" onerror="this.style.display='none'">
   </div>
 
   <div class="game-container" id="screen-mode" style="display: none;">
@@ -158,7 +162,18 @@
     let currentMode = '';
     let score = 0;
     
-    const cardIcons = ['💊', '🏃', '🌿', '💧', '🧠', '🦷', '❤️', '🍎'];
+    // REPLACE these filenames with the actual names of your product images in the assets folder
+    const cardImages = [
+      'assets/Centrum_energy_pack.png',
+      'assets/Cold & Flu Day Pack.png',
+      'assets/Panadol advance.png',
+      'assets/panadol_extra.png',
+      'assets/parodontax.png',
+      'assets/SENSODYNE.png',
+      'assets/Voltaren-50gm-pack.png',
+      'assets/CENTRUM_MEN.jpg'
+    ];
+    
     let deck = [];
     let firstCard = null;
     let secondCard = null;
@@ -198,20 +213,30 @@
     function setSqaureCards() { /* handled by CSS aspect-ratio */ }
 
     function initGame() {
-      deck = [...cardIcons, ...cardIcons];
+      // Create pairs and shuffle
+      deck = [...cardImages, ...cardImages];
       deck.sort(() => Math.random() - 0.5);
 
       const grid = document.getElementById('memory-grid');
       grid.innerHTML = '';
       
-      deck.forEach((icon, index) => {
+      deck.forEach((imgSrc) => {
         const card = document.createElement('div');
         card.classList.add('memory-card');
-        card.dataset.icon = icon;
+        
+        // Use the image source as the unique identifier for checking matches
+        card.dataset.id = imgSrc; 
+        
+        // Add pointer-events:none to images to prevent dragging the image instead of clicking the card
         card.innerHTML = `
-          <div class="memory-card-face memory-card-front">${icon}</div>
-          <div class="memory-card-face memory-card-back">H</div>
+          <div class="memory-card-face memory-card-front">
+            <img src="${imgSrc}" style="width: 80%; height: 80%; object-fit: contain; pointer-events: none;" alt="Product">
+          </div>
+          <div class="memory-card-face memory-card-back">
+            <img src="assets/logo1.png" style="width: 70%; height: 70%; object-fit: contain; pointer-events: none;" alt="Haleon Logo" onerror="this.style.display='none'">
+          </div>
         `;
+        
         card.addEventListener('click', () => flipCard(card));
         grid.appendChild(card);
       });
@@ -257,7 +282,8 @@
     }
 
     function checkForMatch() {
-      const isMatch = firstCard.dataset.icon === secondCard.dataset.icon;
+      // Compare the image paths we saved in dataset.id
+      const isMatch = firstCard.dataset.id === secondCard.dataset.id;
       isMatch ? disableCards() : unflipCards();
     }
 
@@ -287,7 +313,7 @@
       [firstCard, secondCard, lockBoard] = [null, null, false];
     }
 
-function endGame(isWin) {
+    function endGame(isWin) {
       document.getElementById('screen-game').style.display = 'none';
       document.getElementById('screen-result').style.display = 'flex';
 
