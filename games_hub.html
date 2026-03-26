@@ -9,16 +9,15 @@
 
   <style>
     :root {
-      /* Haleon Brand Colors based on your index.html */
-      --bg: #F4F7FA; 
-      --surface: #ffffff;
-      --border: #CBD5E1;
-      --text: #1E293B;
-      --muted: #64748B;
+      /* Fixed Black & White Theme */
+      --bg: #000000; 
+      --surface: #0a0a0a; /* Very dark gray for cards to slightly pop against pure black */
+      --border: #333333;
+      --text: #ffffff;
+      --muted: #aaaaaa;
       --green: #10B981;
-      --blue: #0055A5;
-      --icon-bg: rgba(96, 165, 250, 0.15);
-      --icon-border: #60a5fa;
+      --icon-bg: rgba(255, 255, 255, 0.08);
+      --icon-border: #555555;
     }
 
     * {
@@ -38,9 +37,9 @@
     .header {
       text-align: center;
       padding: 40px 20px 20px;
-      background: var(--surface);
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.8);
       margin-bottom: 40px;
     }
 
@@ -87,7 +86,7 @@
       flex-direction: column;
       align-items: center;
       transition: all 0.2s ease-in-out;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
 
     .game-card:hover {
@@ -121,8 +120,8 @@
       transition: filter 0.2s;
     }
 
-    /* Turn the icon white on hover for better contrast */
-    .game-card:hover .game-icon {
+    /* Force the icon to be white for high contrast */
+    .game-card .game-icon {
       filter: brightness(0) invert(1);
     }
 
@@ -135,8 +134,8 @@
     }
 
     .play-badge {
-      background: var(--bg);
-      color: var(--blue);
+      background: #222222;
+      color: #ffffff;
       font-size: 0.8rem;
       font-weight: 700;
       padding: 4px 12px;
@@ -148,7 +147,7 @@
 
     .game-card:hover .play-badge {
       background: var(--green);
-      color: white;
+      color: #ffffff;
     }
 
     .footer-disclaimer {
@@ -157,7 +156,7 @@
       left: 0;
       width: 100%;
       text-align: center;
-      color: grey;
+      color: #666666;
       font-size: 12px;
       pointer-events: none;
       z-index: 9999;
@@ -228,7 +227,7 @@
         <div class="game-icon-wrap">
           <img src="assets/Rx Challenge.png" alt="Rx Challenge" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
         </div>
-        <div class="game-title">Rx Challenge(V)</div>
+        <div class="game-title">Prescription Challenge(V)</div>
         <div class="play-badge">Play</div>
       </a>
 
@@ -247,22 +246,6 @@
         <div class="game-title">Panadol Game(H/V)</div>
         <div class="play-badge">Play</div>
       </a>
-
-      <!-- <a href="game_spin.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Spin to Win.png" alt="Spin to Win" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
-        </div>
-        <div class="game-title">Spin to Win(V)</div>
-        <div class="play-badge">Play</div>
-      </a> -->
-
-      <!-- <a href="game_centrum.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Buzzer Battle.png" alt="Centrum Game" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
-        </div>
-        <div class="game-title">Centrum Game(V)</div>
-        <div class="play-badge">Play</div>
-      </a> -->
 
       <a href="game_pacman.html" class="game-card">
         <div class="game-icon-wrap">
