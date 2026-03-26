@@ -9,11 +9,10 @@
 
   <style>
     :root {
-      /* Panadol Brand Colors */
-      --bg: #E8EEF5; /* Replaced white with a soft clinical blue-grey */
+      --bg: #E8EEF5; 
       --text: #1E293B;
       --surface: #E2E8F0;
-      --surface2: #F4F7FA; /* Replaced pure white with off-white */
+      --surface2: #F4F7FA; 
       --border: #CBD5E1;
       --muted: #64748B;
       
@@ -60,7 +59,6 @@
       text-align: center;
     }
 
-    /* Panadol Button Style */
     .btn-panadol {
       background: var(--c-blue);
       color: #ffffff;
@@ -106,7 +104,6 @@
       color: var(--c-blue);
     }
 
-    /* Mode Selection Styles */
     .mode-card { 
       background: var(--surface2); 
       border: 2px solid var(--border); 
@@ -125,7 +122,6 @@
       box-shadow: 0 12px 24px rgba(0, 85, 165, 0.1);
     }
 
-    /* Iframe & Game view specifics */
     .iframe-wrap { flex: 1; width: 100%; background: #000; position: relative; overflow: hidden; }
     .iframe-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
     
@@ -138,7 +134,7 @@
       border-bottom: 2px solid var(--border); 
       flex-shrink: 0; 
       width: 100%;
-      min-height: 80px; /* Increased to accommodate larger logo */
+      min-height: 80px; 
       gap: 10px;
     }
 
@@ -208,6 +204,16 @@
     </div>
     <div class="iframe-wrap">
       <iframe src="https://mitohype.com/panadol-ksa/" allow="autoplay; fullscreen"></iframe>
+    </div>
+  </div>
+
+  <div id="pin-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--surface2); padding:30px; border-radius:20px; text-align:center; max-width: 400px; width: 90%;">
+      <h2 style="color:var(--c-blue); margin-bottom:15px; font-size: 2rem;">Enter PIN</h2>
+      <p style="color:var(--muted); margin-bottom:20px;">Please enter the PIN code to claim your points.</p>
+      <input type="number" id="pin-input" style="padding:10px; font-size:1.5rem; width:100%; border:2px solid var(--border); border-radius:10px; margin-bottom:15px; text-align:center;">
+      <p id="pin-error" style="color:red; display:none; margin-bottom:15px; font-weight: 600;">Incorrect PIN. Try again.</p>
+      <button class="btn-panadol" onclick="checkPin()">Submit</button>
     </div>
   </div>
 
@@ -297,7 +303,20 @@
 
    function finishGame() {
       if (countdownInterval) clearInterval(countdownInterval);
-      
+      document.getElementById('pin-modal').style.display = 'flex';
+   }
+
+   function checkPin() {
+      const pin = document.getElementById('pin-input').value;
+      if (pin === '2013') {
+        document.getElementById('pin-modal').style.display = 'none';
+        showResultScreen();
+      } else {
+        document.getElementById('pin-error').style.display = 'block';
+      }
+   }
+
+   function showResultScreen() {
       document.getElementById('screen-game').style.display = 'none';
       document.getElementById('screen-result').style.display = 'flex';
       
@@ -326,7 +345,6 @@
         const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
         const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
         
-        // Ensure QR code remains pure white for scanability
         actionsDiv.innerHTML = `
           <div style="background:var(--surface2); padding:25px; border-radius:24px; border:2px solid var(--border); display:inline-block; margin-bottom:20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
             <div style="background:#ffffff; padding:15px; border-radius:16px; border: 1px solid var(--border);">

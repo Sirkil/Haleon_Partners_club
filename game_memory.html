@@ -9,10 +9,9 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    /* 🎛️ SETTINGS CONTROL PANEL FOR CARD SIZES 🎛️ */
     :root {
-      --grid-columns: 4;             /* Number of columns */
-      --card-gap: 10px;              /* Space between the cards */
+      --grid-columns: 4; 
+      --card-gap: 10px; 
     }
 
     .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;}
@@ -63,16 +62,11 @@
       position: absolute; inset: 0; border-radius: 16px; 
       backface-visibility: hidden; display: flex; align-items: center; justify-content: center; 
       border: 2px solid var(--border); box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
-      overflow: hidden; /* Keeps images inside the rounded corners */
+      overflow: hidden; 
     }
     
-    /* Front: White background for clear product visibility */
     .memory-card-front { background: #fff; transform: rotateY(180deg); }
-    
-    /* Back: Dark gradient + Haleon Logo */
     .memory-card-back { background: linear-gradient(135deg, #1a2820, #0d1a12); border-color: rgba(74, 222, 128, 0.3); }
-    
-    /* When matched */
     .matched .memory-card-front { border-color: var(--green); background: rgba(74, 222, 128, 0.1); }
   </style>
 </head>
@@ -162,7 +156,6 @@
     let currentMode = '';
     let score = 0;
     
-    // REPLACE these filenames with the actual names of your product images in the assets folder
     const cardImages = [
       'assets/Centrum_energy_pack.png',
       'assets/Cold & Flu Day Pack.png',
@@ -210,10 +203,9 @@
       initGame();
     }
 
-    function setSqaureCards() { /* handled by CSS aspect-ratio */ }
+    function setSqaureCards() { }
 
     function initGame() {
-      // Create pairs and shuffle
       deck = [...cardImages, ...cardImages];
       deck.sort(() => Math.random() - 0.5);
 
@@ -223,17 +215,14 @@
       deck.forEach((imgSrc) => {
         const card = document.createElement('div');
         card.classList.add('memory-card');
-        
-        // Use the image source as the unique identifier for checking matches
         card.dataset.id = imgSrc; 
         
-        // Add pointer-events:none to images to prevent dragging the image instead of clicking the card
         card.innerHTML = `
           <div class="memory-card-face memory-card-front">
             <img src="${imgSrc}" style="width: 80%; height: 80%; object-fit: contain; pointer-events: none;" alt="Product">
           </div>
           <div class="memory-card-face memory-card-back">
-            <img src="assets/logo1.png" style="width: 70%; height: 70%; object-fit: contain; pointer-events: none;" alt="Haleon Logo" onerror="this.style.display='none'">
+            <img src="assets/Asset 2.png" style="width: 70%; height: 70%; object-fit: contain; pointer-events: none;" alt="Haleon Logo" onerror="this.style.display='none'">
           </div>
         `;
         
@@ -245,8 +234,24 @@
       matches = 0;
       document.getElementById('matches-display').textContent = '0 / 8';
       updateTimerDisplay();
-      timerInterval = setInterval(tickTimer, 1000);
       requestAnimationFrame(setSqaureCards);
+
+      // Peek logic: Flip all cards face up for 2 seconds
+      lockBoard = true;
+      const allCards = document.querySelectorAll('.memory-card');
+      
+      setTimeout(() => {
+        allCards.forEach(c => c.classList.add('flipped'));
+      }, 100);
+
+      setTimeout(() => {
+        allCards.forEach(c => c.classList.remove('flipped'));
+        setTimeout(() => {
+           lockBoard = false;
+           // Start the timer only after the peeking is done
+           timerInterval = setInterval(tickTimer, 1000);
+        }, 600);
+      }, 2100);
     }
 
     function tickTimer() {
@@ -282,7 +287,6 @@
     }
 
     function checkForMatch() {
-      // Compare the image paths we saved in dataset.id
       const isMatch = firstCard.dataset.id === secondCard.dataset.id;
       isMatch ? disableCards() : unflipCards();
     }

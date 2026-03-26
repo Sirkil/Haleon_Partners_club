@@ -9,7 +9,6 @@
 
   <style>
     :root {
-      /* Centrum Brand Colors */
       --bg: #FFFDF8;
       --text: #333333;
       --surface: #f9f9f9;
@@ -36,7 +35,7 @@
       background: var(--bg); 
       color: var(--text); 
       overflow-x: hidden; 
-      touch-action: none; /* Prevent bouncing on iframe container */
+      touch-action: none;
     }
 
     .game-container { 
@@ -63,7 +62,6 @@
       text-align: center;
     }
 
-    /* Unified Black Button Style */
     .btn-centrum {
       background: #000000;
       color: #ffffff;
@@ -85,8 +83,6 @@
     .btn-centrum:active:not(:disabled) {
       transform: translateY(2px);
     }
-    
-    /* Disabled Button Style for the 30s timer */
     .btn-centrum:disabled {
       background: #cccccc;
       color: #666666;
@@ -111,7 +107,6 @@
       color: #000000;
     }
 
-    /* Mode Selection Styles */
     .mode-card { 
       background: var(--surface2); 
       border: 2px solid var(--border); 
@@ -130,11 +125,9 @@
       box-shadow: 0 12px 24px rgba(0,0,0,0.08);
     }
 
-    /* Iframe & Game view specifics */
     .iframe-wrap { flex: 1; width: 100%; background: #000; position: relative; overflow: hidden; }
     .iframe-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
     
-    /* Updated Embed Header using Grid to prevent overlap */
     .embed-header { 
       display: grid; 
       grid-template-columns: 1fr auto 1fr; 
@@ -177,7 +170,7 @@
     <div class="auth-title">Play & Earn</div>
     <p style="color: var(--muted); margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem; text-align: center;">
       Play the interactive Centrum game.<br>
-      Once you finish, tap the claim button to earn 100 pts!
+      Earn 100 pts at the end!
     </p>
     <button class="btn-centrum" style="max-width: 300px; margin: 0 auto;" onclick="proceedFromStart()">Start Game</button>
     <button class="btn-outline" id="btn-exit-start" style="margin-top: 20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">← Back to App</button>
@@ -211,11 +204,21 @@
       </div>
       
       <div style="text-align: right;">
-        <button id="btn-claim" class="btn-centrum" style="width: auto; padding: 8px 16px; font-size: 0.95rem;" onclick="finishGame()" disabled>Wait (30s)</button>
+        <button id="btn-claim" class="btn-centrum" style="width: auto; padding: 8px 16px; font-size: 0.95rem;" disabled>Wait (32s)</button>
       </div>
     </div>
     <div class="iframe-wrap">
       <iframe src="https://strikeads.net/games/Centrum/energy/" allow="autoplay; fullscreen"></iframe>
+    </div>
+  </div>
+
+  <div id="pin-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--surface2); padding:30px; border-radius:20px; text-align:center; max-width: 400px; width: 90%;">
+      <h2 style="color:#000000; margin-bottom:15px; font-size: 2rem;">Enter PIN</h2>
+      <p style="color:var(--muted); margin-bottom:20px;">Please enter the PIN code to claim your points.</p>
+      <input type="number" id="pin-input" style="padding:10px; font-size:1.5rem; width:100%; border:2px solid var(--border); border-radius:10px; margin-bottom:15px; text-align:center;">
+      <p id="pin-error" style="color:red; display:none; margin-bottom:15px; font-weight: 600;">Incorrect PIN. Try again.</p>
+      <button class="btn-centrum" onclick="checkPin()">Submit</button>
     </div>
   </div>
 
@@ -286,8 +289,7 @@
       document.getElementById('screen-mode').style.display = 'none';
       document.getElementById('screen-game').style.display = 'flex';
 
-      // Start the 30-second wait timer for the claim button
-      let claimTimer = 30;
+      let claimTimer = 32;
       const claimBtn = document.getElementById('btn-claim');
       claimBtn.disabled = true;
       claimBtn.textContent = `Wait (${claimTimer}s)`;
@@ -298,20 +300,20 @@
           claimBtn.textContent = `Wait (${claimTimer}s)`;
         } else {
           clearInterval(countdownInterval);
-          claimBtn.disabled = false;
-          claimBtn.textContent = 'Claim Pts';
+          claimBtn.textContent = 'Claiming...';
+          showPinDialog();
         }
       }, 1000);
     }
 
-   function finishGame() {
+   function showPinDialog() {
       if (countdownInterval) clearInterval(countdownInterval);
       
+      // Cut the game and transition directly to the result screen
       document.getElementById('screen-game').style.display = 'none';
       document.getElementById('screen-result').style.display = 'flex';
-      
-      launchConfetti(3000); 
 
+      // Setup the result actions ahead of time so the screen looks complete under the modal
       const actionsDiv = document.getElementById('result-actions');
       if (currentMode === 'challenge') {
         actionsDiv.innerHTML = `<button class="btn-centrum" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>`;
@@ -321,6 +323,24 @@
           <button class="btn-outline" style="margin-top:20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">Play for fun (Exit)</button>
         `;
       }
+
+      // Show the PIN dialog as an overlay on top of the results screen
+      document.getElementById('pin-modal').style.display = 'flex';
+   }
+
+   function checkPin() {
+      const pin = document.getElementById('pin-input').value;
+      if (pin === '2013') {
+        document.getElementById('pin-modal').style.display = 'none';
+        finishGame();
+      } else {
+        document.getElementById('pin-error').style.display = 'block';
+      }
+   }
+
+   function finishGame() {
+      // The screen is already set up and visible from showPinDialog, just trigger the confetti!
+      launchConfetti(3000); 
     }
 
     function processPoints() {

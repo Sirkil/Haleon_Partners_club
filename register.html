@@ -8,172 +8,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 
-  <style>
-    /* Landing Page Specific Layout Styles */
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: #f4f6f8; 
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .landing-wrapper {
-      display: flex;
-      flex-direction: row;
-      max-width: 1000px;
-      width: 90%;
-      /* The overall wrapper background doesn't matter as much now since the children have backgrounds */
-      background: #ffffff; 
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      overflow: hidden;
-      margin: 20px auto;
-    }
-
-.landing-hero {
-      flex: 1;
-      background: linear-gradient(135deg, #00b48c 0%, #007a5e 100%); 
-      color: white;
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center; /* Centers the logo and content horizontally */
-      text-align: center;  /* Centers the text */
-    }
-
-    .landing-hero h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 15px;
-    }
-
-    .landing-hero p {
-      font-size: 1rem;
-      line-height: 1.6;
-      opacity: 0.9;
-    }
-
-    /* ---------------------------------------------------
-       UPDATED: Black background for the form container
-       --------------------------------------------------- */
-    .landing-form-container {
-      flex: 1;
-      padding: 50px 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background-color: #121212; /* Dark/Black background */
-    }
-
-    /* Heading changed to white to show up on the black background */
-    .landing-form-container h2 {
-      margin-top: 0;
-      margin-bottom: 25px;
-      color: #ffffff; 
-      font-weight: 800;
-      font-size: 1.8rem;
-    }
-
-    /* ---------------------------------------------------
-       UPDATED: White background & Black text for fields
-       --------------------------------------------------- */
-    .field input {
-      width: 100%;
-      padding: 16px;
-      margin-bottom: 20px;
-      background-color: #ffffff; /* White field background */
-      color: #000000; /* Black text when user types */
-      border: 1px solid #e0e0e0; /* Subtle border */
-      border-radius: 6px;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-      font-size: 1rem;
-    }
-
-    /* Darker placeholder text so it's visible on white */
-    .field input::placeholder {
-      color: #666666; 
-    }
-    /* --------------------------------------------------- */
-
-    .checkbox-field {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 25px;
-      font-size: 0.95rem;
-      color: #ffffff; /* Changed to white to show on black background */
-    }
-
-    .checkbox-field input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      width: 100%;
-      padding: 16px;
-      background: #1cb58b; 
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-primary:hover {
-      background: #169673;
-    }
-
-    .auth-error {
-      color: #ff6b6b; /* Lightened red to show better on black */
-      font-size: 0.9rem;
-      margin-bottom: 15px;
-      font-weight: 500;
-      min-height: 20px;
-    }
-
-    .auth-switch {
-      margin-top: 25px;
-      text-align: center;
-      font-size: 0.95rem;
-      color: #cccccc; /* Lightened to show on black */
-    }
-
-    .auth-switch a {
-      color: #1cb58b;
-      font-weight: 700;
-      text-decoration: none;
-    }
-
-    /* Mobile Responsiveness */
-    @media (max-width: 768px) {
-      .landing-wrapper {
-        flex-direction: column;
-      }
-      .landing-hero {
-        padding: 30px 20px;
-        text-align: center;
-      }
-      .landing-form-container {
-        padding: 30px 20px;
-      }
-    }
-  </style>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+    // 1. Initialize Firebase
     const firebaseConfig = {
       apiKey:            "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU",
       authDomain:        "haleon-partners-club.firebaseapp.com",
@@ -189,6 +29,7 @@
 
     const SHEETS_WEBHOOK = "https://script.google.com/macros/s/AKfycbzXv_YPKLL1UUW00yZ07DvlCDgTB_bdf3Cqlb48QPVoG1e4BEeE5mPACs-9tnw7cYkw/exec";
 
+    // 2. Map Firebase error codes to friendly messages
     function friendlyError(code) { 
       const map = { 
         "auth/email-already-in-use": "This email is already registered.", 
@@ -198,43 +39,37 @@
       return map[code] || "Something went wrong. Please try again."; 
     }
 
+    // 3. Main Registration Function
     window.doRegisterStandalone = async function() {
       const name = document.getElementById("reg-name").value.trim(); 
       const email = document.getElementById("reg-email").value.trim(); 
       const phone = document.getElementById("reg-phone").value.trim(); 
       const pharmacy = document.getElementById("reg-pharmacy").value.trim(); 
       const pass = document.getElementById("reg-pass").value; 
-      const consent = document.getElementById("reg-consent").checked; // Grab checkbox state
       const errEl = document.getElementById("reg-error"); 
       const btn = document.getElementById("btn-register");
       
       errEl.textContent = ""; 
       
-      // Check if all text fields are filled
       if (!name || !email || !phone || !pharmacy || !pass) { 
         errEl.textContent = "Please fill in all fields."; 
         return; 
       }
-      
-      // Check if consent is checked
-      if (!consent) {
-        errEl.textContent = "You must agree to join this consent to continue.";
-        return;
-      }
-
       if (pass.length < 6) { 
         errEl.textContent = "Password must be at least 6 characters."; 
         return; 
       }
       
-      btn.textContent = "Processing..."; 
+      btn.textContent = "Creating account…"; 
       btn.disabled = true;
 
       try {
+        // Create user in Firebase Auth
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
         const uid = cred.user.uid; 
         const memberId = uid.slice(0, 8).toUpperCase();
         
+        // Prepare Firestore Data
         const profile = { name, email, phone, pharmacy, memberId };
         const userData = { 
           profile, 
@@ -247,8 +82,10 @@
           createdAt: new Date().toISOString() 
         };
         
+        // Save to Firestore
         await setDoc(doc(db, "users", uid), userData);
         
+        // Sync to Google Sheets
         const payload = { 
           uid, name, email, phone, pharmacy, memberId, 
           score: 0, quizzesCompleted: 0, tier: "Student", 
@@ -261,53 +98,38 @@
           body: JSON.stringify(payload) 
         }).catch(() => {});
 
-        // Redirect to Haleon Partners Club Launch page upon success
-        window.location.href = "https://www.haleonhealthpartner.com/en-eg/news-events/events-and-webinars/haleon-partners-club-launch/";
+        // Redirect to index.html with a special flag to trigger the welcome screen
+        window.location.href = "index.html?registered=true";
 
       } catch (e) { 
         errEl.textContent = friendlyError(e.code); 
-        btn.textContent = "CONTINUE REGISTRATION"; 
+        btn.textContent = "CREATE ACCOUNT"; 
         btn.disabled = false; 
       } 
     };
   </script>
 </head>
-<body>
-
-  <div class="landing-wrapper">
-    <div class="landing-hero">
-      <img src="assets/logo1.png" alt="Haleon Logo" style="max-width: 200px; margin-bottom: 20px;">
-      <h1>Empowering Your Pharmacy Journey</h1>
-      <p>Join the Haleon Partners Club to access exclusive training, earn rewards, and connect with a community of healthcare professionals dedicated to excellence.</p>
-    </div>
-
-    <div class="landing-form-container">
-      <h2 style="margin-top:0; color:#ffffff; font-weight:700;">Create your account</h2>
-      
-      <div class="field"><input type="text" id="reg-name" placeholder="Full name" required /></div>
-      <div class="field"><input type="email" id="reg-email" placeholder="Email address" required /></div>
-      <div class="field"><input type="tel" id="reg-phone" placeholder="Phone number" required /></div>
-      <div class="field"><input type="text" id="reg-pharmacy" placeholder="Pharmacy name" required /></div>
-      <div class="field"><input type="password" id="reg-pass" placeholder="Password (min 6 chars)" required /></div>
-      
-      <div class="checkbox-field">
-        <input type="checkbox" id="reg-consent" required />
-        <label for="reg-consent">I agree to join this consent</label>
+<body style="background: var(--bg);">
+  <div class="app">
+    <div class="view auth-view active" id="view-register">
+      <div class="auth-logo">
+        <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" style="max-width: 200px;">
       </div>
-
+      <div class="auth-title">Create account.</div>
+      <div class="field"><input type="text"     id="reg-name"     placeholder="Full name" /></div>
+      <div class="field"><input type="email"    id="reg-email"    placeholder="Email address" /></div>
+      <div class="field"><input type="tel"      id="reg-phone"    placeholder="Phone number" /></div>
+      <div class="field"><input type="text"     id="reg-pharmacy" placeholder="Pharmacy name" /></div>
+      <div class="field"><input type="password" id="reg-pass"     placeholder="Password (min 6 chars)" /></div>
       <div class="auth-error" id="reg-error"></div>
       
-      <button class="btn-primary" id="btn-register" onclick="doRegisterStandalone()">CONTINUE REGISTRATION</button>
+      <button class="btn-primary" id="btn-register" onclick="doRegisterStandalone()">CREATE ACCOUNT</button>
       
-      <div class="auth-switch" style="margin-top:20px; text-align:center; font-size:0.9rem;">
-        Have an account? <a href="index.html" style="color:#00b48c; font-weight:600; text-decoration:none;">Login</a>
-      </div>
+      <div class="auth-switch">Have an account? <a href="index.html">Login</a></div>
       
-      <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 140px; margin: 30px auto 0; display: block;">
+      <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;">
     </div>
   </div>
-
-  <div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
-
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>

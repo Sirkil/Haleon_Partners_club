@@ -9,7 +9,6 @@
 
   <style>
     :root {
-      /* Panadol Brand Colors */
       --bg: #E8EEF5; 
       --text: #1E293B;
       --surface: #E2E8F0;
@@ -41,7 +40,6 @@
     .mode-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 24px; padding: 24px; margin-bottom: 20px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.03); width: 100%; }
     .mode-card:hover { border-color: var(--c-light); transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0, 85, 165, 0.1); }
 
-    /* Canvas & HUD Overlays */
     .catch-hud { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; pointer-events: none; }
     .catch-pill { background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; padding: 6px 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .lives-box { display: flex; flex-direction: row; gap: 5px; background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; padding: 8px 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -92,10 +90,30 @@
     </div>
   </div>
 
+  <div id="instructions-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--surface2); padding:30px; border-radius:20px; text-align:center; max-width: 450px; width: 90%;">
+      <h2 style="color:var(--c-blue); margin-bottom:20px; font-size: 2rem;">How to Play</h2>
+      <div style="display: flex; justify-content: space-around; margin-bottom: 25px;">
+         <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 12px; flex: 1; margin-right: 10px;">
+            <p style="font-weight:bold; color:var(--c-green); margin-bottom:10px; font-size: 1.1rem;">Catch (+10 pts)</p>
+            <div style="display:flex; gap:5px; justify-content:center; flex-wrap: wrap;">
+               <img src="assets/Cold & Flu Day Pack.png" style="height:50px; object-fit:contain;">
+               <img src="assets/Panadol advance.png" style="height:50px; object-fit:contain;">
+               <img src="assets/panadol_extra.png" style="height:50px; object-fit:contain;">
+            </div>
+         </div>
+         <div style="background: rgba(225, 29, 72, 0.1); padding: 15px; border-radius: 12px; flex: 0.6;">
+            <p style="font-weight:bold; color:var(--c-red); margin-bottom:10px; font-size: 1.1rem;">Avoid (-10 pts)</p>
+            <img src="assets/not_panadol.png" style="height:50px; object-fit:contain;">
+         </div>
+      </div>
+      <p style="color:var(--muted); margin-bottom:25px; font-size:1rem; line-height: 1.5;">Drag the basket to catch the correct Panadol packs. Avoid the fake pack and don't let the good ones drop!</p>
+      <button class="btn-panadol" onclick="startCatchGame()">Play Now</button>
+    </div>
+  </div>
+
   <div id="screen-game" style="display: none; position: fixed; inset: 0;">
-    
     <div class="catch-hud">
-      
       <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start; pointer-events: auto;">
         <button class="btn-outline" style="padding: 6px 14px; font-size: 0.9rem; background: var(--surface2);" onclick="goBack()">← Exit</button>
         <div class="catch-pill" style="pointer-events: none;">
@@ -114,9 +132,7 @@
         </div>
         <div class="catch-pill" style="color:var(--c-light); font-size:1.2rem; min-width: 70px; justify-content: center;" id="hud-score">0</div>
       </div>
-
     </div>
-
     <canvas id="catch-canvas"></canvas>
   </div>
 
@@ -167,8 +183,15 @@
 
     function startGame(mode) {
       if (exhausted && mode === 'challenge') { showToast("You've already completed this game. Playing in Test Mode."); currentMode = 'test'; } else { currentMode = mode; }
-      document.getElementById('screen-mode').style.display = 'none'; document.getElementById('screen-game').style.display = 'block';
-      resizeCanvas(); initGame();
+      document.getElementById('screen-mode').style.display = 'none'; 
+      document.getElementById('screen-game').style.display = 'block';
+      resizeCanvas(); 
+      document.getElementById('instructions-modal').style.display = 'flex';
+    }
+
+    function startCatchGame() {
+      document.getElementById('instructions-modal').style.display = 'none';
+      initGame();
     }
 
     function initGame() {

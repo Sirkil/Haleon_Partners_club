@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haleon Games Hub</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Haleon Brand Colors based on your index.html */
+      --bg: #F4F7FA; 
+      --surface: #ffffff;
+      --border: #CBD5E1;
+      --text: #1E293B;
+      --muted: #64748B;
+      --green: #10B981;
+      --blue: #0055A5;
+      --icon-bg: rgba(96, 165, 250, 0.15);
+      --icon-border: #60a5fa;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 60px; /* Space for the PM code */
+    }
+
+    .header {
+      text-align: center;
+      padding: 40px 20px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      margin-bottom: 40px;
+    }
+
+    .app-logo {
+      max-width: 180px;
+      margin-bottom: 15px;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .page-sub {
+      color: var(--muted);
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 20px;
+    }
+
+    /* Game Card Styles */
+    .game-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 24px 15px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+
+    .game-card:hover {
+      border-color: var(--green);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
+    }
+
+    .game-icon-wrap {
+      width: 60px;
+      height: 60px;
+      background: var(--icon-bg);
+      border: 2px solid var(--icon-border);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .game-card:hover .game-icon-wrap {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .game-icon {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      transition: filter 0.2s;
+    }
+
+    /* Turn the icon white on hover for better contrast */
+    .game-card:hover .game-icon {
+      filter: brightness(0) invert(1);
+    }
+
+    .game-title {
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.05rem;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .play-badge {
+      background: var(--bg);
+      color: var(--blue);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 50px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+
+    .game-card:hover .play-badge {
+      background: var(--green);
+      color: white;
+    }
+
+    .footer-disclaimer {
+      position: fixed;
+      bottom: 5px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: grey;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+      .page-title { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" onerror="this.style.display='none';">
+    <h1 class="page-title">Games Hub</h1>
+    <p class="page-sub">Select a game to start playing and earning points!</p>
+  </header>
+
+  <main class="container">
+    <div class="games-grid">
+      
+      <a href="game_basket.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Build Basket.png" alt="Build Basket" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Build Basket(V)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+      <a href="game_myth.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Myth & Fact.png" alt="Myth vs Fact" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Myth vs Fact(H/V)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+      <a href="game_buzzer.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Buzzer Battle.png" alt="Buzzer Battle" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Buzzer Battle(H)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+      <a href="game_memory.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Memory Challenge.png" alt="Memory Challenge" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Memory Challenge(V)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+      <a href="game_catch.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Catch.png" alt="Catch & Win" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Catch & Win(V)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+      <a href="game_prescription.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Rx Challenge.png" alt="Rx Challenge" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Rx Challenge(V)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+      <a href="game_placement.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Best Place.png" alt="Best Place" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Perfect Shelf(H)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+      <a href="game_mitohype.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Panadol Challenge.png" alt="Panadol Challenge" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Panadol Game(H/V)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+      <!-- <a href="game_spin.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Spin to Win.png" alt="Spin to Win" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Spin to Win(V)</div>
+        <div class="play-badge">Play</div>
+      </a> -->
+
+      <!-- <a href="game_centrum.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Buzzer Battle.png" alt="Centrum Game" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Centrum Game(V)</div>
+        <div class="play-badge">Play</div>
+      </a> -->
+
+      <a href="game_pacman.html" class="game-card">
+        <div class="game-icon-wrap">
+          <img src="assets/Buzzer Battle.png" alt="Pacman" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        </div>
+        <div class="game-title">Pacman Maze(H)</div>
+        <div class="play-badge">Play</div>
+      </a>
+
+    </div>
+  </main>
+
+  <div class="footer-disclaimer">PM-EG-CNT-26-00007</div>
+
+</body>
+</html>
