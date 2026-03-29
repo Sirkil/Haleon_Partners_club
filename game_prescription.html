@@ -25,7 +25,7 @@
 
     body { 
       background-color: #0b0614; 
-      background-image: url('assets/RX Challenge/gameBg.jpg');
+      background-image: url('assets/Rx Challenge/gameBg.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -182,7 +182,7 @@
 
   <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; padding-top: 25%;">
     
-    <img src="assets/RX Challenge/gameLogo.png" alt="Rx Challenge Logo" style="max-width: 250px; margin: 0 auto 10px; display: block; mix-blend-mode: screen;">
+    <img src="assets/Rx Challenge/gameLogo.png" alt="Rx Challenge Logo" style="max-width: 250px; margin: 0 auto 10px; display: block; mix-blend-mode: screen;">
     
     <div class="auth-title">Rx Challenge</div>
     
@@ -191,12 +191,12 @@
       <strong style="color: white; font-size: 1.2rem;">Correct: +20 pts. Wrong: 0 pts.</strong>
     </p>
     
-    <img src="assets/RX Challenge/startGameButton.png" alt="Start Game" class="img-btn" style="max-width: 260px; margin: 0 auto; display: block;" onclick="proceedFromStart()">
+    <img src="assets/Rx Challenge/startGameButton.png" alt="Start Game" class="img-btn" style="max-width: 260px; margin: 0 auto; display: block;" onclick="proceedFromStart()">
     
     <button class="btn-secondary" id="btn-exit-start" style="margin-top: 25px; width: auto; align-self: center;" onclick="goBack()">← Back to App</button>
     
     <div style="margin-top: auto; padding-bottom: 20px;">
-      <img src="assets/RX Challenge/brought to you by centrum.png" alt="Brought to you by Centrum" style="max-width: 160px; margin: 0 auto; display: block;">
+      <img src="assets/Rx Challenge/brought to you by centrum.png" alt="Brought to you by Centrum" style="max-width: 160px; margin: 0 auto; display: block;">
     </div>
   </div>
 
@@ -216,7 +216,7 @@
 
   <div class="game-container" id="screen-game" style="display: none; padding: 0; width: 100%; height: 100vh;">
     
-    <img src="assets/RX Challenge/caseBg.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 0; pointer-events: none;" alt="Case Background">
+    <img src="assets/Rx Challenge/caseBg.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 0; pointer-events: none;" alt="Case Background">
 
     <div class="game-header">
       <button class="btn-secondary" style="background: rgba(255,255,255,0.05);" onclick="goBack()">← Exit</button>
@@ -225,7 +225,7 @@
         <div class="score-display" id="hud-score">0 pts</div>
       </div>
     </div>
-
+ 
     <div class="patient-label">Patient Case</div>
     <div class="scenario-text" id="scenario-text">Loading...</div>
     
@@ -235,7 +235,7 @@
     <button class="opt-btn" id="opt-3">D) Option</button>
 
     <div style="position: absolute; bottom: 3%; left: 0; width: 100%; text-align: center; z-index: 10;">
-      <img src="assets/RX Challenge/brought to you by centrum.png" alt="Sponsor" style="max-width: 130px; margin: 0 auto; display: block;">
+      <img src="assets/Rx Challenge/brought to you by centrum.png" alt="Sponsor" style="max-width: 130px; margin: 0 auto; display: block;">
     </div>
   </div>
 
@@ -245,7 +245,7 @@
       <div class="auth-title" style="font-size: 2rem; margin-bottom: 15px;" id="feedback-title">Correct!</div>
       <p id="feedback-text" style="color: #cbd5e1; font-size: 1.05rem; line-height: 1.5; margin-bottom: 30px;">Explanation goes here.</p>
       
-      <img src="assets/RX Challenge/nextButton.png" alt="Next" class="img-btn" style="max-width: 200px; display: block; margin: 0 auto;" onclick="nextCase()">
+      <img src="assets/Rx Challenge/nextButton.png" alt="Next" class="img-btn" style="max-width: 200px; display: block; margin: 0 auto;" onclick="nextCase()">
     </div>
   </div>
 
@@ -256,7 +256,7 @@
     <div id="result-actions" style="width: 100%;"></div>
     
     <div style="margin-top: auto; padding-bottom: 20px;">
-      <img src="assets/RX Challenge/brought to you by centrum.png" alt="Sponsor" style="max-width: 160px; margin: 0 auto; display: block;">
+      <img src="assets/Rx Challenge/brought to you by centrum.png" alt="Sponsor" style="max-width: 160px; margin: 0 auto; display: block;">
     </div>
   </div>
 
@@ -415,7 +415,7 @@
       if (score > 0) launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
-      const primaryBtnHTML = `<img src="assets/RX Challenge/collectPointButton.png" alt="Collect Points" class="img-btn" style="max-width: 320px; margin: 0 auto 15px; display: block;" onclick="processPoints()">`;
+      const primaryBtnHTML = `<img src="assets/Rx Challenge/collectPointButton.png" alt="Collect Points" class="img-btn" style="max-width: 320px; margin: 0 auto 15px; display: block;" onclick="processPoints()">`;
 
       if (currentMode === 'challenge') {
           actionsDiv.innerHTML = primaryBtnHTML;
@@ -445,7 +445,7 @@
             ${qr.createImgTag(5)}
           </div>
           <p style="color:#d1d5db; font-size:1rem; margin-bottom: 25px;">Scan this QR with your App to collect points.</p>
-          <img src="assets/RX Challenge/startNewGameButton.png" alt="Start New Game" class="img-btn" style="max-width: 250px; margin: 0 auto; display: block;" onclick="location.reload()">
+          <img src="assets/Rx Challenge/startNewGameButton.png" alt="Start New Game" class="img-btn" style="max-width: 250px; margin: 0 auto; display: block;" onclick="location.reload()">
         `;
       }
     }
