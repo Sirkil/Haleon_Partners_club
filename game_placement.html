@@ -4,430 +4,629 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Perfect Shelf Builder</title>
+  
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    body { touch-action: none; overflow: hidden; margin: 0; padding: 0; background: var(--surface); } 
-    
-    .game-container { 
-      width: 100vw; 
-      min-height: 100vh; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: center;
-      align-items: center; 
-      padding: 2vh 4vw; 
+    :root {
+      --bg: #000000;
+      --text: #ffffff;
+      --green: #10B981;
+      --red: #ef4444;
+      --dialog-bg: rgba(10, 10, 10, 0.95);
+    }
+
+    * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      user-select: none;
     }
 
-    .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; width: 100%; max-width: 400px; }
-    .mode-card:hover { border-color: var(--green); transform: translateY(-2px); }
-    
-    .game-header {
-      width: 100%;
-      max-width: 150vh; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 2vh;
-    }
-
-    .pharmacy-bg { 
-      position: relative; 
-      width: 100%; 
-      max-width: 150vh; 
-      aspect-ratio: 16/9; 
-      background-image: url('assets/shelf_bg.jpeg'); 
-      background-size: cover;
-      background-position: center;
-      border: 2px solid var(--border); 
-      border-radius: 16px; 
-      margin-bottom: 2vh;
+    body {
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
       overflow: hidden;
-      flex-shrink: 0;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    
-    .drop-zone { position: absolute; border: none; background: transparent; }
-    
-    .inventory { 
-      width: 100%; 
-      max-width: 150vh; 
-      display: flex; 
-      flex-wrap: wrap; 
-      gap: clamp(10px, 2vw, 20px); 
-      justify-content: center; 
-      background: var(--surface2); 
-      padding: clamp(10px, 2vw, 20px); 
-      border-radius: 16px; 
-      border: 1px solid var(--border); 
-      box-sizing: border-box;
-    }
-    
-    .drag-item { 
-      width: clamp(50px, 8vw, 90px); 
-      height: clamp(50px, 8vw, 90px); 
-      background: #fff; 
-      border: 2px solid var(--green); 
-      border-radius: 12px; 
-      display: flex; align-items: center; justify-content: center; 
-      z-index: 100;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      padding: 6px;
-      box-sizing: border-box;
-      cursor: grab;
-      transition: box-shadow 0.2s;
-    }
-    .drag-item:active { cursor: grabbing; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-    
-    .drag-item img {
+
+    .screen {
+      display: none;
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      pointer-events: none; 
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
-    .drag-item.placed {
-      width: auto;
-      height: 80%; 
-      max-width: 90%;
-      border: none;
-      background: transparent;
-      box-shadow: none;
-      padding: 0;
+    .screen.active {
+      display: flex;
     }
 
-    .custom-msg-dialog {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none; transition: 0.3s;
+    /* Top Logos */
+    .brand-logos {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      max-width: 200px;
+      z-index: 10;
+      transition: opacity 0.3s;
     }
-    .custom-msg-dialog.show { opacity: 1; pointer-events: all; }
-    .custom-msg-box {
-      background: var(--surface); border: 2px solid var(--green); border-radius: 20px; 
-      padding: 30px; text-align: center; width: 90%; max-width: 450px; transform: scale(0.8); transition: 0.3s;
-    }
-    .custom-msg-dialog.show .custom-msg-box { transform: scale(1); }
 
-    /* Neon Text Style */
-    .neon-claim {
-      font-weight: 900;
-      color: #10B981;
-      text-shadow: 0 0 5px #10B981, 0 0 10px #10B981;
-      display: inline-block;
-      margin-top: 15px;
+    .brand-logos img {
+      width: 100%;
+      height: auto;
+    }
+
+    /* --- Start Screen --- */
+    #start-screen {
+      background: url('assets/Perfect Shelf/gameBg.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    #start-screen::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: -1;
+    }
+
+    #start-screen .game-logo {
+      width: 250px;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    #start-screen h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #start-screen p {
       font-size: 1.1rem;
+      text-align: center;
+      max-width: 400px;
+      margin-bottom: 30px;
+      line-height: 1.5;
+    }
+
+    .btn-action {
+      cursor: pointer;
+      border: none;
+      background: var(--green);
+      color: #fff;
+      padding: 15px 30px;
+      border-radius: 30px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn-action:hover {
+      transform: scale(1.05);
+      background: #0d9668;
+    }
+
+    .btn-action img {
+      width: 200px;
+      display: block;
+    }
+
+    /* --- Game Screen --- */
+    #game-screen {
       background: #000;
-      padding: 8px 15px;
-      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #shelf-img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: cover;
+    }
+
+    /* Overlay sits exactly on top of the rendered shelf image - sized by JS */
+    #shelf-overlay {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .shelf-row {
+      position: absolute;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: all;
+    }
+
+    .drop-zone {
+      height: 100%;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      position: relative;
+    }
+
+    .drop-zone.highlight {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .items-container {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      gap: 1%;
+      align-items: center;
+      pointer-events: all;
+    }
+
+    .start-slot {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .draggable-item {
+      width: auto;
+      height: 88%;
+      max-width: 100%;
+      max-height: 88%;
+      object-fit: contain;
+      cursor: grab;
+      touch-action: none;
+      position: static;
+      z-index: 100;
+      transition: opacity 0.3s;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    }
+
+    .draggable-item.placed {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .is-dragging {
+      position: fixed !important;
+      z-index: 2000 !important;
+      pointer-events: none;
+      transform: scale(1.08);
+      filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
+    }
+
+    .drop-zone .draggable-item {
+      width: auto;
+      height: 82%;
+      max-width: 78%;
+      max-height: 82%;
+      cursor: default;
+    }
+
+    /* --- Dialog Overlay --- */
+    .dialog-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .dialog-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .dialog-box {
+      background: var(--dialog-bg);
+      border: 2px solid var(--border, #333);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      transform: translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .dialog-overlay.show .dialog-box {
+      transform: translateY(0);
+    }
+
+    .dialog-img {
+      width: 120px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .dialog-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .dialog-claim {
+      font-size: 1.1rem;
+      color: var(--green);
+      font-weight: 600;
+      margin-bottom: 20px;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .dialog-error-title {
+      color: var(--red);
+    }
+
+    #end-screen {
+      background: rgba(0,0,0,0.85);
+    }
+
+    #end-screen h1 {
+      font-size: 3.5rem;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
     }
   </style>
 </head>
 <body>
-  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
-  <div class="toast" id="toast"></div>
 
-  <div class="game-container" id="screen-start" style="text-align: center;">
-    <div style="font-size: clamp(4rem, 8vw, 6rem); margin-bottom: 20px;">🏬</div>
-    <div class="auth-title" style="font-size: clamp(2rem, 4vw, 3rem);">Perfect Shelf Builder</div>
-    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5; font-size: clamp(1rem, 2vw, 1.2rem); max-width: 600px;">
-      Drag the 6 products to their correct places on the pharmacy shelves.<br>
-      Total: 120 pts (20 pts per item).
-    </p>
-    <div>
-      <button class="btn-primary" style="padding: 15px 40px; font-size: 1.2rem; display: inline-block; width: auto;" onclick="proceedFromStart()">Start Game</button>
-    </div>
-    <div>
-      <button class="btn-secondary" id="btn-exit-start" style="margin-top: 15px; width: auto; display: inline-block;" onclick="goBack()">← Back to App</button>
-    </div>
-    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;" onerror="this.style.display='none'">
+  <div class="brand-logos" id="brand-logos">
+    <img src="assets/Perfect Shelf/brought to you by.png" alt="Brought to you by Panadol and Centrum" onerror="this.style.display='none';">
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start; width: auto;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center; margin-bottom: 30px; font-size: 2.5rem;">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.5rem;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.5rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Compete for real points (max 120 pts).</p>
-    </div>
+  <div id="start-screen" class="screen active">
+    <img src="assets/Perfect Shelf/gameLogo.png" alt="Game Logo" class="game-logo" onerror="this.style.display='none';">
+    <h1>Perfect Shelf Builder</h1>
+    <p>Drag the 6 products to their correct places on the pharmacy shelves.<br><strong>Total: 120 pts (20 pts per item).</strong></p>
+    <button class="btn-action" onclick="startGame()" style="padding:0; background:none;">
+      <img src="assets/Perfect Shelf/startGameButton.png" alt="Start Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'startGame()\'>Start Game</button>'">
+    </button>
   </div>
 
-  <div class="game-container" id="screen-game" style="display: none; padding-top: 2vh;">
-    <div class="game-header">
-      <button class="btn-secondary" style="width:auto; padding: 10px 20px; font-size: 1rem; border-radius: 12px;" onclick="goBack()">← Exit</button>
-      <div style="font-weight: 800; font-size: 1.5rem; color: var(--green);" id="game-pts-display">0 pts</div>
-    </div>
+  <div id="game-screen" class="screen">
+    <!-- Shelf background as real <img> so JS can measure exact rendered bounds -->
+    <img id="shelf-img" src="assets/Perfect Shelf/shelfBg.png" alt="" draggable="false">
 
-    <div class="pharmacy-bg" id="pharmacy-bg">
-      <div class="drop-zone" id="zone-1" style="top: 25%; left: 30%; width: 18%; height: 22%;"></div>
-      <div class="drop-zone" id="zone-2" style="top: 25%; left: 52%; width: 18%; height: 22%;"></div>
-      <div class="drop-zone" id="zone-3" style="top: 50%; left: 30%; width: 18%; height: 22%;"></div>
-      <div class="drop-zone" id="zone-4" style="top: 50%; left: 52%; width: 18%; height: 22%;"></div>
-      <div class="drop-zone" id="zone-5" style="top: 75%; left: 30%; width: 18%; height: 22%;"></div>
-      <div class="drop-zone" id="zone-6" style="top: 75%; left: 52%; width: 18%; height: 22%;"></div>
-    </div>
+    <!-- All interactive zones; JS positions this overlay exactly over the shelf image -->
+    <div id="shelf-overlay">
 
-    <div class="inventory" id="inventory">
-      <div class="drag-item" id="item-1" data-target="zone-1"><img src="assets/Panadol advance.png" alt="Panadol Advance" onerror="this.style.display='none'"></div>
-      <div class="drag-item" id="item-2" data-target="zone-2"><img src="assets/panadol_extra.png" alt="Panadol Extra" onerror="this.style.display='none'"></div>
-      <div class="drag-item" id="item-3" data-target="zone-3"><img src="assets/Centrum_energy_pack.png" alt="Centrum Energy" onerror="this.style.display='none'"></div>
-      <div class="drag-item" id="item-4" data-target="zone-4"><img src="assets/CENTRUM_MEN.jpg" alt="Centrum Men" onerror="this.style.display='none'"></div>
-      <div class="drag-item" id="item-5" data-target="zone-5"><img src="assets/CENTRUM_WOMEN.jpg" alt="Centrum Women" onerror="this.style.display='none'"></div>
-      <div class="drag-item" id="item-6" data-target="zone-6"><img src="assets/Cold & Flu Day Pack.png" alt="Panadol Cold and Flu" onerror="this.style.display='none'"></div>
+      <div class="shelf-row" id="shelf-row-top">
+        <div class="drop-zone" data-slot="1"></div>
+        <div class="drop-zone" data-slot="2"></div>
+        <div class="drop-zone" data-slot="3"></div>
+      </div>
+
+      <div class="shelf-row" id="shelf-row-bottom">
+        <div class="drop-zone" data-slot="4"></div>
+        <div class="drop-zone" data-slot="5"></div>
+        <div class="drop-zone" data-slot="6"></div>
+      </div>
+
+      <div class="items-container" id="items-container">
+        <div class="start-slot" id="slot-1"><img src="assets/Perfect Shelf/Centrum_energy_pack.png" class="draggable-item" data-id="1" alt="Centrum Energy"></div>
+        <div class="start-slot" id="slot-2"><img src="assets/Perfect Shelf/CENTRUM_MEN.png" class="draggable-item" data-id="2" alt="Centrum Men"></div>
+        <div class="start-slot" id="slot-3"><img src="assets/Perfect Shelf/CENTRUM_WOMEN.png" class="draggable-item" data-id="3" alt="Centrum Women"></div>
+        <div class="start-slot" id="slot-4"><img src="assets/Perfect Shelf/Panadol advance.png" class="draggable-item" data-id="4" alt="Panadol Advance"></div>
+        <div class="start-slot" id="slot-5"><img src="assets/Perfect Shelf/panadol_extra.png" class="draggable-item" data-id="5" alt="Panadol Extra"></div>
+        <div class="start-slot" id="slot-6"><img src="assets/Perfect Shelf/Cold & Flu Day Pack.png" class="draggable-item" data-id="6" alt="Cold & Flu Day"></div>
+      </div>
+
     </div>
   </div>
 
-  <div class="game-container" id="screen-result" style="display: none; text-align: center;">
-    <div style="font-size: 5rem; margin-bottom: 10px;">🏆</div>
-    <div class="auth-title" style="font-size: 3rem;">Perfect Placement!</div>
-    <div style="font-size: 4rem; font-weight:800; color: var(--green); margin-bottom: 30px;" id="result-score">0 pts</div>
-    <div id="result-actions" style="max-width: 400px; width: 100%; margin: 0 auto;"></div>
+  <div id="end-screen" class="screen">
+    <h1>Perfect!</h1>
+    <p style="font-size: 1.2rem; margin-bottom: 30px;">You earned <strong>120 pts</strong>!</p>
+    <button class="btn-action" onclick="location.reload()" style="padding:0; background:none;">
+      <img src="assets/Perfect Shelf/startNewGameButton.png" alt="Start New Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'location.reload()\'>Play Again</button>'">
+    </button>
   </div>
 
-  <div class="custom-msg-dialog" id="custom-dialog">
-    <div class="custom-msg-box" id="custom-msg-box">
-      <div id="dialog-icon" style="font-size: 3rem; margin-bottom: 15px; min-height: 80px; display: flex; align-items: center; justify-content: center;">✅</div>
-      <div class="auth-title" id="dialog-title" style="font-size: 1.8rem; color: var(--green); margin-bottom: 10px;">Correct Spot!</div>
-      <p id="custom-dialog-text" style="color: var(--text); font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; white-space: pre-line; text-align: left;"></p>
-      <button class="btn-primary" style="padding: 15px;" onclick="closeCustomDialog()">Continue</button>
+  <div class="dialog-overlay" id="dialog-overlay">
+    <div class="dialog-box" id="dialog-box">
+      <img src="" alt="Product" class="dialog-img" id="dialog-img" style="display:none;">
+      <h2 class="dialog-title" id="dialog-title">Title</h2>
+      <div class="dialog-claim" id="dialog-claim" style="display:none;">Claim text</div>
+      <p id="dialog-desc">Description</p>
+      <br>
+      <button class="btn-action" onclick="closeDialog()">Continue</button>
     </div>
   </div>
 
   <script>
-    function launchConfetti(duration) {
-      const canvas = document.getElementById("confetti-canvas");
-      if(!canvas) return;
-      const ctx = canvas.getContext("2d");
-      canvas.style.display = "block";
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const pieces = [];
-      const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"];
-      for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 5 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
-      const end = Date.now() + duration;
-      (function frame() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pieces.forEach((p) => {
-          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color;
-          ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore();
-          p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs;
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-        else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
-      })();
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const uid = urlParams.get('uid');
-    const exhausted = urlParams.get('exhausted') === 'true';
-    const GAME_ID = 'placement';
-    
-    let currentMode = '';
-    let score = 0;
-    let placedCount = 0;
-    let lastDropSuccess = false; 
-
-    // Injecting HTML for the claims
-    const ITEM_MESSAGES = {
-      'item-1': "Reason: Placed at eye-level to maximize visibility for high-demand pain relief.<br><span class='neon-claim'>🌟 Claim: Effective pain relief, gentle on stomach, faster absorbed.</span>",
-      'item-2': "Reason: Positioned directly next to standard paracetamol to allow quick consumer comparison.<br><span class='neon-claim'>🌟 Claim: Faster disintegration than the standard paracetamol.</span>",
-      'item-3': "Reason: Centered on the middle shelf to anchor the wellness section.<br><span class='neon-claim'>🌟 Claim: World’s #1 Multivitamin.</span>",
-      'item-4': "Reason: Grouped with other multivitamins to make targeted shopping easier.<br><span class='neon-claim'>🌟 Claim: Formulated with essential nutrients to respond to health needs of active men.</span>",
-      'item-5': "Reason: Kept together with related health supplements to create a comprehensive wellness area.<br><span class='neon-claim'>🌟 Claim: Crafted with a combination of vitamins and minerals especially tailored for women.</span>",
-      'item-6': "Reason: Highly accessible during seasonal high-demand periods.<br><span class='neon-claim'>🌟 Claim: Effective relief from blocked & runny nose. Does not cause drowsiness.</span>"
+    const productsData = {
+      "1": { name: "Centrum Energy", claim: "Supports daily energy levels", image: "assets/Perfect Shelf/Centrum_energy_pack.png" },
+      "2": { name: "Centrum Men", claim: "Customized formula for Men", image: "assets/Perfect Shelf/CENTRUM_MEN.png" },
+      "3": { name: "Centrum Women", claim: "Customized formula for Women", image: "assets/Perfect Shelf/CENTRUM_WOMEN.png" },
+      "4": { name: "Panadol Advance", claim: "Advanced absorption for fast relief", image: "assets/Perfect Shelf/Panadol advance.png" },
+      "5": { name: "Panadol Extra", claim: "Tough on strong pain", image: "assets/Perfect Shelf/panadol_extra.png" },
+      "6": { name: "Cold & Flu Day", claim: "Non-drowsy relief for cold & flu", image: "assets/Perfect Shelf/Cold & Flu Day Pack.png" }
     };
 
-    window.onload = () => {
-      if (!uid) document.getElementById('btn-exit-start').style.display = 'none';
-      setupDragEvents();
-    };
-
-    function goBack() { 
-      if (uid) window.location.href = 'index.html'; 
-      else location.reload(); 
-    }
-
-    function proceedFromStart() {
-      document.getElementById('screen-start').style.display = 'none';
-      if (uid) document.getElementById('screen-mode').style.display = 'flex';
-      else startGame('challenge');
-    }
-
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') {
-        showToast("You've already completed this game. Playing in Test Mode.");
-        currentMode = 'test';
-      } else {
-        currentMode = mode;
+    // ─── Shelf image coordinates (as % of the image's intrinsic size 1920x1080) ───
+    // Measure once against the source image; JS scales to any screen size.
+    const SHELF = {
+      // Top shelf row (Centrum)
+      topRow: {
+        left:   0.295,   // left edge of first slot
+        top:    0.215,   // top edge of row
+        width:  0.415,   // total width spanning all 3 slots
+        height: 0.26,    // height of row
+        slotWidthFrac: 0.305  // each slot is ~30.5% of row width; gaps fill the rest
+      },
+      // Bottom shelf row (Panadol)
+      bottomRow: {
+        left:   0.295,
+        top:    0.46,
+        width:  0.415,
+        height: 0.26,
+        slotWidthFrac: 0.305
+      },
+      // Bottom tray (the 6 white boxes)
+      tray: {
+        left:   0.195,
+        top:    0.815,
+        width:  0.615,
+        height: 0.175
       }
-      document.getElementById('screen-mode').style.display = 'none';
-      document.getElementById('screen-game').style.display = 'flex';
+    };
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
     }
 
-    let activeItem = null;
-    let startX = 0, startY = 0;
+    function startGame() {
+      document.getElementById('brand-logos').style.opacity = '0';
+      setTimeout(() => document.getElementById('brand-logos').style.display = 'none', 300);
+      showScreen('game-screen');
+      // Wait for img to render then layout
+      const img = document.getElementById('shelf-img');
+      if (img.complete) {
+        layoutShelf();
+      } else {
+        img.onload = layoutShelf;
+      }
+      window.addEventListener('resize', layoutShelf);
+      initDragAndDrop();
+    }
 
-    function setupDragEvents() {
-      const items = document.querySelectorAll('.drag-item');
-      items.forEach(item => {
-        item.addEventListener('touchstart', dragStart, {passive: false});
-        item.addEventListener('touchmove', dragMove, {passive: false});
-        item.addEventListener('touchend', dragEnd, {passive: false});
+    function getImgRenderedBounds() {
+      // Returns the actual rendered rect of the shelf image (cover behaviour)
+      const img = document.getElementById('shelf-img');
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const iw = img.naturalWidth  || 1920;
+      const ih = img.naturalHeight || 1080;
+      const scale = Math.max(vw / iw, vh / ih);
+      const rw = iw * scale;
+      const rh = ih * scale;
+      const rx = (vw - rw) / 2;
+      const ry = (vh - rh) / 2;
+      return { x: rx, y: ry, w: rw, h: rh };
+    }
 
-        item.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', dragMove);
-        document.addEventListener('mouseup', dragEnd);
+    function layoutShelf() {
+      const b = getImgRenderedBounds();
+      const overlay = document.getElementById('shelf-overlay');
+
+      // Size the overlay to exactly match the rendered image
+      overlay.style.left   = b.x + 'px';
+      overlay.style.top    = b.y + 'px';
+      overlay.style.width  = b.w + 'px';
+      overlay.style.height = b.h + 'px';
+
+      positionRow('shelf-row-top',    SHELF.topRow,    b);
+      positionRow('shelf-row-bottom', SHELF.bottomRow, b);
+      positionTray(b);
+    }
+
+    function positionRow(id, cfg, b) {
+      const row = document.getElementById(id);
+      row.style.left   = (cfg.left   * b.w) + 'px';
+      row.style.top    = (cfg.top    * b.h) + 'px';
+      row.style.width  = (cfg.width  * b.w) + 'px';
+      row.style.height = (cfg.height * b.h) + 'px';
+
+      const slots = row.querySelectorAll('.drop-zone');
+      const slotW = cfg.slotWidthFrac * cfg.width * b.w;
+      const gap   = ((1 - 3 * cfg.slotWidthFrac) / 2) * cfg.width * b.w;
+
+      slots.forEach((slot, i) => {
+        slot.style.width    = slotW + 'px';
+        slot.style.position = 'absolute';
+        slot.style.left     = (i * (slotW + gap)) + 'px';
+        slot.style.top      = '0';
+        slot.style.height   = '100%';
       });
     }
 
-    function dragStart(e) {
-      let target = e.target.closest('.drag-item');
-      if (target && !target.classList.contains('placed')) {
-        activeItem = target;
-        const event = e.touches ? e.touches[0] : e;
-        startX = event.clientX;
-        startY = event.clientY;
-        
-        const rect = activeItem.getBoundingClientRect();
-        activeItem.style.position = 'fixed';
-        activeItem.style.left = rect.left + 'px';
-        activeItem.style.top = rect.top + 'px';
-        activeItem.style.margin = '0';
-        activeItem.style.zIndex = '1000';
+    function positionTray(b) {
+      const tray = document.getElementById('items-container');
+      const cfg  = SHELF.tray;
+      tray.style.left   = (cfg.left   * b.w) + 'px';
+      tray.style.top    = (cfg.top    * b.h) + 'px';
+      tray.style.width  = (cfg.width  * b.w) + 'px';
+      tray.style.height = (cfg.height * b.h) + 'px';
+
+      const slots = tray.querySelectorAll('.start-slot');
+      const slotW = (cfg.width * b.w - 5 * 0.01 * cfg.width * b.w) / 6;
+      slots.forEach(slot => {
+        slot.style.width = slotW + 'px';
+      });
+    }
+
+    // ─── Dialog ────────────────────────────────────────────────────────────────
+    function showDialog(type, itemId) {
+      const overlay = document.getElementById('dialog-overlay');
+      const title   = document.getElementById('dialog-title');
+      const claim   = document.getElementById('dialog-claim');
+      const img     = document.getElementById('dialog-img');
+      const desc    = document.getElementById('dialog-desc');
+
+      if (type === 'correct') {
+        const data = productsData[itemId];
+        title.innerText = "Correct Placement!";
+        title.className = "dialog-title";
+        title.style.color = "var(--green)";
+        img.src = data.image;
+        img.style.display = "inline-block";
+        claim.innerText = data.claim;
+        claim.style.display = "block";
+        desc.innerText = "You have successfully placed " + data.name + ".";
+      } else if (type === 'wrong') {
+        title.innerText = "Oops! Wrong Position";
+        title.className = "dialog-title dialog-error-title";
+        title.style.color = "var(--red)";
+        img.style.display = "none";
+        claim.style.display = "none";
+        desc.innerText = "This is the wrong place, try again.";
+      }
+      overlay.classList.add('show');
+    }
+
+    function closeDialog() {
+      document.getElementById('dialog-overlay').classList.remove('show');
+      if (placedItemsCount === totalItems) {
+        setTimeout(() => showScreen('end-screen'), 300);
       }
     }
 
-    function dragMove(e) {
-      if (!activeItem) return;
-      e.preventDefault(); 
-      const event = e.touches ? e.touches[0] : e;
-      const dx = event.clientX - startX;
-      const dy = event.clientY - startY;
-      
-      activeItem.style.transform = `translate(${dx}px, ${dy}px)`;
+    // ─── Drag & Drop ───────────────────────────────────────────────────────────
+    let draggedItem = null;
+    let offsetX = 0, offsetY = 0;
+    let currentDropZone = null;
+    let placedItemsCount = 0;
+    const totalItems = 6;
+
+    function initDragAndDrop() {
+      const items = document.querySelectorAll('.start-slot .draggable-item');
+      items.forEach(item => {
+        item.addEventListener('pointerdown', startDrag, { passive: false });
+      });
+      document.addEventListener('pointermove', drag, { passive: false });
+      document.addEventListener('pointerup', endDrag);
     }
 
-    function dragEnd(e) {
-      if (!activeItem) return;
-      
-      const targetZoneId = activeItem.dataset.target;
-      const targetZone = document.getElementById(targetZoneId);
-      
-      const itemRect = activeItem.getBoundingClientRect();
-      const zoneRect = targetZone.getBoundingClientRect();
-      
-      const itemCX = itemRect.left + itemRect.width / 2;
-      const itemCY = itemRect.top + itemRect.height / 2;
+    function startDrag(e) {
+      const original = e.target;
+      if (original.dataset.placed === "true") return;
 
-      const padding = window.innerWidth > 768 ? 50 : 30;
+      original.setPointerCapture(e.pointerId);
+      e.preventDefault();
 
-      if (
-        itemCX >= zoneRect.left - padding &&
-        itemCX <= zoneRect.right + padding &&
-        itemCY >= zoneRect.top - padding &&
-        itemCY <= zoneRect.bottom + padding
-      ) {
-        activeItem.classList.add('placed');
-        activeItem.style.transform = 'translate(0,0)';
-        activeItem.style.position = 'absolute';
-        
-        activeItem.style.left = '50%';
-        activeItem.style.top = '50%';
-        activeItem.style.transform = 'translate(-50%, -50%)';
-        targetZone.appendChild(activeItem);
-        
-        score += 20;
-        placedCount++;
-        document.getElementById('game-pts-display').textContent = score + " pts";
-        
-        let imgSrc = activeItem.querySelector('img').src;
-        showCustomDialog("Correct Spot!", ITEM_MESSAGES[activeItem.id], true, imgSrc);
+      const rect = original.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+
+      draggedItem = original.cloneNode(true);
+      draggedItem.classList.add('is-dragging');
+      draggedItem.style.width  = rect.width  + 'px';
+      draggedItem.style.height = rect.height + 'px';
+      draggedItem.style.objectFit = 'contain';
+      draggedItem.originalSource = original;
+
+      document.body.appendChild(draggedItem);
+      moveItem(e.clientX, e.clientY);
+    }
+
+    function drag(e) {
+      if (!draggedItem) return;
+      e.preventDefault();
+      moveItem(e.clientX, e.clientY);
+      checkDropZones(e.clientX, e.clientY);
+    }
+
+    function moveItem(clientX, clientY) {
+      if (!draggedItem) return;
+      draggedItem.style.left = (clientX - offsetX) + 'px';
+      draggedItem.style.top  = (clientY - offsetY) + 'px';
+    }
+
+    function checkDropZones(mouseX, mouseY) {
+      const dropZones = document.querySelectorAll('.drop-zone');
+      let foundZone = null;
+      dropZones.forEach(zone => {
+        const rect = zone.getBoundingClientRect();
+        if (mouseX >= rect.left && mouseX <= rect.right &&
+            mouseY >= rect.top  && mouseY <= rect.bottom) {
+          if (zone.children.length === 0) {
+            zone.classList.add('highlight');
+            foundZone = zone;
+          }
+        } else {
+          zone.classList.remove('highlight');
+        }
+      });
+      currentDropZone = foundZone;
+    }
+
+    function endDrag(e) {
+      if (!draggedItem) return;
+
+      if (currentDropZone) {
+        const itemId = draggedItem.dataset.id;
+        const slotId = currentDropZone.dataset.slot;
+        currentDropZone.classList.remove('highlight');
+
+        if (itemId === slotId) {
+          draggedItem.classList.remove('is-dragging');
+          draggedItem.style.width  = '';
+          draggedItem.style.height = '';
+          draggedItem.style.left   = '';
+          draggedItem.style.top    = '';
+          currentDropZone.appendChild(draggedItem);
+
+          draggedItem.originalSource.dataset.placed = "true";
+          draggedItem.originalSource.classList.add('placed');
+          placedItemsCount++;
+          showDialog('correct', itemId);
+        } else {
+          document.body.removeChild(draggedItem);
+          showDialog('wrong', null);
+        }
       } else {
-        activeItem.style.position = 'static';
-        activeItem.style.transform = 'translate(0,0)';
-        document.getElementById('inventory').appendChild(activeItem);
-
-        showCustomDialog("Wrong Place!", "This is not the optimal shelf spot for this product. Think about the product category and try again!", false);
-      }
-      
-      activeItem = null;
-    }
-
-    function showCustomDialog(title, msg, isSuccess, imgSrc = null) {
-      lastDropSuccess = isSuccess;
-
-      document.getElementById('dialog-title').textContent = title;
-      document.getElementById('custom-dialog-text').innerHTML = msg; 
-      
-      if (isSuccess) {
-        document.getElementById('dialog-icon').innerHTML = `<img src="${imgSrc}" style="height: 100px; object-fit: contain;">`;
-        document.getElementById('dialog-title').style.color = 'var(--green)';
-        document.getElementById('custom-msg-box').style.borderColor = 'var(--green)';
-      } else {
-        document.getElementById('dialog-icon').textContent = '❌';
-        document.getElementById('dialog-title').style.color = '#ef4444';
-        document.getElementById('custom-msg-box').style.borderColor = '#ef4444';
+        document.body.removeChild(draggedItem);
       }
 
-      document.getElementById('custom-dialog').classList.add('show');
-    }
-
-    function closeCustomDialog() {
-      document.getElementById('custom-dialog').classList.remove('show');
-      
-      if (lastDropSuccess && placedCount === 6) { 
-        setTimeout(finishGame, 400);
-      }
-    }
-
-    function finishGame() {
-      document.getElementById('screen-game').style.display = 'none';
-      document.getElementById('screen-result').style.display = 'flex';
-      document.getElementById('result-score').textContent = score + " pts";
-
-      launchConfetti(4000); 
-
-      const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = `
-        <button class="btn-primary" style="padding: 15px;" onclick="processPoints()">Collect Points & Complete</button>
-        <button class="btn-secondary" style="margin-top:15px;" onclick="goBack()">Play for fun (Exit)</button>
-      `;
-    }
-
-    function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; }
-
-      const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "Processing...";
-
-      if (uid) {
-        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
-      } else {
-        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
-        const qr = qrcode(0, 'L');
-        qr.addData(payload);
-        qr.make();
-        actionsDiv.innerHTML = `
-          <div style="background:white; padding:20px; display:inline-block; border-radius:15px; margin-bottom:15px;">
-            ${qr.createImgTag(6)}
-          </div>
-          <p style="color:var(--muted); font-size:1.1rem;">Scan this QR with your Haleon app to collect points.</p>
-          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
-        `;
-      }
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 1500);
+      draggedItem = null;
+      currentDropZone = null;
     }
   </script>
-<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>
