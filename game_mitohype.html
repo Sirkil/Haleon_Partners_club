@@ -162,17 +162,25 @@
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container game-container-narrow" id="screen-start" style="z-index: 20;">
-    <img src="assets/Panadol_logo.png" alt="Panadol" style="max-width: 260px; margin-bottom: 20px;">
-    <div class="auth-title">Play & Earn</div>
-    <p style="color: var(--muted); margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem; text-align: center;">
+  <div class="game-container" id="screen-start" style="z-index: 20; background: url('assets/Fever Smach/gameBg.png') no-repeat center center; background-size: cover; max-width: 100%; width: 100%; min-height: 100dvh; position: fixed; inset: 0; justify-content: center;">
+    
+    <div style="position: absolute; top: 30px; right: 30px; text-align: right; z-index: 2;">
+      <img src="assets/Fever Smach/brought to you by panadol.png" alt="Panadol" style="width:200px;">
+    </div>
+
+    <img src="assets/Fever Smach/gameLogo.png" alt="Fever Smash" style="max-width: 250px; margin-top: 40px; margin-bottom: 20px; z-index: 2;">
+    
+    <div class="auth-title" style="color: #ffffff; z-index: 2; margin-bottom: 5px;">Fever Smash</div>
+    
+    <p style="color: #ffffff; margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem; text-align: center; font-weight: 500; z-index: 2; max-width: 450px;">
       Play the interactive Panadol game.<br>
       Once you finish, tap the claim button to earn 100 pts!
     </p>
-    <button class="btn-panadol" style="max-width: 300px; margin: 0 auto;" onclick="proceedFromStart()">Start Game</button>
-    <button class="btn-outline" id="btn-exit-start" style="margin-top: 20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">← Back to App</button>
+    
+    <img src="assets/Fever Smach/startGameButton.png" alt="Start Game" style="max-width: 280px; width: 100%; cursor: pointer; z-index: 2; transition: transform 0.2s;" onclick="proceedFromStart()" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+    
+    <button class="btn-outline" id="btn-exit-start" style="margin-top: 30px; max-width: 300px; margin-left: auto; margin-right: auto; color: #ffffff; border-color: rgba(255,255,255,0.4); z-index: 2;" onclick="goBack()" onmouseover="this.style.borderColor='#ffffff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.4)'">← Back to App</button>
   </div>
-
   <div class="game-container game-container-narrow" id="screen-mode" style="display: none; z-index: 20;">
     <div style="width: 100%; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; min-height: 70px;">
       <button class="btn-outline" style="position: absolute; left: 0; width: auto; padding: 10px 20px;" onclick="goBack()">← Back</button>

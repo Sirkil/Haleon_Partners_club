@@ -9,20 +9,10 @@
 
   <style>
     :root {
-      /* Centrum Brand Colors */
-      --bg: #FFFDF8;
-      --text: #333333;
-      --surface: #f9f9f9;
-      --surface2: #ffffff;
-      --border: #eeeeee;
-      --muted: #888888;
-      
-      --c-pink: #E91E63;
-      --c-orange: #FF9800;
-      --c-yellow: #FFC107;
-      --c-green: #4CAF50;
-      --c-blue: #2196F3;
-      --c-purple: #9C27B0;
+      --c-green: #4ade80;
+      --c-red: #ef4444;
+      --c-light: #38BDF8;
+      --muted: #9ca3af;
     }
 
     * {
@@ -30,179 +20,158 @@
       margin: 0;
       padding: 0;
       font-family: 'Poppins', sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body { 
-      background: var(--bg); 
-      color: var(--text); 
+      background-color: #0b0614; 
+      background-image: url('assets/RX Challenge/gameBg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white; 
       overflow-x: hidden; 
       touch-action: manipulation;
     }
 
     .game-container { 
-      max-width: 800px; 
+      max-width: 480px; 
       margin: 0 auto; 
       padding: 20px; 
       min-height: 100vh; 
       display: flex; 
       flex-direction: column; 
-      justify-content: center; 
-      align-items: center; 
       position: relative;
-    }
-
-    .game-container-narrow {
-      max-width: 500px;
     }
     
     .auth-title {
-      font-size: 3rem;
+      font-size: 3.2rem;
       font-weight: 800;
-      color: #000000;
+      color: white;
       margin-bottom: 10px;
       text-align: center;
+      letter-spacing: -1px;
+      line-height: 1.1;
     }
 
-    /* Unified Black Button Style */
-    .btn-centrum {
-      background: #000000;
-      color: #ffffff;
-      border: none;
-      padding: 15px 30px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      border-radius: 50px;
+    .img-btn {
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-      width: 100%;
+      transition: transform 0.1s ease;
     }
-    .btn-centrum:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 20px rgba(0,0,0,0.2);
-    }
-    .btn-centrum:active {
-      transform: translateY(2px);
+    .img-btn:active {
+      transform: scale(0.95);
     }
 
-    .btn-outline {
+    .btn-secondary {
       background: transparent;
-      color: var(--text);
-      border: 2px solid var(--border);
-      padding: 12px 24px;
-      font-size: 1rem;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 8px 16px;
+      font-size: 0.9rem;
       font-weight: 600;
       border-radius: 50px;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-outline:hover {
-      border-color: #000000;
-      color: #000000;
+    .btn-secondary:hover {
+      border-color: var(--c-light);
+      color: var(--c-light);
     }
 
-    /* Specific Rx Game Styles */
     .mode-card { 
-      background: var(--surface2); 
-      border: 2px solid var(--border); 
+      background: rgba(255,255,255,0.05); 
+      border: 1px solid rgba(255,255,255,0.1); 
       border-radius: 24px; 
       padding: 24px; 
       margin-bottom: 20px; 
       text-align: center; 
       cursor: pointer; 
       transition: all 0.2s; 
-      box-shadow: 0 10px 20px rgba(0,0,0,0.03);
       width: 100%;
     }
     .mode-card:hover { 
-      border-color: var(--c-orange); 
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+      border-color: var(--c-light); 
+      background: rgba(255,255,255,0.1);
     }
 
     /* Game Header / HUD */
-    .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; }
-    .basket-hud { display: flex; align-items: center; gap: 15px; }
-    .case-counter { font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; }
-    .score-display { font-weight: 800; color: var(--c-green); font-size: 1.1rem; background: var(--surface2); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); }
-    
-    .scenario-card { 
-      background: var(--surface2); 
-      border: 2px solid var(--border); 
-      border-radius: 24px; 
-      padding: 30px; 
-      text-align: center; 
-      margin-bottom: 20px; 
-      box-shadow: 0 10px 20px rgba(0,0,0,0.03);
-      width: 100%;
+    .game-header { 
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      width: calc(100% - 30px); 
+      z-index: 20;
     }
-    .scenario-text { 
-      font-size: 1.1rem; 
-      line-height: 1.6; 
-      color: var(--text); 
-      font-weight: 600;
+    .case-counter { 
+      font-weight: 800; 
+      color: var(--muted); 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+      font-size: 0.85rem; 
     }
-    
-    .rx-option { 
-      width: 100%; 
-      background: var(--surface2); 
-      border: 2px solid var(--border); 
-      color: var(--text); 
-      padding: 16px 20px; 
-      border-radius: 50px; 
-      margin-bottom: 12px; 
-      font-family: 'Poppins', sans-serif; 
-      font-size: 1.05rem; 
-      font-weight: 600;
-      cursor: pointer; 
-      transition: all 0.2s; 
-      text-align: left; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-    }
-    .rx-option:hover:not(:disabled) { 
-      border-color: #000000; 
-      transform: translateY(-2px);
-    }
-    .rx-option.correct { 
-      background: rgba(76, 175, 80, 0.1); 
-      border-color: var(--c-green); 
+    .score-display { 
+      font-weight: 800; 
       color: var(--c-green); 
+      font-size: 1rem; 
+      background: rgba(74, 222, 128, 0.1); 
+      padding: 4px 12px; 
+      border-radius: 10px; 
+      border: 1px solid var(--c-green); 
     }
-    .rx-option.wrong { 
-      background: rgba(233, 30, 99, 0.1); 
-      border-color: var(--c-pink); 
-      color: var(--c-pink); 
+
+    /* Text areas absolutely positioned over the paper */
+    .patient-label {
+      position: absolute; top: 13.5%; left: 0; width: 100%;
+      text-align: center; color: black; font-size: clamp(1rem, 4vw, 1.2rem); font-weight: 800;
+      z-index: 10;
     }
+
+    .scenario-text { 
+      position: absolute; top: 19%; left: 10%; width: 80%; height: 16%;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      font-size: clamp(0.85rem, 3.5vw, 1.1rem); line-height: 1.3; color: black; font-weight: 600;
+      z-index: 10; padding: 0 10px;
+    }
+    
+    /* Transparent buttons mapping precisely over the white pills in the purple box */
+    .opt-btn {
+      position: absolute; left: 12.5%; width: 75%; height: 7.5%;
+      display: flex; align-items: center; justify-content: flex-start;
+      padding-left: 5%; font-weight: 700; color: black; font-size: clamp(0.9rem, 4vw, 1.1rem);
+      cursor: pointer; border-radius: 50px; background: transparent; border: none;
+      transition: background 0.2s, color 0.2s; z-index: 10; overflow: hidden; white-space: nowrap;
+    }
+    .opt-btn:active { background: rgba(0,0,0,0.05); }
+    .opt-btn:disabled { pointer-events: none; }
+    
+    /* Precise positions for the 4 white pills based on the caseBg.jpg layout */
+    #opt-0 { top: 44.5%; } /* Moved slightly down */
+    #opt-1 { top: 53.5%; } /* Moved slightly down */
+    #opt-2 { top: 61.5%; }
+    #opt-3 { top: 70.5%; }
 
     /* Explanation Dialog */
     .custom-msg-dialog {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000;
       display: flex; align-items: center; justify-content: center;
       opacity: 0; pointer-events: none; transition: 0.3s;
     }
     .custom-msg-dialog.show { opacity: 1; pointer-events: all; }
     .custom-msg-box {
-      background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; 
-      padding: 24px; text-align: center; width: 90%; max-width: 340px; transform: scale(0.8); transition: 0.3s;
+      background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; 
+      padding: 30px 24px; text-align: center; width: 90%; max-width: 400px; 
+      transform: scale(0.9); transition: 0.3s; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
     .custom-msg-dialog.show .custom-msg-box { transform: scale(1); }
 
     .toast {
-      position: fixed;
-      top: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--text);
-      color: var(--bg);
-      padding: 15px 30px;
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 1.1rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-      z-index: 10000;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+      background: white; color: black; padding: 12px 25px; border-radius: 50px;
+      font-weight: 700; font-size: 1.1rem; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
     .toast.show { opacity: 1; }
   </style>
@@ -211,68 +180,84 @@
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container game-container-narrow" id="screen-start">
-    <img src="assets/Centrum_logo.png" alt="Centrum" style="max-width: 280px; margin-bottom: 30px;">
-    <div class="auth-title">Rx Challenge</div>
-    <p style="color: var(--muted); margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem; text-align: center;">
-      Read the patient case and suggest the correct recommendation.<br>
-      Correct: +20 pts. Wrong: 0 pts.
-    </p>
-    <button class="btn-centrum" style="max-width: 300px; margin: 0 auto;" onclick="proceedFromStart()">Start Game</button>
-    <button class="btn-outline" id="btn-exit-start" style="margin-top: 20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">← Back to App</button>
+  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; padding-top: 25%;">
     
-    </div>
-
-  <div class="game-container game-container-narrow" id="screen-mode" style="display: none;">
-    <div style="width: 100%; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; min-height: 50px;">
-      <button class="btn-outline" style="position: absolute; left: 0; width: auto; padding: 10px 20px;" onclick="goBack()">← Back</button>
-      <img src="assets/Centrum_logo.png" alt="Centrum" style="height: 45px;">
-    </div>
-
-    <div class="auth-title" style="margin-bottom: 30px;">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.4rem; font-weight: 800;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--c-orange); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for real. Points are automatically recorded.</p>
+    <img src="assets/RX Challenge/gameLogo.png" alt="Rx Challenge Logo" style="max-width: 250px; margin: 0 auto 10px; display: block; mix-blend-mode: screen;">
+    
+    <div class="auth-title">Rx Challenge</div>
+    
+    <p style="color: #cbd5e1; margin-bottom: 40px; line-height: 1.6; font-size: 1.1rem;">
+      Read the patient case and suggest the correct recommendation.<br><br>
+      <strong style="color: white; font-size: 1.2rem;">Correct: +20 pts. Wrong: 0 pts.</strong>
+    </p>
+    
+    <img src="assets/RX Challenge/startGameButton.png" alt="Start Game" class="img-btn" style="max-width: 260px; margin: 0 auto; display: block;" onclick="proceedFromStart()">
+    
+    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 25px; width: auto; align-self: center;" onclick="goBack()">← Back to App</button>
+    
+    <div style="margin-top: auto; padding-bottom: 20px;">
+      <img src="assets/RX Challenge/brought to you by centrum.png" alt="Brought to you by Centrum" style="max-width: 160px; margin: 0 auto; display: block;">
     </div>
   </div>
 
-  <div class="game-container game-container-narrow" id="screen-game" style="display: none; justify-content: flex-start; padding-top: 20px;">
+  <div class="game-container" id="screen-mode" style="display: none; justify-content: center;">
+    <button class="btn-secondary" style="margin-bottom: 30px; align-self: flex-start; width: auto;" onclick="goBack()">← Back</button>
+
+    <div class="auth-title" style="margin-bottom: 30px;">Select Mode</div>
+    <div class="mode-card" onclick="startGame('test')">
+      <h3 style="color:white; font-size:1.4rem; font-weight: 800;">Test Mode</h3>
+      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
+    </div>
+    <div class="mode-card" onclick="startGame('challenge')">
+      <h3 style="color:var(--c-light); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
+      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Compete for real points.</p>
+    </div>
+  </div>
+
+  <div class="game-container" id="screen-game" style="display: none; padding: 0; width: 100%; height: 100vh;">
     
+    <img src="assets/RX Challenge/caseBg.png" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 0; pointer-events: none;" alt="Case Background">
+
     <div class="game-header">
-      <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.85rem; margin: 0;" onclick="goBack()">← Exit</button>
-      <div class="basket-hud">
-        <div class="case-counter" id="case-counter">Case 1 / 6</div>
+      <button class="btn-secondary" style="background: rgba(255,255,255,0.05);" onclick="goBack()">← Exit</button>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="case-counter" id="case-counter">CASE 1 / 6</div>
         <div class="score-display" id="hud-score">0 pts</div>
       </div>
     </div>
 
-    <div class="scenario-card">
-      <div style="color: var(--c-orange); font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">Patient Case</div>
-      <div class="scenario-text" id="scenario-text">Loading...</div>
-    </div>
+    <div class="patient-label">Patient Case</div>
+    <div class="scenario-text" id="scenario-text">Loading...</div>
     
-    <div id="options-container" style="width: 100%;">
-      </div>
+    <button class="opt-btn" id="opt-0">A) Option</button>
+    <button class="opt-btn" id="opt-1">B) Option</button>
+    <button class="opt-btn" id="opt-2">C) Option</button>
+    <button class="opt-btn" id="opt-3">D) Option</button>
+
+    <div style="position: absolute; bottom: 3%; left: 0; width: 100%; text-align: center; z-index: 10;">
+      <img src="assets/RX Challenge/brought to you by centrum.png" alt="Sponsor" style="max-width: 130px; margin: 0 auto; display: block;">
+    </div>
   </div>
 
   <div class="custom-msg-dialog" id="feedback-dialog">
     <div class="custom-msg-box">
-      <div style="font-size: 3rem; margin-bottom: 10px;" id="feedback-icon">✅</div>
-      <div class="auth-title" style="font-size: 1.6rem; margin-bottom: 8px;" id="feedback-title">Correct!</div>
-      <p id="feedback-text" style="color: var(--muted); font-size: 1rem; line-height: 1.5; margin-bottom: 20px;">Explanation goes here.</p>
-      <button class="btn-centrum" onclick="nextCase()">Continue →</button>
+      <div style="font-size: 4rem; margin-bottom: 10px; line-height: 1;" id="feedback-icon">✅</div>
+      <div class="auth-title" style="font-size: 2rem; margin-bottom: 15px;" id="feedback-title">Correct!</div>
+      <p id="feedback-text" style="color: #cbd5e1; font-size: 1.05rem; line-height: 1.5; margin-bottom: 30px;">Explanation goes here.</p>
+      
+      <img src="assets/RX Challenge/nextButton.png" alt="Next" class="img-btn" style="max-width: 200px; display: block; margin: 0 auto;" onclick="nextCase()">
     </div>
   </div>
 
-  <div class="game-container game-container-narrow" id="screen-result" style="display: none; text-align: center;">
-    <img src="assets/Centrum_logo.png" alt="Centrum" style="max-width: 200px; margin-bottom: 20px;">
-    <div class="auth-title">Challenge Over</div>
-    <div style="font-size: 3.5rem; font-weight:900; color: var(--c-green); margin-bottom: 30px;" id="result-score">0 pts</div>
+  <div class="game-container" id="screen-result" style="display: none; text-align: center; padding-top: 10vh;">
+    <div style="font-size: 5rem; margin-bottom: 10px; line-height: 1;">🏆</div>
+    <div class="auth-title" style="margin-bottom: 10px;">Challenge Over</div>
+    <div style="font-size: 4.5rem; font-weight:900; color: var(--c-green); margin-bottom: 40px; text-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);" id="result-score">0 pts</div>
     <div id="result-actions" style="width: 100%;"></div>
+    
+    <div style="margin-top: auto; padding-bottom: 20px;">
+      <img src="assets/RX Challenge/brought to you by centrum.png" alt="Sponsor" style="max-width: 160px; margin: 0 auto; display: block;">
+    </div>
   </div>
 
   <script>
@@ -341,7 +326,6 @@
       else startGame('challenge');
     }
 
-    // Shuffle helper function
     function shuffleArray(array) {
       let currentIndex = array.length, randomIndex;
       while (currentIndex !== 0) {
@@ -362,7 +346,6 @@
       document.getElementById('screen-mode').style.display = 'none';
       document.getElementById('screen-game').style.display = 'flex';
 
-      // Randomize the 6 cases
       gameCases = shuffleArray([...allCases]);
       currentCaseIndex = 0;
       score = 0;
@@ -371,27 +354,24 @@
     }
 
     function loadCase() {
-      document.getElementById('case-counter').textContent = `Case ${currentCaseIndex + 1} / ${gameCases.length}`;
+      document.getElementById('case-counter').textContent = `CASE ${currentCaseIndex + 1} / ${gameCases.length}`;
       document.getElementById('hud-score').textContent = `${score} pts`;
 
       const currentCase = gameCases[currentCaseIndex];
       document.getElementById('scenario-text').textContent = currentCase.scenario;
 
-      const optionsContainer = document.getElementById('options-container');
-      optionsContainer.innerHTML = '';
-
-      currentCase.options.forEach((optText, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'rx-option';
-        btn.textContent = `${['A', 'B', 'C', 'D'][index]}) ${optText}`;
-        btn.onclick = () => checkAnswer(index, btn);
-        optionsContainer.appendChild(btn);
-      });
+      for(let i=0; i<4; i++) {
+        let btn = document.getElementById('opt-'+i);
+        btn.disabled = false; // Re-enable
+        btn.textContent = `${['A', 'B', 'C', 'D'][i]}) ${currentCase.options[i]}`;
+        btn.onclick = () => checkAnswer(i, btn);
+      }
     }
 
     function checkAnswer(selectedIndex, btn) {
-      const options = document.querySelectorAll('.rx-option');
-      options.forEach(b => b.disabled = true); 
+      for(let i=0; i<4; i++) {
+        document.getElementById('opt-'+i).disabled = true;
+      }
 
       const currentCase = gameCases[currentCaseIndex];
       const isCorrect = (selectedIndex === currentCase.correctIndex);
@@ -400,7 +380,6 @@
       const iconEl = document.getElementById('feedback-icon');
 
       if (isCorrect) {
-        btn.classList.add('correct');
         score += 20;
         document.getElementById('hud-score').textContent = `${score} pts`;
         
@@ -408,17 +387,13 @@
         titleEl.style.color = "var(--c-green)";
         iconEl.textContent = "✅";
       } else {
-        btn.classList.add('wrong');
-        options[currentCase.correctIndex].classList.add('correct'); // highlight correct answer
-        
         titleEl.textContent = "Incorrect";
-        titleEl.style.color = "var(--c-pink)";
+        titleEl.style.color = "var(--c-red)";
         iconEl.textContent = "❌";
       }
 
-      // Show dialog with explanation
       document.getElementById('feedback-text').textContent = currentCase.explanation;
-      document.getElementById('feedback-dialog').classList.add('show');
+      setTimeout(() => document.getElementById('feedback-dialog').classList.add('show'), 500);
     }
 
     function nextCase() {
@@ -426,7 +401,7 @@
       currentCaseIndex++;
 
       if (currentCaseIndex < gameCases.length) {
-        setTimeout(loadCase, 300); // Slight delay for smooth transition
+        setTimeout(loadCase, 300); 
       } else {
         setTimeout(finishGame, 300);
       }
@@ -440,14 +415,14 @@
       if (score > 0) launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
+      const primaryBtnHTML = `<img src="assets/RX Challenge/collectPointButton.png" alt="Collect Points" class="img-btn" style="max-width: 320px; margin: 0 auto 15px; display: block;" onclick="processPoints()">`;
+
       if (currentMode === 'challenge') {
-          actionsDiv.innerHTML = `
-            <button class="btn-centrum" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>
-          `;
+          actionsDiv.innerHTML = primaryBtnHTML;
       } else {
           actionsDiv.innerHTML = `
-            <button class="btn-centrum" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>
-            <button class="btn-outline" style="margin-top:20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">Play for fun (Exit)</button>
+            ${primaryBtnHTML}
+            <button class="btn-secondary" style="border-color: var(--c-light); color: var(--c-light);" onclick="goBack()">Play for fun (Exit)</button>
           `;
       }
     }
@@ -456,7 +431,7 @@
       if (score === 0 && currentMode === 'test') { goBack(); return; }
 
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600;'>Processing...</p>";
+      actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600; color: white;'>Processing...</p>";
 
       if (uid) {
         window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
@@ -466,13 +441,11 @@
         qr.addData(payload);
         qr.make();
         actionsDiv.innerHTML = `
-          <div style="background:var(--surface2); padding:25px; border-radius:24px; border:2px solid var(--border); display:inline-block; margin-bottom:20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
-            <div style="background:white; padding:15px; border-radius:16px; border: 1px solid var(--border);">
-                ${qr.createImgTag(6)}
-            </div>
+          <div style="background:white; padding:15px; display:inline-block; border-radius:16px; margin-bottom:15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
+            ${qr.createImgTag(5)}
           </div>
-          <p style="color:var(--muted); font-size:1.1rem; margin-bottom: 30px; font-weight: 500;">Scan this QR with your App to collect points.</p>
-          <button class="btn-outline" style="max-width: 300px; margin: 0 auto;" onclick="location.reload()">Start New Game</button>
+          <p style="color:#d1d5db; font-size:1rem; margin-bottom: 25px;">Scan this QR with your App to collect points.</p>
+          <img src="assets/RX Challenge/startNewGameButton.png" alt="Start New Game" class="img-btn" style="max-width: 250px; margin: 0 auto; display: block;" onclick="location.reload()">
         `;
       }
     }
@@ -492,7 +465,7 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       const pieces = [];
-      const colors = ["#E91E63", "#FF9800", "#FFC107", "#4CAF50", "#2196F3", "#9C27B0"]; 
+      const colors = ["#4ade80", "#38BDF8", "#FFFFFF", "#E11D48", "#facc15"]; 
       for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 6 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 8 });
       const end = Date.now() + duration;
       (function frame() {
@@ -507,6 +480,6 @@
       })();
     }
   </script>
-<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>
