@@ -124,38 +124,44 @@
       display: block;
     }
 
-    /* --- Game Screen --- */
+    /* --- Game Screen (Fullscreen Background) --- */
     #game-screen {
-      background: #000;
-      overflow: hidden;
+      background: url('assets/Perfect Shelf/shelfBg.png') no-repeat center center;
+      background-size: cover; 
     }
 
-    #shelf-img {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      min-width: 100%;
-      min-height: 100%;
-      width: auto;
-      height: auto;
-      object-fit: cover;
+    /* Game Area to hold relative coordinates for shelves */
+    .game-area {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      max-width: 1600px; 
     }
 
-    /* Overlay sits exactly on top of the rendered shelf image - sized by JS */
-    #shelf-overlay {
+    /* --- Top Shelf (Centrum row) --- */
+    .shelf-row-top {
       position: absolute;
-      pointer-events: none;
-    }
-
-    .shelf-row {
-      position: absolute;
+      top: 24%;
+      left: 23%;
+      width: 54%;
+      height: 23%; 
       display: flex;
       justify-content: space-between;
-      pointer-events: all;
+    }
+
+    /* --- Bottom Shelf (Panadol row) --- */
+    .shelf-row-bottom {
+      position: absolute;
+      top: 49%; 
+      left: 23%;
+      width: 54%;
+      height: 23%;
+      display: flex;
+      justify-content: space-between;
     }
 
     .drop-zone {
+      width: 30%;
       height: 100%;
       border: 2px solid transparent;
       border-radius: 12px;
@@ -167,20 +173,28 @@
     }
 
     .drop-zone.highlight {
-      background: rgba(255, 255, 255, 0.18);
-      border-color: rgba(255,255,255,0.3);
+      background: rgba(255, 255, 255, 0.15); 
     }
 
+    /* Starting items frame - Matches the background boxes */
     .items-container {
       position: absolute;
+      bottom: 0%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
       display: flex;
       justify-content: center;
       gap: 1%;
+      height: 18%;
+      background: transparent;
+      border: none;
+      padding: 1% 0;
       align-items: center;
-      pointer-events: all;
     }
 
     .start-slot {
+      width: 13.5%;
       height: 100%;
       display: flex;
       align-items: center;
@@ -190,11 +204,12 @@
       overflow: hidden;
     }
 
+    /* Base styles for the packs */
     .draggable-item {
       width: auto;
-      height: 88%;
+      height: 90%;
       max-width: 100%;
-      max-height: 88%;
+      max-height: 100%;
       object-fit: contain;
       cursor: grab;
       touch-action: none;
@@ -204,24 +219,28 @@
       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
     }
 
+    /* Dim the original item in the box once it is successfully placed */
     .draggable-item.placed {
-      opacity: 0.35;
+      opacity: 0.4;
       cursor: default;
     }
 
+    /* The cloned pack that follows your mouse/finger */
     .is-dragging {
       position: fixed !important;
       z-index: 2000 !important;
-      pointer-events: none;
-      transform: scale(1.08);
+      pointer-events: none; /* Prevents clone from interfering with drop zone calculation */
+      transform: scale(1.1);
       filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
     }
 
+    /* Styles applied to the pack ONLY when it is successfully sitting on the shelf */
     .drop-zone .draggable-item {
       width: auto;
-      height: 82%;
-      max-width: 78%;
-      max-height: 82%;
+      height: 85%;
+      max-width: 80%;
+      max-height: 85%;
+      margin-bottom: 0;
       cursor: default;
     }
 
@@ -319,25 +338,21 @@
   </div>
 
   <div id="game-screen" class="screen">
-    <!-- Shelf background as real <img> so JS can measure exact rendered bounds -->
-    <img id="shelf-img" src="assets/Perfect Shelf/shelfBg.png" alt="" draggable="false">
-
-    <!-- All interactive zones; JS positions this overlay exactly over the shelf image -->
-    <div id="shelf-overlay">
-
-      <div class="shelf-row" id="shelf-row-top">
+    <div class="game-area" id="game-area">
+      
+      <div class="shelf-row-top">
         <div class="drop-zone" data-slot="1"></div>
         <div class="drop-zone" data-slot="2"></div>
         <div class="drop-zone" data-slot="3"></div>
       </div>
 
-      <div class="shelf-row" id="shelf-row-bottom">
+      <div class="shelf-row-bottom">
         <div class="drop-zone" data-slot="4"></div>
         <div class="drop-zone" data-slot="5"></div>
         <div class="drop-zone" data-slot="6"></div>
       </div>
 
-      <div class="items-container" id="items-container">
+      <div class="items-container">
         <div class="start-slot" id="slot-1"><img src="assets/Perfect Shelf/Centrum_energy_pack.png" class="draggable-item" data-id="1" alt="Centrum Energy"></div>
         <div class="start-slot" id="slot-2"><img src="assets/Perfect Shelf/CENTRUM_MEN.png" class="draggable-item" data-id="2" alt="Centrum Men"></div>
         <div class="start-slot" id="slot-3"><img src="assets/Perfect Shelf/CENTRUM_WOMEN.png" class="draggable-item" data-id="3" alt="Centrum Women"></div>
@@ -378,34 +393,6 @@
       "6": { name: "Cold & Flu Day", claim: "Non-drowsy relief for cold & flu", image: "assets/Perfect Shelf/Cold & Flu Day Pack.png" }
     };
 
-    // ─── Shelf image coordinates (as % of the image's intrinsic size 1920x1080) ───
-    // Measure once against the source image; JS scales to any screen size.
-    const SHELF = {
-      // Top shelf row (Centrum)
-      topRow: {
-        left:   0.295,   // left edge of first slot
-        top:    0.215,   // top edge of row
-        width:  0.415,   // total width spanning all 3 slots
-        height: 0.26,    // height of row
-        slotWidthFrac: 0.305  // each slot is ~30.5% of row width; gaps fill the rest
-      },
-      // Bottom shelf row (Panadol)
-      bottomRow: {
-        left:   0.295,
-        top:    0.46,
-        width:  0.415,
-        height: 0.26,
-        slotWidthFrac: 0.305
-      },
-      // Bottom tray (the 6 white boxes)
-      tray: {
-        left:   0.195,
-        top:    0.815,
-        width:  0.615,
-        height: 0.175
-      }
-    };
-
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
@@ -415,89 +402,15 @@
       document.getElementById('brand-logos').style.opacity = '0';
       setTimeout(() => document.getElementById('brand-logos').style.display = 'none', 300);
       showScreen('game-screen');
-      // Wait for img to render then layout
-      const img = document.getElementById('shelf-img');
-      if (img.complete) {
-        layoutShelf();
-      } else {
-        img.onload = layoutShelf;
-      }
-      window.addEventListener('resize', layoutShelf);
       initDragAndDrop();
     }
 
-    function getImgRenderedBounds() {
-      // Returns the actual rendered rect of the shelf image (cover behaviour)
-      const img = document.getElementById('shelf-img');
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const iw = img.naturalWidth  || 1920;
-      const ih = img.naturalHeight || 1080;
-      const scale = Math.max(vw / iw, vh / ih);
-      const rw = iw * scale;
-      const rh = ih * scale;
-      const rx = (vw - rw) / 2;
-      const ry = (vh - rh) / 2;
-      return { x: rx, y: ry, w: rw, h: rh };
-    }
-
-    function layoutShelf() {
-      const b = getImgRenderedBounds();
-      const overlay = document.getElementById('shelf-overlay');
-
-      // Size the overlay to exactly match the rendered image
-      overlay.style.left   = b.x + 'px';
-      overlay.style.top    = b.y + 'px';
-      overlay.style.width  = b.w + 'px';
-      overlay.style.height = b.h + 'px';
-
-      positionRow('shelf-row-top',    SHELF.topRow,    b);
-      positionRow('shelf-row-bottom', SHELF.bottomRow, b);
-      positionTray(b);
-    }
-
-    function positionRow(id, cfg, b) {
-      const row = document.getElementById(id);
-      row.style.left   = (cfg.left   * b.w) + 'px';
-      row.style.top    = (cfg.top    * b.h) + 'px';
-      row.style.width  = (cfg.width  * b.w) + 'px';
-      row.style.height = (cfg.height * b.h) + 'px';
-
-      const slots = row.querySelectorAll('.drop-zone');
-      const slotW = cfg.slotWidthFrac * cfg.width * b.w;
-      const gap   = ((1 - 3 * cfg.slotWidthFrac) / 2) * cfg.width * b.w;
-
-      slots.forEach((slot, i) => {
-        slot.style.width    = slotW + 'px';
-        slot.style.position = 'absolute';
-        slot.style.left     = (i * (slotW + gap)) + 'px';
-        slot.style.top      = '0';
-        slot.style.height   = '100%';
-      });
-    }
-
-    function positionTray(b) {
-      const tray = document.getElementById('items-container');
-      const cfg  = SHELF.tray;
-      tray.style.left   = (cfg.left   * b.w) + 'px';
-      tray.style.top    = (cfg.top    * b.h) + 'px';
-      tray.style.width  = (cfg.width  * b.w) + 'px';
-      tray.style.height = (cfg.height * b.h) + 'px';
-
-      const slots = tray.querySelectorAll('.start-slot');
-      const slotW = (cfg.width * b.w - 5 * 0.01 * cfg.width * b.w) / 6;
-      slots.forEach(slot => {
-        slot.style.width = slotW + 'px';
-      });
-    }
-
-    // ─── Dialog ────────────────────────────────────────────────────────────────
     function showDialog(type, itemId) {
       const overlay = document.getElementById('dialog-overlay');
-      const title   = document.getElementById('dialog-title');
-      const claim   = document.getElementById('dialog-claim');
-      const img     = document.getElementById('dialog-img');
-      const desc    = document.getElementById('dialog-desc');
+      const title = document.getElementById('dialog-title');
+      const claim = document.getElementById('dialog-claim');
+      const img = document.getElementById('dialog-img');
+      const desc = document.getElementById('dialog-desc');
 
       if (type === 'correct') {
         const data = productsData[itemId];
@@ -517,6 +430,7 @@
         claim.style.display = "none";
         desc.innerText = "This is the wrong place, try again.";
       }
+
       overlay.classList.add('show');
     }
 
@@ -527,9 +441,8 @@
       }
     }
 
-    // ─── Drag & Drop ───────────────────────────────────────────────────────────
     let draggedItem = null;
-    let offsetX = 0, offsetY = 0;
+    let offsetX = 0; let offsetY = 0;
     let currentDropZone = null;
     let placedItemsCount = 0;
     const totalItems = 6;
@@ -545,47 +458,60 @@
 
     function startDrag(e) {
       const original = e.target;
+      
+      // If the item has already been successfully placed, ignore drag
       if (original.dataset.placed === "true") return;
 
+      // Capture pointer so we keep receiving events even outside the element
       original.setPointerCapture(e.pointerId);
-      e.preventDefault();
 
       const rect = original.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
 
+      // Create a clone of the item to drag (original stays in the white box)
       draggedItem = original.cloneNode(true);
       draggedItem.classList.add('is-dragging');
-      draggedItem.style.width  = rect.width  + 'px';
+      
+      // Match the exact physical size of the original image while dragging
+      draggedItem.style.width = rect.width + 'px';
       draggedItem.style.height = rect.height + 'px';
       draggedItem.style.objectFit = 'contain';
+      
+      // Keep a reference back to the original item so we can update it later
       draggedItem.originalSource = original;
 
       document.body.appendChild(draggedItem);
       moveItem(e.clientX, e.clientY);
+
+      e.preventDefault();
     }
 
     function drag(e) {
       if (!draggedItem) return;
       e.preventDefault();
-      moveItem(e.clientX, e.clientY);
-      checkDropZones(e.clientX, e.clientY);
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      moveItem(clientX, clientY);
+      checkDropZones(clientX, clientY);
     }
 
     function moveItem(clientX, clientY) {
       if (!draggedItem) return;
       draggedItem.style.left = (clientX - offsetX) + 'px';
-      draggedItem.style.top  = (clientY - offsetY) + 'px';
+      draggedItem.style.top = (clientY - offsetY) + 'px';
     }
 
     function checkDropZones(mouseX, mouseY) {
       const dropZones = document.querySelectorAll('.drop-zone');
       let foundZone = null;
+
       dropZones.forEach(zone => {
         const rect = zone.getBoundingClientRect();
-        if (mouseX >= rect.left && mouseX <= rect.right &&
-            mouseY >= rect.top  && mouseY <= rect.bottom) {
-          if (zone.children.length === 0) {
+        if (mouseX >= rect.left && mouseX <= rect.right && 
+            mouseY >= rect.top && mouseY <= rect.bottom) {
+          
+          if(zone.children.length === 0) {
             zone.classList.add('highlight');
             foundZone = zone;
           }
@@ -602,25 +528,35 @@
       if (currentDropZone) {
         const itemId = draggedItem.dataset.id;
         const slotId = currentDropZone.dataset.slot;
+
         currentDropZone.classList.remove('highlight');
 
         if (itemId === slotId) {
+          // Correct placement
+          
+          // Clear dragging styles so CSS takes over for the shelf sizing/positioning
           draggedItem.classList.remove('is-dragging');
-          draggedItem.style.width  = '';
+          draggedItem.style.width = ''; 
           draggedItem.style.height = '';
-          draggedItem.style.left   = '';
-          draggedItem.style.top    = '';
+          draggedItem.style.left = '';
+          draggedItem.style.top = '';
+          
           currentDropZone.appendChild(draggedItem);
-
+          
+          // Mark the original item in the bottom box as placed
           draggedItem.originalSource.dataset.placed = "true";
-          draggedItem.originalSource.classList.add('placed');
+          draggedItem.originalSource.classList.add('placed'); // dims it in the container
+          
           placedItemsCount++;
           showDialog('correct', itemId);
         } else {
+          // Wrong placement - destroy the clone
           document.body.removeChild(draggedItem);
           showDialog('wrong', null);
         }
+
       } else {
+        // Dropped nowhere - destroy the clone
         document.body.removeChild(draggedItem);
       }
 
