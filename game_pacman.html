@@ -5,13 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Panadol Maze</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    body { overflow: hidden; touch-action: none; background: var(--bg); }
+    :root {
+      --text: #ffffff;
+      --muted: #e2e8f0;
+      --green: #4ade80;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body { 
+      overflow: hidden; 
+      touch-action: none; 
+      background: #06401f; 
+      color: var(--text);
+    }
     
-    /* Centered, Enlarged, and Responsive Container */
     .game-container { 
       width: 100%; 
       max-width: 100%; 
@@ -21,95 +37,152 @@
       display: flex; 
       flex-direction: column; 
       justify-content: center; 
-      align-items: center; /* Centers everything horizontally */
+      align-items: center; 
       position: relative; 
     }
     
-    .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; width: 100%; max-width: 400px; }
-    .mode-card:hover { border-color: var(--green); }
-    
-    #screen-game { width: 100%; max-width: 800px; justify-content: flex-start; padding-top: 20px; }
+    .auth-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
 
-    .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--surface2); padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border); z-index: 10; width: 100%; }
-    .hud-val { font-size: 1.5rem; font-weight: 800; color: var(--green); }
+    .mode-card { 
+      background: rgba(255, 255, 255, 0.1); 
+      border: 2px solid rgba(255, 255, 255, 0.2); 
+      backdrop-filter: blur(10px);
+      border-radius: 16px; 
+      padding: 20px; 
+      margin-bottom: 16px; 
+      text-align: center; 
+      cursor: pointer; 
+      transition: 0.2s; 
+      width: 100%; 
+      max-width: 400px; 
+    }
+    .mode-card:hover { border-color: var(--green); background: rgba(255, 255, 255, 0.2); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: #ffffff;
+    }
     
-    /* Enlarged Canvas Wrapper */
+    #screen-game { width: 100%; max-width: 1000px; justify-content: flex-start; padding-top: 20px; }
+
+    .hud { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 15px; 
+      padding: 10px 20px; 
+      z-index: 10; 
+      width: 100%; 
+      max-width: 900px;
+    }
+    .hud-text { font-size: 1.8rem; font-weight: 700; color: #ffffff; }
+    
     #game-canvas-wrap { 
         position: relative; 
         width: 100%; 
-        aspect-ratio: 19/11; /* Changed to match the wider layout */
-        background: #000; 
-        border: 4px solid #0055ff; /* Classic blue border */
+        max-width: 900px;
+        aspect-ratio: 21 / 11; 
         border-radius: 12px; 
         overflow: hidden; 
-        box-shadow: 0 8px 30px rgba(0,0,0,0.6); 
+        box-shadow: 0 15px 40px rgba(0,0,0,0.5); 
     }
     
     #maze-canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
 
-    /* DOM Sprites for perfect GIF animation */
     .sprite {
         position: absolute;
         z-index: 10;
-        display: none; /* Hidden until game starts */
+        display: none; 
         object-fit: contain;
     }
+
+    .image-btn {
+        max-width: 280px; 
+        width: 100%; 
+        cursor: pointer; 
+        transition: transform 0.2s;
+    }
+    .image-btn:hover { transform: scale(1.03); }
+    .image-btn:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
 
-<div class="game-container" id="screen-start" style="text-align: center;">
-    <div style="font-size: 5rem; margin-bottom: 20px;">🟡</div>
-    <div class="auth-title">Panadol Maze</div>
-    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5; max-width: 400px;">
-      Navigate the maze, collect all the Panadol packs for points, and avoid the pain ghosts!<br>
-      <strong>Swipe the screen</strong> or use <strong>Arrow Keys</strong> to move.
-    </p>
-    <button class="btn-primary" style="max-width: 400px;" onclick="proceedFromStart()">Start Game</button>
-    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px; max-width: 400px;" onclick="goBack()">← Back to App</button>
+  <div class="game-container" id="screen-start" style="text-align: center;">
+    <div style="position: absolute; top: 25px; right: 30px; text-align: right; z-index: 2;">
+      <img src="assets/pacman/brought to you by.png" alt="Brought to you by" style="max-height: 120px;">
+    </div>
 
-    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;" onerror="this.style.display='none'">
+    <img src="assets/pacman/gameLogo.png" alt="Maze Logo" style="max-width: 200px; margin-bottom: 15px; margin-top: 20px;">
+    <div class="auth-title">Maze</div>
+    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.6; max-width: 450px; font-size: 1.1rem; font-weight: 400;">
+      Navigate the maze, collect all the Panadol packs<br>
+      for points, and avoid the pain ghosts!<br><br>
+      <strong>Swipe the screen or use Arrow Keys to move.</strong>
+    </p>
+
+    <img src="assets/pacman/startGameButton.png" alt="Start Game" class="image-btn" onclick="proceedFromStart()">
+    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 25px; width: 300px;" onclick="goBack()">← Back to App</button>
   </div>
 
   <div class="game-container" id="screen-mode" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: center; max-width: 400px;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center;">Select Mode</div>
+    <button class="btn-secondary" style="margin-bottom: 30px; align-self: center; width: 200px;" onclick="goBack()">← Exit Game</button>
+    <div class="auth-title" style="text-align: center; margin-bottom: 30px;">Select Mode</div>
     
     <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.3rem;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
+      <h3 style="color:var(--text); font-size:1.4rem; font-weight: 800;">Test Mode</h3>
+      <p style="color:var(--muted); font-size:0.95rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
     </div>
     
     <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.85rem; margin-top:8px;">Compete for real points.</p>
+      <h3 style="color:var(--green); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
+      <p style="color:var(--muted); font-size:0.95rem; margin-top:8px;">Compete for real points.</p>
     </div>
   </div>
 
   <div class="game-container" id="screen-game" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 10px; align-self: center; width: 100%;" onclick="goBack()">← Exit</button>
-    
     <div class="hud">
-      <div><div style="font-size:0.7rem; color:var(--muted);">SCORE</div><div class="hud-val" id="hud-score">0</div></div>
-      <div><div style="font-size:0.7rem; color:var(--muted);">TIME</div><div class="hud-val" id="hud-timer" style="color:var(--text);">60s</div></div>
+      <div class="hud-text">Score <span id="hud-score">0</span></div>
+      <img src="assets/pacman/pandol and centrum Logos.png" alt="Panadol & Centrum" style="height: 45px;">
+      <div class="hud-text"><span id="hud-timer">60</span>s</div>
     </div>
 
     <div id="game-canvas-wrap">
       <canvas id="maze-canvas"></canvas>
-      <img id="player-sprite" src="assets/pac_man.gif" class="sprite" alt="PacMan">
-      <img id="ghost-sprite-0" src="assets/ghost-pacman.gif" class="sprite" alt="Ghost">
-      <img id="ghost-sprite-1" src="assets/ghost-pacman.gif" class="sprite" alt="Ghost">
+      <img id="player-sprite" src="assets/pacman/pacmanAsset.png" class="sprite" alt="PacMan">
+      <img id="ghost-sprite-0" src="assets/pacman/ghost1.png" class="sprite" alt="Ghost">
+      <img id="ghost-sprite-1" src="assets/pacman/ghost2.png" class="sprite" alt="Ghost">
+      <img id="ghost-sprite-2" src="assets/pacman/ghost3.png" class="sprite" alt="Ghost">
+      <img id="ghost-sprite-3" src="assets/pacman/ghost4.png" class="sprite" alt="Ghost">
     </div>
     
-    <p style="text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 15px;">Swipe anywhere to move!</p>
+    <div style="width: 100%; max-width: 900px; margin-top: 15px; display: flex; justify-content: flex-start; padding: 0 10px;">
+        <button class="btn-secondary" style="border: none; padding: 5px 10px;" onclick="goBack()">← Exit</button>
+    </div>
   </div>
 
   <div class="game-container" id="screen-result" style="display: none; text-align: center;">
     <div style="font-size: 5rem; margin-bottom: 10px;" id="result-icon">🏆</div>
     <div class="auth-title" id="result-title">Game Over</div>
-    <div style="font-size: 3.5rem; font-weight: 800; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">0 pts</div>
-    <div id="result-actions" style="width: 100%; max-width: 400px;"></div>
+    <div style="font-size: 3.5rem; font-weight: 800; color: var(--green); margin-bottom: 30px; line-height: 1;" id="result-score">0 pts</div>
+    <div id="result-actions" style="width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center;"></div>
   </div>
 
   <script>
@@ -120,20 +193,16 @@
     let currentMode = '';
     let score = 0, timeLeft = 60, timerId, gameLoopId;
     
-    // Variables for Win Condition
     let totalPellets = 0;
     let collectedPellets = 0;
 
-    // Load multiple image assets for the Panadol packs
     const panadolSrcs = [
-      'assets/Centrum_energy_pack.png',
-      'assets/CENTRUM_MEN.jpg',
-      'assets/CENTRUM_WOMEN.jpg',
-      'assets/Cold & Flu Day Pack.png',
-      'assets/panadol_extra.png',
-      'assets/parodontax.png',
-      'assets/SENSODYNE.png',
-      'assets/Voltaren-50gm-pack.png',
+      'assets/pacman/Centrum_energy_pack.png',
+      'assets/pacman/CENTRUM_MEN.png',
+      'assets/pacman/CENTRUM_WOMEN.png',
+      'assets/pacman/Cold & Flu Day Pack.png',
+      'assets/pacman/panadol_extra.png',
+      'assets/pacman/Panadol advance.png'
     ];
     
     const panadolImgs = panadolSrcs.map(src => {
@@ -145,26 +214,27 @@
     // --- MAP & ENGINE ---
     const cvs = document.getElementById('maze-canvas');
     const ctx = cvs.getContext('2d');
-    const cols = 19; const rows = 11; // Matches the new map exactly
-    let ts = 40; // Internal tile size
+    
+    const cols = 21; 
+    const rows = 11; 
+    let ts = 40; 
 
-    // 0 = Empty, 1 = Wall, 2 = Panadol Pellet
     const initialMap = [
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-      [1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,1],
-      [1,2,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,2,1],
-      [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-      [1,2,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,2,1],
-      [1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],
-      [1,1,1,1,2,1,1,1,0,0,0,1,1,1,2,1,1,1,1],
-      [1,0,0,1,2,1,0,1,0,0,0,1,0,1,2,1,0,0,1],
-      [1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],
-      [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,1],
+      [1,2,1,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,2,1],
+      [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+      [1,2,1,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,1,2,1],
+      [0,2,2,2,2,2,1,2,2,2,0,2,2,2,1,2,2,2,2,2,0],
+      [1,2,1,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,2,1],
+      [1,2,2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,2,2,1],
+      [1,2,1,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,2,1],
+      [1,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ];
     let map = [];
     
-    let player = { r: 9, c: 9, dr: 0, dc: 0, nextDr: 0, nextDc: 0, x: 0, y: 0 };
+    let player = { r: 7, c: 10, dr: 0, dc: 0, nextDr: 0, nextDc: 0, x: 0, y: 0 };
     let ghosts = [];
 
     window.onload = () => { if (!uid) document.getElementById('btn-exit-start').style.display = 'none'; };
@@ -187,22 +257,24 @@
       
       initCanvas();
       
-      // Show DOM Sprites
       document.getElementById('player-sprite').style.display = 'block';
-      document.getElementById('ghost-sprite-0').style.display = 'block';
-      document.getElementById('ghost-sprite-1').style.display = 'block';
+      for (let i = 0; i < 4; i++) {
+        document.getElementById('ghost-sprite-' + i).style.display = 'block';
+      }
 
-      // Reset State
       score = 0; 
       timeLeft = 60; 
       map = JSON.parse(JSON.stringify(initialMap));
-      player = { r: 9, c: 9, dr: 0, dc: 0, nextDr: 0, nextDc: 0, x: 9*ts, y: 9*ts };
+      
+      player = { r: 7, c: 10, dr: 0, dc: 0, nextDr: 0, nextDc: 0, x: 10*ts, y: 7*ts };
+      
       ghosts = [
-        { r: 7, c: 8, dr: -1, dc: 0, x: 8*ts, y: 7*ts, speed: 0.05 },
-        { r: 7, c: 10, dr: -1, dc: 0, x: 10*ts, y: 7*ts, speed: 0.05 }
+        { r: 5, c: 9, dr: -1, dc: 0, x: 9*ts, y: 5*ts, speed: 0.04 },
+        { r: 5, c: 10, dr: -1, dc: 0, x: 10*ts, y: 5*ts, speed: 0.045 },
+        { r: 5, c: 11, dr: -1, dc: 0, x: 11*ts, y: 5*ts, speed: 0.05 },
+        { r: 4, c: 10, dr: -1, dc: 0, x: 10*ts, y: 4*ts, speed: 0.055 }
       ];
       
-      // Calculate Total Pellets for Win Condition
       totalPellets = 0;
       collectedPellets = 0;
       for (let r = 0; r < rows; r++) {
@@ -212,19 +284,18 @@
       }
       
       document.getElementById('hud-score').textContent = score;
+      document.getElementById('hud-timer').textContent = timeLeft;
       clearInterval(timerId); cancelAnimationFrame(gameLoopId);
       
       timerId = setInterval(() => {
-        timeLeft--; document.getElementById('hud-timer').textContent = timeLeft + 's';
+        timeLeft--; document.getElementById('hud-timer').textContent = timeLeft;
         if (timeLeft <= 0) endGame(true, false);
       }, 1000);
 
       gameLoopId = requestAnimationFrame(loop);
     }
 
-    // --- CONTROLS (Swipe & Keyboard) ---
-    
-    // Stop screen from scrolling when user swipes on mobile
+    // --- CONTROLS ---
     document.addEventListener('touchmove', e => {
       if (document.getElementById('screen-game').style.display === 'flex') {
         e.preventDefault(); 
@@ -246,9 +317,9 @@
       let dx = e.changedTouches[0].screenX - touchStartX;
       let dy = e.changedTouches[0].screenY - touchStartY;
       if (Math.abs(dx) > Math.abs(dy)) {
-        if (Math.abs(dx) > 30) setDir(dx > 0 ? 1 : -1, 0); // Left/Right
+        if (Math.abs(dx) > 30) setDir(dx > 0 ? 1 : -1, 0); 
       } else {
-        if (Math.abs(dy) > 30) setDir(0, dy > 0 ? 1 : -1); // Up/Down
+        if (Math.abs(dy) > 30) setDir(0, dy > 0 ? 1 : -1); 
       }
     }, {passive: true});
 
@@ -261,66 +332,98 @@
     }
 
     function update() {
-      // Move Player Smoothly
       let targetX = player.c * ts; 
       let targetY = player.r * ts;
       
+      if (Math.abs(player.x - targetX) > ts || Math.abs(player.y - targetY) > ts) {
+        player.x = targetX; player.y = targetY;
+      }
+
       let dist = Math.abs(player.x - targetX) + Math.abs(player.y - targetY);
       
       if (dist < 2) { 
         player.x = targetX; 
         player.y = targetY;
         
-        if (map[player.r + player.nextDr] && map[player.r + player.nextDr][player.c + player.nextDc] !== 1) {
+        let nextR = player.r + player.nextDr;
+        let nextC = player.c + player.nextDc;
+        
+        if (nextC < 0) nextC = cols - 1;
+        if (nextC >= cols) nextC = 0;
+
+        if (map[nextR] && map[nextR][nextC] !== 1) {
           player.dr = player.nextDr; 
           player.dc = player.nextDc;
         }
         
-        if (map[player.r + player.dr] && map[player.r + player.dr][player.c + player.dc] === 1) {
+        let stepR = player.r + player.dr;
+        let stepC = player.c + player.dc;
+        
+        if (stepC < 0) stepC = cols - 1;
+        if (stepC >= cols) stepC = 0;
+
+        if (map[stepR] && map[stepR][stepC] === 1) {
+          // Stop moving completely if the next tile is a wall
           player.dr = 0; 
           player.dc = 0;
         } else {
-          player.c += player.dc; 
-          player.r += player.dr;
+          player.c = stepC; 
+          player.r = stepR;
         }
         
-        // Eat Panadol Pellet
         if (map[player.r] && map[player.r][player.c] === 2) {
           map[player.r][player.c] = 0; 
           score += 10;
           collectedPellets++;
           document.getElementById('hud-score').textContent = score;
           
-          // Win Condition Check
           if (collectedPellets >= totalPellets) {
-             endGame(true, true); // true = survived, true = cleared board
+             endGame(true, true); 
           }
         }
-      } else {
-        player.x += player.dc * ts * 0.1; 
-        player.y += player.dr * ts * 0.1;
-      }
+      } 
+      
+      // Move visually - this will now safely be 0 if blocked by a wall
+      player.x += player.dc * ts * 0.1; 
+      player.y += player.dr * ts * 0.1;
 
-      // Move Ghosts
+      // Ghosts Update
       ghosts.forEach(g => {
         let gtx = g.c * ts; let gty = g.r * ts;
+        
+        if (Math.abs(g.x - gtx) > ts || Math.abs(g.y - gty) > ts) {
+            g.x = gtx; g.y = gty;
+        }
+
         let gdist = Math.abs(g.x - gtx) + Math.abs(g.y - gty);
         if (gdist < 2) {
           g.x = gtx; g.y = gty;
           let possibleMoves = [];
+          const dirs = [{dr:-1, dc:0}, {dr:1, dc:0}, {dr:0, dc:-1}, {dr:0, dc:1}];
           
-          if (map[g.r-1] && map[g.r-1][g.c] !== 1 && g.dr !== 1) possibleMoves.push({dr:-1, dc:0});
-          if (map[g.r+1] && map[g.r+1][g.c] !== 1 && g.dr !== -1) possibleMoves.push({dr:1, dc:0});
-          if (map[g.r] && map[g.r][g.c-1] !== 1 && g.dc !== 1) possibleMoves.push({dr:0, dc:-1});
-          if (map[g.r] && map[g.r][g.c+1] !== 1 && g.dc !== -1) possibleMoves.push({dr:0, dc:1});
-          
+          dirs.forEach(d => {
+              let nr = g.r + d.dr;
+              let nc = g.c + d.dc;
+              if (nc < 0) nc = cols - 1;
+              if (nc >= cols) nc = 0;
+              
+              let isReversing = (d.dr === -g.dr && d.dr !== 0) || (d.dc === -g.dc && d.dc !== 0);
+              if (!isReversing && map[nr] && map[nr][nc] !== 1) {
+                  possibleMoves.push(d);
+              }
+          });
+
           if(possibleMoves.length > 0) {
             let move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
             g.dr = move.dr; g.dc = move.dc;
           } else { 
             g.dr *= -1; g.dc *= -1; 
           } 
-          g.c += g.dc; g.r += g.dr;
+          
+          g.c += g.dc; 
+          if (g.c < 0) g.c = cols - 1;
+          if (g.c >= cols) g.c = 0;
+          g.r += g.dr;
         } else {
           g.x += g.dc * ts * g.speed; g.y += g.dr * ts * g.speed;
         }
@@ -332,22 +435,51 @@
     }
 
     function draw() {
-      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cvs.width, cvs.height);
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+      
+      ctx.fillStyle = '#CBE8F6';
+      ctx.fillRect(0, 0, cvs.width, cvs.height);
+      
+      ctx.strokeStyle = '#A9D6E5';
+      ctx.lineWidth = 1;
+      for(let i=0; i<=cols; i++) { ctx.beginPath(); ctx.moveTo(i*ts, 0); ctx.lineTo(i*ts, cvs.height); ctx.stroke(); }
+      for(let i=0; i<=rows; i++) { ctx.beginPath(); ctx.moveTo(0, i*ts); ctx.lineTo(cvs.width, i*ts); ctx.stroke(); }
+      
       for(let r=0; r<rows; r++) {
         for(let c=0; c<cols; c++) {
-          if(map[r][c] === 1) { 
-            ctx.fillStyle = '#000';
-            ctx.fillRect(c*ts, r*ts, ts, ts);
-            ctx.strokeStyle = '#0055ff'; 
+          if (map[r][c] === 1) { 
+            let x = c*ts; 
+            let y = r*ts;
+            let m = 3; 
+            
+            let x1 = x + m; let y1 = y + m;
+            let w = ts - 2*m; let h = ts - 2*m;
+            
+            if (r > 0 && map[r-1][c] === 1) { y1 -= m; h += m; }
+            if (r < rows-1 && map[r+1][c] === 1) { h += m; }
+            if (c > 0 && map[r][c-1] === 1) { x1 -= m; w += m; }
+            if (c < cols-1 && map[r][c+1] === 1) { w += m; }
+
+            ctx.fillStyle = '#1A3673';
+            ctx.beginPath();
+            ctx.roundRect(x1, y1+4, w, h, 6);
+            ctx.fill();
+
+            ctx.fillStyle = '#2651A6';
+            ctx.beginPath();
+            ctx.roundRect(x1, y1, w, h, 6);
+            ctx.fill();
+
+            ctx.strokeStyle = '#43E8D8';
             ctx.lineWidth = 2;
-            ctx.strokeRect(c*ts, r*ts, ts, ts);
-          } else if (map[r][c] === 2) { 
+            ctx.stroke();
+
+          } else if (map[r][c] === 2) {
             const imgIdx = (r * cols + c) % panadolImgs.length;
             const imgToDraw = panadolImgs[imgIdx];
             
             if (imgToDraw.complete && imgToDraw.naturalWidth !== 0) {
-              // Increased size (ts*0.9) and reduced padding (ts*0.05) to make images more visible
-              ctx.drawImage(imgToDraw, c*ts + ts*0.05, r*ts + ts*0.05, ts*0.9, ts*0.9);
+              ctx.drawImage(imgToDraw, c*ts + ts*0.1, r*ts + ts*0.1, ts*0.8, ts*0.8);
             } else {
               ctx.fillStyle = '#fff'; 
               ctx.beginPath(); 
@@ -361,25 +493,26 @@
       const cvsW = cols * ts;
       const cvsH = rows * ts;
 
-      const pSprite = document.getElementById('player-sprite');
-      pSprite.style.left = (player.x / cvsW * 100) + '%';
-      pSprite.style.top = (player.y / cvsH * 100) + '%';
-      pSprite.style.width = (ts / cvsW * 100) + '%';
-      pSprite.style.height = (ts / cvsH * 100) + '%';
-
       let angle = 0;
       if (player.dc === 1) angle = 0;
       else if (player.dc === -1) angle = 180;
       else if (player.dr === 1) angle = 90;
       else if (player.dr === -1) angle = -90;
-      pSprite.style.transform = `rotate(${angle}deg)`;
+
+      const pSprite = document.getElementById('player-sprite');
+      pSprite.style.left = ((player.x + ts/2) / cvsW * 100) + '%';
+      pSprite.style.top = ((player.y + ts/2) / cvsH * 100) + '%';
+      pSprite.style.width = (ts / cvsW * 85) + '%';
+      pSprite.style.height = (ts / cvsH * 85) + '%';
+      pSprite.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
 
       ghosts.forEach((g, i) => {
         const gSprite = document.getElementById('ghost-sprite-' + i);
-        gSprite.style.left = (g.x / cvsW * 100) + '%';
-        gSprite.style.top = (g.y / cvsH * 100) + '%';
-        gSprite.style.width = (ts / cvsW * 100) + '%';
-        gSprite.style.height = (ts / cvsH * 100) + '%';
+        gSprite.style.left = ((g.x + ts/2) / cvsW * 100) + '%';
+        gSprite.style.top = ((g.y + ts/2) / cvsH * 100) + '%';
+        gSprite.style.width = (ts / cvsW * 85) + '%';
+        gSprite.style.height = (ts / cvsH * 85) + '%';
+        gSprite.style.transform = `translate(-50%, -50%)`;
       });
     }
 
@@ -388,13 +521,13 @@
       clearInterval(timerId); cancelAnimationFrame(gameLoopId);
       
       document.getElementById('player-sprite').style.display = 'none';
-      document.getElementById('ghost-sprite-0').style.display = 'none';
-      document.getElementById('ghost-sprite-1').style.display = 'none';
+      for (let i = 0; i < 4; i++) {
+        document.getElementById('ghost-sprite-' + i).style.display = 'none';
+      }
 
       document.getElementById('screen-game').style.display = 'none';
       document.getElementById('screen-result').style.display = 'flex';
       
-      // Update result text based on Win, Survive, or Lose
       if (cleared) {
         document.getElementById('result-title').textContent = "Maze Cleared!";
         document.getElementById('result-icon').textContent = "🌟";
@@ -409,11 +542,11 @@
       
       const actionsDiv = document.getElementById('result-actions');
       if (currentMode === 'challenge') {
-        actionsDiv.innerHTML = `<button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>`;
+        actionsDiv.innerHTML = `<img src="assets/pacman/collectPointsButton.png" alt="Collect Points" class="image-btn" onclick="processPoints()">`;
       } else {
         actionsDiv.innerHTML = `
-          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-          <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
+          <img src="assets/pacman/collectPointsButton.png" alt="Collect Points" class="image-btn" onclick="processPoints()">
+          <button class="btn-secondary" style="margin-top:20px; width: 250px;" onclick="goBack()">Play for fun (Exit)</button>
         `;
       }
     }
@@ -421,7 +554,7 @@
     function processPoints() {
       if (score === 0 && currentMode === 'test') { goBack(); return; }
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "Processing...";
+      actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600;'>Processing...</p>";
 
       if (uid) {
         window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
@@ -429,9 +562,9 @@
         const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
         const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
         actionsDiv.innerHTML = `
-          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">${qr.createImgTag(5)}</div>
-          <p style="color:var(--muted); font-size:0.9rem;">Scan this QR with your Haleon app to collect points.</p>
-          <button class="btn-secondary" style="margin-top:20px;" onclick="location.reload()">Start New Game</button>
+          <div style="background:white; padding:15px; border-radius:16px; margin-bottom:20px;">${qr.createImgTag(5)}</div>
+          <p style="color:var(--muted); font-size:1rem; margin-bottom: 25px;">Scan this QR with your Haleon app to collect points.</p>
+          <img src="assets/pacman/startNewGameButton.png" alt="Start New Game" class="image-btn" onclick="location.reload()">
         `;
       }
     }
@@ -440,6 +573,6 @@
       const canvas = document.getElementById("confetti-canvas"); if(!canvas) return; const ctx = canvas.getContext("2d"); canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight; const pieces = []; const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"]; for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 }); const end = Date.now() + duration; (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs; }); if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } })();
     }
   </script>
-<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: rgba(255,255,255,0.4); font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>
