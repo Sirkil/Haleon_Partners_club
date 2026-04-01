@@ -35,6 +35,23 @@
       touch-action: none;
     }
 
+    /* Sponsor logo positioning */
+    .sponsor-logo {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      text-align: right;
+      z-index: 2;
+    }
+
+    /* Change position in portrait mode */
+    @media (orientation: portrait) {
+      .sponsor-logo {
+        position: static;
+        margin-top: 30px; /* Adds space between the start button and the logo */
+      }
+    }
+
     .game-container { 
       max-width: 800px; 
       margin: 0 auto; 
@@ -161,13 +178,8 @@
 <body>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
-
   <div class="game-container" id="screen-start" style="z-index: 20; background: url('assets/Fever Smach/gameBg.png') no-repeat center center; background-size: cover; max-width: 100%; width: 100%; min-height: 100dvh; position: fixed; inset: 0; justify-content: center;">
     
-    <div style="position: absolute; top: 30px; right: 30px; text-align: right; z-index: 2;">
-      <img src="assets/Fever Smach/brought to you by panadol.png" alt="Panadol" style="width:200px;">
-    </div>
-
     <img src="assets/Fever Smach/gameLogo.png" alt="Fever Smash" style="max-width: 250px; margin-top: 40px; margin-bottom: 20px; z-index: 2;">
     
     <div class="auth-title" style="color: #ffffff; z-index: 2; margin-bottom: 5px;">Fever Smash</div>
@@ -178,6 +190,10 @@
     </p>
     
     <img src="assets/Fever Smach/startGameButton.png" alt="Start Game" style="max-width: 280px; width: 100%; cursor: pointer; z-index: 2; transition: transform 0.2s;" onclick="proceedFromStart()" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+    
+    <div class="sponsor-logo">
+      <img src="assets/Fever Smach/brought to you by panadol.png" alt="Panadol" style="width:200px;">
+    </div>
     
     <button class="btn-outline" id="btn-exit-start" style="position: absolute; top: 15px; left: 15px; width: auto; padding: 6px 12px; font-size: 0.8rem; z-index: 50; color: #ffffff; border-color: rgba(255,255,255,0.4);" onclick="goBack()" onmouseover="this.style.borderColor='#ffffff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.4)'">← Back to App</button>
   </div>

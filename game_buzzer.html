@@ -149,7 +149,8 @@
     
     .opt-btn {
       display: flex; align-items: center; justify-content: flex-start;
-      padding-left: 6%; color: black; font-weight: 700; font-size: 1.6cqi;
+      padding-left: 6%; 
+      padding-right: 25%; color: black; font-weight: 700; font-size: 1.25cqi; /* Reduced text size */
       cursor: pointer; line-height: 1.2; text-align: left;
       overflow: hidden;
     }
@@ -273,12 +274,38 @@
     let buzzerTime = 15;
     let buzzerTimerId;
 
+    // --- UPDATED QUESTIONS ---
     const buzzerQuestions = [
-      { q: "Which of the following ingredients differentiates the Centrum Energy SKU?", options: ["Omega-3", "Ginseng & Ginkgo Biloba", "Collagen", "Probiotics"], a: 1 },
-      { q: "What is the primary positioning of the Centrum Energy SKU?", options: ["Bone strength support", "Digestive health", "Fighting fatigue & supporting energy", "Weight loss"], a: 2 },
-      { q: "Which of the following is a key benefit of the Centrum Women SKU?", options: ["Muscle mass increase", "Skin, hair & nail health", "Joint lubrication", "Blood thinning"], a: 1 },
-      { q: "What additional benefit is emphasized in the Centrum Men SKU?", options: ["Eye lubrication", "Heart function support", "Liver detoxification", "Gut microbiome balance"], a: 1 },
-      { q: "Which pair represents the main SKUs in the Centrum Core range?", options: ["Kids & Teens", "Energy & Immunity", "Adults & 50+ (Silver)", "Prenatal & Postnatal"], a: 2 }
+      { 
+        q: "What is the correct claim for Centrum Energy?", 
+        options: ["A multivitamin to support the body’s daily energy needs", "Improves sleep", "Supports joints", "Boosts mood"], 
+        a: 0 
+      },
+      { 
+        q: "What does Centrum Energy include?", 
+        options: ["Omega-3 only", "B-Vitamins and iron to support daily energy needs", "Vitamin C only", "Collagen blend"], 
+        a: 1 
+      },
+      { 
+        q: "What is the correct claim for Centrum Men?", 
+        options: ["Supports digestion", "Heart only", "Supports energy, immunity, metabolism + muscle function", "Hydration focus"], 
+        a: 2 
+      },
+      { 
+        q: "What does Centrum Men contain?", 
+        options: ["Iron only", "Collagen mix", "Probiotics", "With Magnesium, Vitamin D, and B6"], 
+        a: 3 
+      },
+      { 
+        q: "What is the correct claim for Centrum Women?", 
+        options: ["Energy, immunity, metabolism + healthy skin/hair/nails", "Muscle only", "Gut health", "Sleep aid"], 
+        a: 0 
+      },
+      { 
+        q: "What does Centrum Women contain?", 
+        options: ["Calcium only", "With Biotin, Beta-carotene, Vitamins A, C and E", "Omega-3", "Zinc mix"], 
+        a: 1 
+      }
     ];
 
     function exitToApp() {

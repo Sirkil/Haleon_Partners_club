@@ -18,7 +18,6 @@
       font-family: 'Poppins', sans-serif; 
       margin: 0; 
       padding: 0; 
-      /* This removes the default blue shadow/highlight when tapping on mobile */
       -webkit-tap-highlight-color: transparent; 
     }
     
@@ -55,7 +54,10 @@
       width: 100%;
       box-shadow: none !important; 
       outline: none;
+      transition: transform 0.1s;
     }
+    .btn-primary:active { transform: scale(0.98); }
+    
     .btn-secondary {
       background: transparent;
       color: white;
@@ -169,8 +171,47 @@
       width: auto; height: auto;
     }
     
+    /* Toast Notification */
     .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 15px 30px; border-radius: 50px; font-weight: 600; font-size: 1.1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px;}
     .toast.show { opacity: 1; }
+
+    /* --- FEEDBACK MODAL STYLES --- */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 5000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-overlay.show {
+      opacity: 1; pointer-events: auto;
+    }
+    .modal-content {
+      background: #111;
+      border: 2px solid var(--green);
+      border-radius: 20px;
+      padding: 25px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      color: white;
+      transform: translateY(20px);
+      transition: transform 0.3s;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.show .modal-content {
+      transform: translateY(0);
+    }
+    .claim-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      text-align: left;
+      font-size: 0.9rem;
+      border-left: 4px solid var(--green);
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -192,8 +233,6 @@
 
     <button class="btn-secondary" id="btn-exit-start" style="position: absolute; top: 15px; left: 15px; width: auto; padding: 6px 12px; font-size: 0.8rem; z-index: 50; border-color: var(--green); color: var(--green);" onclick="goBack()">← Back to App</button>
   </div>
-
-
 
   <div class="game-container" id="screen-game" style="display: none; padding: 0; width: 100%; height: 100vh;">
     
@@ -229,16 +268,24 @@
     <div id="result-actions" style="width: 100%;"></div>
   </div>
 
+  <div class="modal-overlay" id="feedback-modal">
+    <div class="modal-content">
+      <h2 style="color: var(--green); margin-bottom: 15px; font-weight: 800; font-size: 1.8rem;">Case Results</h2>
+      <div id="feedback-content" style="margin-bottom: 20px;"></div>
+      <button class="btn-primary" onclick="closeFeedbackModal()">Continue to Next Case</button>
+    </div>
+  </div>
+
   <script>
-    // --- UPDATED GAME DATA ---
+    // --- UPDATED GAME DATA WITH CLAIMS ---
     const cases = [
       {
         scenario: "A 32-year-old professional is juggling work deadlines and night shifts. They feel mentally drained, physically tired, and have mild tension headaches. No fever or other health issues.",
         question: "Which products would you include<br>in the patient’s basket?",
         options: [
           { id: "o1", name: "Panadol Advance", img: "assets/build basket/Panadol advance.png", isCorrect: false },
-          { id: "o2", name: "Panadol Extra", img: "assets/build basket/panadol_extra.png", isCorrect: true },
-          { id: "o3", name: "Centrum Energy", img: "assets/build basket/Centrum_energy_pack.png", isCorrect: true },
+          { id: "o2", name: "Panadol Extra", img: "assets/build basket/panadol_extra.png", isCorrect: true, claim: "Extra effective pain relief." },
+          { id: "o3", name: "Centrum Energy", img: "assets/build basket/Centrum_energy_pack.png", isCorrect: true, claim: "a multivitamin to support the body’s daily energy needs." },
           { id: "o4", name: "Centrum Women", img: "assets/build basket/CENTRUM_WOMEN.png", isCorrect: false }
         ]
       },
@@ -246,9 +293,9 @@
         scenario: "A 38-year-old recovering from seasonal flu has fever, body aches, headache, and nasal congestion. They report low energy and difficulty focusing on work tasks.",
         question: "Which products would you include<br>in the patient’s basket?",
         options: [
-          { id: "o1", name: "Panadol Cold and Flu", img: "assets/build basket/Cold & Flu Day Pack.png", isCorrect: true },
+          { id: "o1", name: "Panadol Cold and Flu", img: "assets/build basket/Cold & Flu Day Pack.png", isCorrect: true, claim: "effective relief from blocked & runny nose." },
           { id: "o2", name: "Panadol Extra", img: "assets/build basket/panadol_extra.png", isCorrect: false },
-          { id: "o3", name: "Centrum Energy", img: "assets/build basket/Centrum_energy_pack.png", isCorrect: true },
+          { id: "o3", name: "Centrum Energy", img: "assets/build basket/Centrum_energy_pack.png", isCorrect: true, claim: "a multivitamin to support the body’s daily energy needs." },
           { id: "o4", name: "Centrum Men", img: "assets/build basket/CENTRUM_MEN.png", isCorrect: false }
         ]
       },
@@ -256,8 +303,8 @@
         scenario: "A 44-year-old man wants a daily routine to maintain overall wellness. He sometimes feels tired and wants to support immunity, muscle function, and heart health.",
         question: "Which products would you include<br>in the patient’s basket?",
         options: [
-          { id: "o1", name: "Centrum Men", img: "assets/build basket/CENTRUM_MEN.png", isCorrect: true },
-          { id: "o2", name: "Centrum Energy", img: "assets/build basket/Centrum_energy_pack.png", isCorrect: true },
+          { id: "o1", name: "Centrum Men", img: "assets/build basket/CENTRUM_MEN.png", isCorrect: true, claim: "Supports energy, immunity, metabolism + muscle function." },
+          { id: "o2", name: "Centrum Energy", img: "assets/build basket/Centrum_energy_pack.png", isCorrect: true, claim: "a multivitamin to support the body’s daily energy needs." },
           { id: "o3", name: "Panadol Advance", img: "assets/build basket/Panadol advance.png", isCorrect: false },
           { id: "o4", name: "Panadol Cold and Flu", img: "assets/build basket/Cold & Flu Day Pack.png", isCorrect: false }
         ]
@@ -266,8 +313,8 @@
         scenario: "A 36-year-old woman experiences mild menstrual cramps and occasional fatigue. She is conscious about her hair, skin, and nails, and wants to support bone and immune health daily.",
         question: "Which products would you include<br>in the patient’s basket?",
         options: [
-          { id: "o1", name: "Panadol Advance", img: "assets/build basket/Panadol advance.png", isCorrect: true },
-          { id: "o2", name: "Centrum Women", img: "assets/build basket/CENTRUM_WOMEN.png", isCorrect: true },
+          { id: "o1", name: "Panadol Advance", img: "assets/build basket/Panadol advance.png", isCorrect: true, claim: "effective pain relief, gentle on stomach." },
+          { id: "o2", name: "Centrum Women", img: "assets/build basket/CENTRUM_WOMEN.png", isCorrect: true, claim: "supports energy, immunity, metabolism + healthy skin, hair and nails ." },
           { id: "o3", name: "Panadol Cold and Flu", img: "assets/build basket/Cold & Flu Day Pack.png", isCorrect: false },
           { id: "o4", name: "Centrum Men", img: "assets/build basket/CENTRUM_MEN.png", isCorrect: false }
         ]
@@ -276,8 +323,8 @@
         scenario: "A 30-year-old mother has a mild cold with headache, mild fever, and congestion. She feels exhausted from caring for her young children and managing work.",
         question: "Which products would you include<br>in the patient’s basket?",
         options: [
-          { id: "o1", name: "Panadol Cold and Flu", img: "assets/build basket/Cold & Flu Day Pack.png", isCorrect: true },
-          { id: "o2", name: "Centrum Energy", img: "assets/build basket/Centrum_energy_pack.png", isCorrect: true },
+          { id: "o1", name: "Panadol Cold and Flu", img: "assets/build basket/Cold & Flu Day Pack.png", isCorrect: true, claim: "effective relief from blocked & runny nose." },
+          { id: "o2", name: "Centrum Energy", img: "assets/build basket/Centrum_energy_pack.png", isCorrect: true, claim: "a multivitamin to support the body’s daily energy needs." },
           { id: "o3", name: "Panadol Extra", img: "assets/build basket/panadol_extra.png", isCorrect: false },
           { id: "o4", name: "Centrum Women", img: "assets/build basket/CENTRUM_WOMEN.png", isCorrect: false }
         ]
@@ -286,10 +333,8 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
-    const exhausted = urlParams.get('exhausted') === 'true';
     const GAME_ID = 'basket';
     
-
     let totalScore = 0;
     let currentCaseIndex = 0;
     
@@ -316,7 +361,6 @@
 
     function startGame() {
       document.getElementById('screen-game').style.display = 'flex';
-      
       totalScore = 0;
       currentCaseIndex = 0;
       loadCase();
@@ -445,7 +489,7 @@
       activeItem = null;
     }
 
-    // --- CONFIRM BASKET & SCORING ---
+    // --- CONFIRM BASKET, SCORING & FEEDBACK ---
     function confirmBasket() {
       const cart = document.getElementById('cart-zone');
       const itemsInCart = cart.querySelectorAll('.drag-item');
@@ -460,23 +504,47 @@
 
       itemsInCart.forEach(item => {
         const isCorrect = item.dataset.correct === 'true';
+        const itemName = item.dataset.name;
+        const optData = cases[currentCaseIndex].options.find(o => o.name === itemName);
+
         if (isCorrect) {
           casePoints += 10;
-          feedbackHTML += `<div style="color:var(--green); margin-bottom:5px;">✅ ${item.dataset.name} (+10)</div>`;
+          feedbackHTML += `<div class="claim-item">
+            <strong style="color: var(--green); display: block; margin-bottom: 3px;">✅ ${itemName}</strong>
+            ${optData.claim}
+          </div>`;
         } else {
           casePoints -= 10;
-          feedbackHTML += `<div style="color:#ef4444; margin-bottom:5px;">❌ ${item.dataset.name} (-10)</div>`;
+          feedbackHTML += `<div class="claim-item" style="border-left-color: #ef4444;">
+            <strong style="color: #ef4444; display: block; margin-bottom: 3px;">❌ ${itemName}</strong>
+            Incorrect selection for this patient's symptoms.
+          </div>`;
         }
       });
 
+      // Show total points earned/lost for this specific case at the top of the modal
+      const scoreHeaderColor = casePoints > 0 ? "var(--green)" : (casePoints < 0 ? "#ef4444" : "white");
+      const scoreHeader = `<h3 style="margin-bottom: 15px; color: ${scoreHeaderColor};">Score: ${casePoints > 0 ? '+'+casePoints : casePoints} pts</h3>`;
+
+      document.getElementById('feedback-content').innerHTML = scoreHeader + feedbackHTML;
+      document.getElementById('feedback-modal').classList.add('show');
+
+      // Update total score in the background
       totalScore += casePoints;
       if (totalScore < 0) totalScore = 0;
       document.getElementById('hud-score').textContent = totalScore + " pts";
+    }
 
-      showToast(`Case Score: ${casePoints > 0 ? '+'+casePoints : casePoints} pts`);
-
+    function closeFeedbackModal() {
+      document.getElementById('feedback-modal').classList.remove('show');
       currentCaseIndex++;
-      setTimeout(loadCase, 1500);
+      
+      // Check if that was the last case
+      if (currentCaseIndex >= cases.length) {
+        finishGame();
+      } else {
+        loadCase();
+      }
     }
 
    function finishGame() {
@@ -488,10 +556,7 @@
       if(totalScore > 0) launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
-      
-      // Using the new image button instead of the HTML button
       const collectBtnHTML = `<img src="assets/build basket/Collect Points & CompleteButton.png" alt="Collect Points" style="width: 80%; max-width: 320px; cursor: pointer; margin: 0 auto; display: block;" onclick="processPoints()">`;
-
       actionsDiv.innerHTML = collectBtnHTML;
     }
 

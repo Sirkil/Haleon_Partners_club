@@ -76,11 +76,23 @@
       color: var(--text);
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
-      height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+    }
+
+    .game-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 16 / 9; 
+      max-width: calc(100dvh * (16 / 9)); 
+      max-height: calc(100vw * (9 / 16)); 
+      overflow: hidden;
+      /* THIS ENABLES CONTAINER SCALING */
+      container-type: inline-size;
     }
 
     .screen {
@@ -99,12 +111,12 @@
       display: flex;
     }
 
-    /* Top Logos */
+    /* Top Logos - Converted to cqi so they shrink smoothly */
     .brand-logos {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      max-width: 200px;
+      top: 3cqi;
+      right: 3cqi;
+      width: 20cqi;
       z-index: 10;
       transition: opacity 0.3s;
     }
@@ -116,7 +128,7 @@
 
     /* --- Start Screen --- */
     #start-screen {
-      background: url('assets/Perfect Shelf/gameBg.png') no-repeat center center fixed;
+      background: url('assets/Perfect Shelf/gameBg.png') no-repeat center center;
       background-size: cover;
     }
 
@@ -128,24 +140,25 @@
       z-index: -1;
     }
 
+    /* Converted all fixed px/rem sizes to cqi units */
     #start-screen .game-logo {
-      width: 250px;
-      margin-bottom: 20px;
+      width: 25cqi;
+      margin-bottom: 2cqi;
       animation: float 3s ease-in-out infinite;
     }
 
     #start-screen h1 {
-      font-size: 2.5rem;
+      font-size: 3.5cqi;
       font-weight: 800;
-      margin-bottom: 10px;
+      margin-bottom: 1cqi;
       text-align: center;
     }
 
     #start-screen p {
-      font-size: 1.1rem;
+      font-size: 1.6cqi;
       text-align: center;
-      max-width: 400px;
-      margin-bottom: 30px;
+      max-width: 50cqi;
+      margin-bottom: 3cqi;
       line-height: 1.5;
     }
 
@@ -154,9 +167,9 @@
       border: none;
       background: var(--green);
       color: #fff;
-      padding: 15px 30px;
-      border-radius: 30px;
-      font-size: 1.2rem;
+      padding: 1.5cqi 3cqi;
+      border-radius: 4cqi;
+      font-size: 1.5cqi;
       font-weight: 700;
       transition: transform 0.2s, background 0.2s;
     }
@@ -167,13 +180,13 @@
     }
 
     .btn-action img {
-      width: 200px;
+      width: 20cqi;
       display: block;
     }
 
     /* --- Game Screen (Fullscreen Background) --- */
     #game-screen {
-      background: url('assets/Perfect Shelf/shelfBg.png') no-repeat center center;
+      background: url('assets/Perfect Shelf/BG.png') no-repeat center center;
       background-size: cover; 
     }
 
@@ -210,17 +223,15 @@
     .drop-zone {
       width: 30%;
       height: 100%;
-      border: 2px solid transparent;
-      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
       position: relative;
     }
 
+    /* Highlight background completely removed to prevent the stuck box issue */
     .drop-zone.highlight {
-      background: rgba(255, 255, 255, 0.15); 
+      background: transparent;
     }
 
     /* Starting items frame - Matches the background boxes */
@@ -353,14 +364,34 @@
       color: var(--red);
     }
 
-    #end-screen {
+    /* End Screens Logic */
+    .end-screen-bg {
       background: rgba(0,0,0,0.85);
     }
 
-    #end-screen h1 {
-      font-size: 3.5rem;
+    .end-screen-bg h1 {
+      font-size: 5cqi;
       color: var(--green);
-      margin-bottom: 10px;
+      margin-bottom: 1cqi;
+    }
+
+    .end-screen-bg p {
+      font-size: 1.8cqi;
+      margin-bottom: 3cqi;
+    }
+
+    .qr-container {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .qr-container img {
+      width: 150px;
+      height: 150px;
+      display: block;
     }
 
     @keyframes float {
@@ -378,52 +409,65 @@
     <p>Please rotate your phone to landscape mode<br>for the best gaming experience.</p>
   </div>
 
-  <div class="brand-logos" id="brand-logos">
-    <img src="assets/Perfect Shelf/brought to you by.png" alt="Brought to you by Panadol and Centrum" onerror="this.style.display='none';">
-  </div>
-
-  <div id="start-screen" class="screen active">
-    <img src="assets/Perfect Shelf/gameLogo.png" alt="Game Logo" class="game-logo" onerror="this.style.display='none';">
-    <h1>Perfect Shelf Builder</h1>
-    <p>Drag the 6 products to their correct places on the pharmacy shelves.<br><strong>Total: 120 pts (20 pts per item).</strong></p>
-    <button class="btn-action" onclick="startGame()" style="padding:0; background:none;">
-      <img src="assets/Perfect Shelf/startGameButton.png" alt="Start Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'startGame()\'>Start Game</button>'">
-    </button>
-  </div>
-
-  <div id="game-screen" class="screen">
-    <div class="game-area" id="game-area">
-      
-      <div class="shelf-row-top">
-        <div class="drop-zone" data-slot="1"></div>
-        <div class="drop-zone" data-slot="2"></div>
-        <div class="drop-zone" data-slot="3"></div>
-      </div>
-
-      <div class="shelf-row-bottom">
-        <div class="drop-zone" data-slot="4"></div>
-        <div class="drop-zone" data-slot="5"></div>
-        <div class="drop-zone" data-slot="6"></div>
-      </div>
-
-      <div class="items-container">
-        <div class="start-slot" id="slot-1"><img src="assets/Perfect Shelf/Centrum_energy_pack.png" class="draggable-item" data-id="1" alt="Centrum Energy"></div>
-        <div class="start-slot" id="slot-2"><img src="assets/Perfect Shelf/CENTRUM_MEN.png" class="draggable-item" data-id="2" alt="Centrum Men"></div>
-        <div class="start-slot" id="slot-3"><img src="assets/Perfect Shelf/CENTRUM_WOMEN.png" class="draggable-item" data-id="3" alt="Centrum Women"></div>
-        <div class="start-slot" id="slot-4"><img src="assets/Perfect Shelf/Panadol advance.png" class="draggable-item" data-id="4" alt="Panadol Advance"></div>
-        <div class="start-slot" id="slot-5"><img src="assets/Perfect Shelf/panadol_extra.png" class="draggable-item" data-id="5" alt="Panadol Extra"></div>
-        <div class="start-slot" id="slot-6"><img src="assets/Perfect Shelf/Cold & Flu Day Pack.png" class="draggable-item" data-id="6" alt="Cold & Flu Day"></div>
-      </div>
-
+  <div class="game-wrapper">
+    <div class="brand-logos" id="brand-logos">
+      <img src="assets/Perfect Shelf/brought to you by.png" alt="Brought to you by Panadol and Centrum" onerror="this.style.display='none';">
     </div>
-  </div>
 
-  <div id="end-screen" class="screen">
-    <h1>Perfect!</h1>
-    <p style="font-size: 1.2rem; margin-bottom: 30px;">You earned <strong>120 pts</strong>!</p>
-    <button class="btn-action" onclick="location.reload()" style="padding:0; background:none;">
-      <img src="assets/Perfect Shelf/startNewGameButton.png" alt="Start New Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'location.reload()\'>Play Again</button>'">
-    </button>
+    <div id="start-screen" class="screen active">
+      <img src="assets/Perfect Shelf/gameLogo.png" alt="Game Logo" class="game-logo" onerror="this.style.display='none';">
+      <h1>Perfect Shelf Builder</h1>
+      <p>Drag the 6 products to their correct places on the pharmacy shelves.<br><strong>Total: 120 pts (20 pts per item).</strong></p>
+      <button class="btn-action" onclick="startGame()" style="padding:0; background:none;">
+        <img src="assets/Perfect Shelf/startGameButton.png" alt="Start Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'startGame()\'>Start Game</button>'">
+      </button>
+    </div>
+
+    <div id="game-screen" class="screen">
+      <div class="game-area" id="game-area">
+        
+        <div class="shelf-row-top">
+          <div class="drop-zone" data-slot="1"></div>
+          <div class="drop-zone" data-slot="2"></div>
+          <div class="drop-zone" data-slot="3"></div>
+        </div>
+
+        <div class="shelf-row-bottom">
+          <div class="drop-zone" data-slot="4"></div>
+          <div class="drop-zone" data-slot="5"></div>
+          <div class="drop-zone" data-slot="6"></div>
+        </div>
+
+        <div class="items-container">
+          <div class="start-slot" id="slot-1"><img src="assets/Perfect Shelf/Centrum_energy_pack.png" class="draggable-item" data-id="1" alt="Centrum Energy"></div>
+          <div class="start-slot" id="slot-2"><img src="assets/Perfect Shelf/CENTRUM_MEN.png" class="draggable-item" data-id="2" alt="Centrum Men"></div>
+          <div class="start-slot" id="slot-3"><img src="assets/Perfect Shelf/CENTRUM_WOMEN.png" class="draggable-item" data-id="3" alt="Centrum Women"></div>
+          <div class="start-slot" id="slot-4"><img src="assets/Perfect Shelf/Panadol advance.png" class="draggable-item" data-id="4" alt="Panadol Advance"></div>
+          <div class="start-slot" id="slot-5"><img src="assets/Perfect Shelf/panadol_extra.png" class="draggable-item" data-id="5" alt="Panadol Extra"></div>
+          <div class="start-slot" id="slot-6"><img src="assets/Perfect Shelf/Cold & Flu Day Pack.png" class="draggable-item" data-id="6" alt="Cold & Flu Day"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="collect-screen" class="screen end-screen-bg">
+      <h1>Perfect!</h1>
+      <p>You have successfully arranged the shelf and earned <strong>120 pts</strong>!</p>
+      <button class="btn-action" onclick="collectPoints()">Collect Points</button>
+    </div>
+
+    <div id="qr-screen" class="screen end-screen-bg">
+      <h1>Scan to Claim</h1>
+      <p>Show this QR code to the representative to collect your points.</p>
+      <div class="qr-container">
+        <img src="assets/Perfect Shelf/qrcode.png" alt="QR Code" onerror="this.outerHTML='<div style=\'width:150px; height:150px; background:#ccc; display:flex; align-items:center; justify-content:center; color:#000;\'>QR Code Placeholder</div>'">
+      </div>
+      <br>
+      <button class="btn-action" onclick="location.reload()" style="padding:0; background:none;">
+        <img src="assets/Perfect Shelf/startNewGameButton.png" alt="Play Again" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'location.reload()\'>Play Again</button>'">
+      </button>
+    </div>
+
   </div>
 
   <div class="dialog-overlay" id="dialog-overlay">
@@ -459,6 +503,10 @@
       initDragAndDrop();
     }
 
+    function collectPoints() {
+      showScreen('qr-screen');
+    }
+
     function showDialog(type, itemId) {
       const overlay = document.getElementById('dialog-overlay');
       const title = document.getElementById('dialog-title');
@@ -491,7 +539,8 @@
     function closeDialog() {
       document.getElementById('dialog-overlay').classList.remove('show');
       if (placedItemsCount === totalItems) {
-        setTimeout(() => showScreen('end-screen'), 300);
+        // Automatically go to collect screen after last success dialog is closed
+        setTimeout(() => showScreen('collect-screen'), 300);
       }
     }
 
@@ -512,27 +561,21 @@
 
     function startDrag(e) {
       const original = e.target;
-      
-      // If the item has already been successfully placed, ignore drag
       if (original.dataset.placed === "true") return;
 
-      // Capture pointer so we keep receiving events even outside the element
       original.setPointerCapture(e.pointerId);
 
       const rect = original.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
 
-      // Create a clone of the item to drag (original stays in the white box)
       draggedItem = original.cloneNode(true);
       draggedItem.classList.add('is-dragging');
       
-      // Match the exact physical size of the original image while dragging
       draggedItem.style.width = rect.width + 'px';
       draggedItem.style.height = rect.height + 'px';
       draggedItem.style.objectFit = 'contain';
       
-      // Keep a reference back to the original item so we can update it later
       draggedItem.originalSource = original;
 
       document.body.appendChild(draggedItem);
@@ -586,31 +629,25 @@
         currentDropZone.classList.remove('highlight');
 
         if (itemId === slotId) {
-          // Correct placement
-          
-          // Clear dragging styles so CSS takes over for the shelf sizing/positioning
           draggedItem.classList.remove('is-dragging');
-          draggedItem.style.width = ''; 
+          draggedItem.style.width = '';
           draggedItem.style.height = '';
           draggedItem.style.left = '';
           draggedItem.style.top = '';
           
           currentDropZone.appendChild(draggedItem);
           
-          // Mark the original item in the bottom box as placed
           draggedItem.originalSource.dataset.placed = "true";
-          draggedItem.originalSource.classList.add('placed'); // dims it in the container
+          draggedItem.originalSource.classList.add('placed');
           
           placedItemsCount++;
           showDialog('correct', itemId);
         } else {
-          // Wrong placement - destroy the clone
           document.body.removeChild(draggedItem);
           showDialog('wrong', null);
         }
 
       } else {
-        // Dropped nowhere - destroy the clone
         document.body.removeChild(draggedItem);
       }
 
