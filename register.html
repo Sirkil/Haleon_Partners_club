@@ -27,7 +27,7 @@
     const auth  = getAuth(fbApp);
     const db    = getFirestore(fbApp);
 
-    const SHEETS_WEBHOOK = "https://script.google.com/macros/s/AKfycbzXv_YPKLL1UUW00yZ07DvlCDgTB_bdf3Cqlb48QPVoG1e4BEeE5mPACs-9tnw7cYkw/exec";
+    const SHEETS_WEBHOOK = "https://script.google.com/macros/s/AKfycbwHj5I-AiO5mQhxJCUHjFf-p1spOTU-E5LZH3-Lc4cq5zkTHs2U-RrTsSY8JFzl2KrX/exec";
 
     // 2. Map Firebase error codes to friendly messages
     function friendlyError(code) { 
@@ -41,20 +41,28 @@
 
     // 3. Main Registration Function
     window.doRegisterStandalone = async function() {
-      const name = document.getElementById("reg-name").value.trim(); 
+      const fname = document.getElementById("reg-fname").value.trim(); 
+      const lname = document.getElementById("reg-lname").value.trim(); 
       const email = document.getElementById("reg-email").value.trim(); 
       const phone = document.getElementById("reg-phone").value.trim(); 
       const pharmacy = document.getElementById("reg-pharmacy").value.trim(); 
-      const pass = document.getElementById("reg-pass").value; 
+      const city = document.getElementById("reg-city").value.trim(); 
+      const profession = document.getElementById("reg-profession").value;
+      const rawPassword = document.getElementById("reg-pass").value.trim(); 
+      let pass = rawPassword;
+
       const errEl = document.getElementById("reg-error"); 
       const btn = document.getElementById("btn-register");
       
       errEl.textContent = ""; 
       
-      if (!name || !email || !phone || !pharmacy || !pass) { 
+      if (!fname || !lname || !email || !phone || !pharmacy || !city || !profession || !pass) { 
         errEl.textContent = "Please fill in all fields."; 
         return; 
       }
+
+      while (pass.length > 0 && pass.length < 6) pass += "0";
+
       if (pass.length < 6) { 
         errEl.textContent = "Password must be at least 6 characters."; 
         return; 
@@ -69,8 +77,27 @@
         const uid = cred.user.uid; 
         const memberId = uid.slice(0, 8).toUpperCase();
         
+        // Establish Tier Mapping
+        const t = profession.toLowerCase();
+        let computedTier = "Student";
+        if (t === "pharmacy owner") computedTier = "Pharmacy Owner";
+        else if (t === "community pharmacist" || t === "pharmacist") computedTier = "Community Pharmacist";
+
+        const name = fname + " " + lname;
+
         // Prepare Firestore Data
-        const profile = { name, email, phone, pharmacy, memberId };
+        const profile = { 
+            firstName: fname, 
+            lastName: lname, 
+            name, 
+            email, 
+            phone, 
+            pharmacy, 
+            city, 
+            profession, 
+            pin: rawPassword,
+            memberId 
+        };
         const userData = { 
           profile, 
           score: 0, 
@@ -78,7 +105,10 @@
           claimedBadges: [], 
           answeredQuestions: [], 
           gamesCompleted: {}, 
-          tier: "Student", 
+          tier: computedTier, 
+          active: false,
+          attendance: false,
+          cardId: "",
           createdAt: new Date().toISOString() 
         };
         
@@ -88,9 +118,10 @@
         // Sync to Google Sheets
         const payload = { 
           uid, name, email, phone, pharmacy, memberId, 
-          score: 0, quizzesCompleted: 0, tier: "Student", 
+          score: 0, quizzesCompleted: 0, tier: computedTier, 
           badges: "", badgesCount: 0, 
-          lastUpdated: new Date().toISOString() 
+          lastUpdated: new Date().toISOString(),
+          pin: rawPassword
         };
         fetch(SHEETS_WEBHOOK, { 
           method: "POST", mode: "no-cors", 
@@ -116,11 +147,27 @@
         <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" style="max-width: 200px;">
       </div>
       <div class="auth-title">Create account.</div>
-      <div class="field"><input type="text"     id="reg-name"     placeholder="Full name" /></div>
+      <style>
+        .field select { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid var(--border, #333); background: var(--surface2, #111418); color: white; font-size: 1rem; font-family: inherit; outline: none; -webkit-appearance: none; appearance: none; }
+        .field select:focus { border-color: var(--green, #2ee701); }
+      </style>
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div class="field" style="margin-bottom: 0; flex: 1;"><input type="text" id="reg-fname" placeholder="First name" /></div>
+        <div class="field" style="margin-bottom: 0; flex: 1;"><input type="text" id="reg-lname" placeholder="Last name" /></div>
+      </div>
       <div class="field"><input type="email"    id="reg-email"    placeholder="Email address" /></div>
       <div class="field"><input type="tel"      id="reg-phone"    placeholder="Phone number" /></div>
       <div class="field"><input type="text"     id="reg-pharmacy" placeholder="Pharmacy name" /></div>
-      <div class="field"><input type="password" id="reg-pass"     placeholder="Password (min 6 chars)" /></div>
+      <div class="field"><input type="text"     id="reg-city"     placeholder="City" /></div>
+      <div class="field">
+        <select id="reg-profession">
+          <option value="" disabled selected>Select Profession / Tier</option>
+          <option value="Student">Student</option>
+          <option value="Community Pharmacist">Community Pharmacist</option>
+          <option value="Pharmacy Owner">Pharmacy Owner</option>
+        </select>
+      </div>
+      <div class="field"><input type="password" id="reg-pass"     placeholder="4-Digit PIN (or Password)" /></div>
       <div class="auth-error" id="reg-error"></div>
       
       <button class="btn-primary" id="btn-register" onclick="doRegisterStandalone()">CREATE ACCOUNT</button>

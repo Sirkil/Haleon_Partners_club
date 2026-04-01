@@ -3,58 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Panadol Catch & Win</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <title>Centrum Buzzer Battle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
-    :root {
-      --bg-dark: #000c1f; 
-      --c-blue: #0055A5;
-      --c-light: #38BDF8;
-      --c-green: #10B981;
-      --c-red: #E11D48;
-      --muted: #9ca3af;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      -webkit-tap-highlight-color: transparent; /* Removes blue tap shadow */
     }
 
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-      font-family: 'Poppins', sans-serif; 
-      -webkit-tap-highlight-color: transparent; 
-    }
-    
-    body { 
-      background: var(--bg-dark); 
-      color: white; 
-      overflow: hidden; 
-      touch-action: none; 
-      background-image: url('assets/Game Catch/catchGameBg.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+    body {
+      background-color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    .game-container { 
-      max-width: 480px; 
-      margin: 0 auto; 
-      padding: 20px; 
-      height: 100vh; 
-      display: flex; 
-      flex-direction: column; 
+    /* Game Container stretches fully to fill screen, eliminating black bars */
+    .game-container {
       position: relative;
-      z-index: 20;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('assets/buzzer battle/buzzerBattle_bg.png');
+      background-size: 100% 100%; /* Stretch to fill */
+      background-position: center;
+      container-type: inline-size; 
+      overflow: hidden;
     }
-    
-    .auth-title { 
-      font-size: 3.5rem; 
-      font-weight: 800; 
-      color: white; 
-      margin-bottom: 10px; 
-      text-align: center; 
-      letter-spacing: -1px;
-      line-height: 1.1;
+
+    .screen {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: none;
+    }
+
+    .active-screen {
+      display: block;
     }
 
     .img-btn {
@@ -65,100 +56,72 @@
       transform: scale(0.95);
     }
 
-    .btn-secondary { 
-      background: transparent; 
-      color: white; 
-      border: 1px solid rgba(255,255,255,0.3); 
-      padding: 10px 24px; 
-      font-size: 0.95rem; 
-      font-weight: 600; 
-      border-radius: 50px; 
-      cursor: pointer; 
-      transition: all 0.2s; 
-      text-align: center; 
-    }
-    .btn-secondary:hover { border-color: var(--c-light); color: var(--c-light); }
-
-    .mode-card { 
-      background: rgba(255,255,255,0.05); 
-      border: 1px solid rgba(255,255,255,0.1); 
-      border-radius: 24px; 
-      padding: 24px; 
-      margin-bottom: 20px; 
-      text-align: center; 
-      cursor: pointer; 
-      transition: all 0.2s; 
-      width: 100%; 
-    }
-    .mode-card:hover { border-color: var(--c-light); background: rgba(255,255,255,0.1); }
-
-    /* --- Gameplay HUD Styling --- */
-    .catch-hud { 
-      position: absolute; 
-      top: 15px; 
-      left: 15px; 
-      right: 15px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: flex-start; 
-      z-index: 10; 
-      pointer-events: none; 
-    }
-    .hud-col { display: flex; flex-direction: column; gap: 12px; pointer-events: auto; }
-    .hud-col.center { align-items: center; }
-    .hud-col.center img { height: 75px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
-    .hud-col.right { align-items: flex-end; }
-    
-    .pill-btn, .pill-badge { 
-      background: #ffffff; 
-      border-radius: 50px; 
-      padding: 6px 18px; 
-      font-weight: 700; 
-      color: #002A6C; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
-      border: none; 
-      font-size: 0.95rem; 
-      display: flex; 
-      align-items: center; 
-      gap: 8px; 
-      justify-content: center;
-    }
-    .pill-btn { cursor: pointer; }
-    .pill-btn:active { transform: scale(0.95); }
-    .pill-badge { cursor: default; }
-    .pill-badge .lbl { color: #64748B; font-weight: 600; }
-    .pill-badge .val { color: #0055A5; font-weight: 800; font-size: 1.1rem; }
-    .pill-badge.score { min-width: 60px; font-size: 1.3rem; color: #0055A5; }
-    
-    .heart { font-size: 1.1rem; transition: opacity 0.3s; color: #E11D48; }
-    .heart.lost { opacity: 0.2; }
-    
-    #catch-canvas { 
-      display: block; 
-      width: 100%; 
-      height: 100%; 
-      position: absolute; 
-      top: 0; left: 0; 
-      z-index: 1; 
-    }
-    
-    .float-text { 
-      position: absolute; 
-      font-weight: 900; 
-      font-size: 1.8rem; 
-      pointer-events: none; 
-      animation: floatUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
-      z-index: 5; 
-      text-shadow: 0 4px 8px rgba(0,0,0,0.4); 
-    }
-    .float-good { color: var(--c-green); }
-    .float-bad { color: var(--c-red); }
-    @keyframes floatUp { 
-      0% { transform: translateY(0) scale(0.5); opacity: 1; } 
-      100% { transform: translateY(-70px) scale(1.3); opacity: 0; } 
+    /* Dimmed state for the player who didn't buzz */
+    .dimmed {
+      filter: brightness(0.4);
+      pointer-events: none;
     }
 
-    .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 10px 25px; border-radius: 50px; font-weight: 700; font-size: 1.1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    /* --- Typography scaling via cqi (Container Queries) --- */
+    .title-text {
+      position: absolute; top: 52%; width: 100%; text-align: center;
+      color: white; font-weight: 800; font-size: 5.5cqi; letter-spacing: -1px;
+    }
+    .subtitle-text {
+      position: absolute; top: 66%; width: 100%; text-align: center;
+      color: #e5e7eb; font-weight: 500; font-size: 2.2cqi;
+    }
+
+    /* --- Game Elements --- */
+    #question-label {
+      position: absolute; top: 6%; left: 5%;
+      color: white; font-weight: 700; font-size: 2cqi;
+      z-index: 5;
+    }
+    
+    /* Text constrained perfectly onto the paper banner part of the background */
+    #question-text {
+      position: absolute; top: 18%; left: 20%; width: 53%; height: 24%;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      color: #1e293b; font-weight: 700; font-size: 2.3cqi; line-height: 1.2; z-index: 5; padding: 0 10px;
+    }
+
+    /* Timer precisely centered in the orange circle part of the background */
+    #timer-text {
+      position: absolute; top: 19%; right: 7.5%; width: 12%; height: 22%;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      color: black; font-weight: 800; font-size: 4cqi; z-index: 5;
+    }
+
+    /* Options Wrapper dynamically sized for the purple box */
+    #options-area {
+      position: absolute; top: 68%; left: 50%; transform: translateX(-50%); 
+      width: 70%; height: 25%; display: none; z-index: 5;
+    }
+
+    /* Grid mapped precisely onto the white pill cutouts with corrected spacing */
+    #options-grid {
+      position: absolute; top: 16%; left: 3%; width: 94%; height: 68%;
+      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+      gap: 8% 2%; z-index: 2; padding: 0;
+    }
+    
+    /* Text perfectly aligned inside the white pills */
+    .opt-btn {
+      display: flex; align-items: center; justify-content: flex-start;
+      padding-left: 6%; color: black; font-weight: 700; font-size: 1.6cqi;
+      cursor: pointer; line-height: 1.2; text-align: left;
+      overflow: hidden;
+    }
+    .opt-btn:active { background: rgba(0,0,0,0.05); border-radius: 50px; }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+      background: white; color: black; padding: 10px 25px; border-radius: 50px;
+      font-weight: 700; font-size: 2cqi; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
     .toast.show { opacity: 1; }
   </style>
 </head>
@@ -166,337 +129,244 @@
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
-  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; padding-top: 20%;">
-    <img src="assets/Game Catch/catchGameLogo.png" alt="Catch Logo" style="max-width: 300px; margin: 0 auto 15px; display: block; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
+  <div class="game-container">
     
-    <div class="auth-title">Catch & Win</div>
-    <p style="color: #cbd5e1; margin-bottom: 40px; font-size: 1.1rem; line-height: 1.6;">
-      Drag to catch good items (+10 pts).<br>
-      Avoid bad items or missing good ones<br> (-10 pts & lose 1 life).<br><br>
-      <strong style="color: white; font-size: 1.2rem;">You have 60 seconds!</strong>
-    </p>
-    
-    <img src="assets/Game Catch/startGameButton.png" alt="Start Game" class="img-btn" style="max-width: 320px; margin: 0 auto; display: block;" onclick="proceedFromStart()">
-    
-    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 20px; max-width: 200px; margin-left: auto; margin-right: auto; border-color: var(--c-light); color: var(--c-light);" onclick="goBack()">← Back to App</button>
-
-    <div style="margin-top: auto; padding-bottom: 20px;">
-      <p style="color: white; font-weight: 600; font-size: 0.85rem; margin-bottom: 10px;">Brought to you by</p>
-      <img src="assets/Game Catch/panadolLogo.png" alt="Panadol" style="max-width: 100px; margin: 0 auto; display: block;">
-    </div>
-  </div>
-
-  <div class="game-container" id="screen-mode" style="display: none; justify-content: center;">
-    <button class="btn-secondary" style="margin-bottom: 30px; align-self: flex-start; width: auto;" onclick="goBack()">← Back</button>
-    
-    <div class="auth-title" style="margin-bottom: 30px;">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:white; font-size:1.4rem; font-weight: 800;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--c-light); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Compete for real points.</p>
-    </div>
-  </div>
-
-  <div id="instructions-modal" style="display:none; position:fixed; inset:0; background:rgba(0,12,31,0.9); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:var(--bg-dark); padding:30px; border-radius:24px; text-align:center; max-width: 450px; width: 90%; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-      <h2 style="color:white; margin-bottom:20px; font-size: 2rem;">How to Play</h2>
-      <div style="display: flex; justify-content: space-around; margin-bottom: 25px;">
-         <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 16px; flex: 1; margin-right: 10px; border: 1px solid rgba(16, 185, 129, 0.3);">
-            <p style="font-weight:bold; color:var(--c-green); margin-bottom:10px; font-size: 1.1rem;">Catch (+10 pts)</p>
-            <div style="display:flex; gap:5px; justify-content:center; flex-wrap: wrap;">
-               <img src="assets/Game Catch/cold&fluPack.png" style="height:45px; object-fit:contain;">
-               <img src="assets/Game Catch/panadolAdvancePack.png" style="height:45px; object-fit:contain;">
-               <img src="assets/Game Catch/panadolExtraPack.png" style="height:45px; object-fit:contain;">
-            </div>
-         </div>
-         <div style="background: rgba(225, 29, 72, 0.1); padding: 15px; border-radius: 16px; flex: 0.6; border: 1px solid rgba(225, 29, 72, 0.3);">
-            <p style="font-weight:bold; color:var(--c-red); margin-bottom:10px; font-size: 1.1rem;">Avoid (-10 pts)</p>
-            <img src="assets/not_panadol.png" style="height:45px; object-fit:contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
-         </div>
-      </div>
-      <p style="color:var(--muted); margin-bottom:30px; font-size:1rem; line-height: 1.5;">Drag the basket to catch the correct Panadol packs. Avoid the fake pack and don't let the good ones drop!</p>
+    <div class="screen active-screen" id="screen-start">
+      <img src="assets/buzzer battle/brought to you by centrum.png" alt="Sponsor" style="position: absolute; top: 6%; right: 4%; width: 16%;">
+      <img src="assets/buzzer battle/buzzerBattle_gameLogo.png" alt="Logo" style="position: absolute; top: 12%; left: 50%; transform: translateX(-50%); width: 35%;">
       
-      <img src="assets/Game Catch/startGameButton.png" alt="Play Now" class="img-btn" style="max-width: 220px; margin: 0 auto; display: block;" onclick="startCatchGame()">
-    </div>
-  </div>
-
-  <div id="screen-game" style="display: none; position: fixed; inset: 0; overflow: hidden;">
-    
-    <img src="assets/Game Catch/gamwBg.png" style="position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; z-index: 0; pointer-events: none;">
-    
-    <div class="catch-hud">
-      <div class="hud-col left">
-        <button class="pill-btn" onclick="goBack()">← Exit</button>
-        <div class="pill-badge"><span class="lbl">Time</span> <span class="val" id="hud-time">60s</span></div>
-      </div>
-
-      <div class="hud-col center">
-        <img src="assets/Game Catch/panadolLogo.png" alt="Panadol">
-      </div>
+      <div class="title-text">Nutrition Battle</div>
+      <div class="subtitle-text">2 Players. Read the question and be the first to buzz in!</div>
       
-      <div class="hud-col right">
-        <div class="pill-badge lives">
-          <span class="heart" id="life-3">❤️</span>
-          <span class="heart" id="life-2">❤️</span>
-          <span class="heart" id="life-1">❤️</span>
+      <img src="assets/buzzer battle/startGameButton.png" alt="Start Game" class="img-btn" style="position: absolute; top: 80%; left: 50%; transform: translateX(-50%); width: 18%;" onclick="startGame()">
+    </div>
+
+    <div class="screen" id="screen-game">
+      
+      <img src="assets/buzzer battle/questionBg.png" style="width: 100%; height: 100%; object-fit: fill; position: absolute; top: 0; left: 0; z-index: 1;">
+
+      <div id="question-label">Question 1</div>
+      <img src="assets/buzzer battle/brought to you by centrum.png" alt="Centrum" style="position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 12%; z-index: 5;">
+      <button style="position: absolute; top: 5%; right: 3%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; font-size: 1.5cqi; z-index: 20;" onclick="location.reload()">Exit</button>
+
+      <div id="question-text">Loading question...</div>
+      <div id="timer-text">15s</div>
+
+      <img src="assets/buzzer battle/player1Button.png" alt="Player 1" class="img-btn" id="btn-p1" style="position: absolute; top: 48%; left: 24%; width: 22%; z-index: 5;" onclick="handleTouchBuzz(1)">
+      <img src="assets/buzzer battle/player2Button.png" alt="Player 2" class="img-btn" id="btn-p2" style="position: absolute; top: 48%; right: 24%; width: 22%; z-index: 5;" onclick="handleTouchBuzz(2)">
+
+      <div id="options-area">
+        <img src="assets/buzzer battle/optionsContainer.png" style="width: 100%; height: 100%; object-fit: fill; position: absolute; z-index: 1;">
+        <div id="options-grid">
+          <div class="opt-btn" id="opt-0" onclick="handleAnswer(0)">A) Option 1</div>
+          <div class="opt-btn" id="opt-1" onclick="handleAnswer(1)">B) Option 2</div>
+          <div class="opt-btn" id="opt-2" onclick="handleAnswer(2)">C) Option 3</div>
+          <div class="opt-btn" id="opt-3" onclick="handleAnswer(3)">D) Option 4</div>
         </div>
-        <div class="pill-badge score" id="hud-score">0</div>
       </div>
     </div>
 
-    <canvas id="catch-canvas"></canvas>
-  </div>
-
-  <div class="game-container" id="screen-result" style="display: none; text-align: center; padding-top: 15vh;">
-    <div id="result-icon" style="font-size: 5.5rem; margin-bottom: 10px; line-height: 1;">🏆</div>
-    <div class="auth-title" id="result-title" style="margin-bottom: 10px;">Time's Up!</div>
-    <div style="font-size: 4.5rem; font-weight: 900; color: #4ade80; margin-bottom: 30px; line-height: 1; text-shadow: 0 4px 10px rgba(74, 222, 128, 0.3);" id="result-score">0 pts</div>
-    <div id="result-actions" style="width: 100%;"></div>
-    
-    <div style="margin-top: auto; padding-bottom: 20px;">
-      <p style="color: white; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px;">Brought to you by</p>
-      <img src="assets/Game Catch/panadolLogo.png" alt="Panadol" style="max-width: 100px; margin: 0 auto; display: block;">
+    <div class="screen" id="screen-result">
+      <img src="assets/buzzer battle/brought to you by centrum.png" alt="Centrum" style="position: absolute; top: 10%; left: 50%; transform: translateX(-50%); width: 20%;">
+      
+      <div class="title-text" style="top: 25%; font-size: 6cqi;">Battle Over!</div>
+      
+      <div id="result-actions" style="position: absolute; top: 45%; left: 0; width: 100%; text-align: center;">
+        </div>
     </div>
+
   </div>
 
   <script>
-    function launchConfetti(duration) {
-      const canvas = document.getElementById("confetti-canvas"); if(!canvas) return; const ctx = canvas.getContext("2d"); canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight; const pieces = []; 
-      const colors = ["#4ade80", "#38BDF8", "#FFFFFF", "#E11D48", "#facc15"]; 
-      for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 6 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 8 }); const end = Date.now() + duration; (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rs; }); if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } })();
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
-    const exhausted = urlParams.get('exhausted') === 'true';
-    const GAME_ID = 'catch';
     
-    let currentMode = '';
-    let score = 0; let lives = 3; let timeLeft = 60; let gameLoopId; let timerId; let spawnTimerId;
-    
-    const canvas = document.getElementById('catch-canvas');
-    const ctx = canvas.getContext('2d');
-    let cw, ch;
+    let buzzerState = 'idle';
+    let buzzerScore1 = 0;
+    let buzzerScore2 = 0;
+    let buzzerLevel = 0;
+    let activeBuzzer = 0;
+    let buzzerTime = 15;
+    let buzzerTimerId;
 
-    // Load Game Assets
-    const badImg = new Image(); badImg.src = 'assets/not_panadol.png';
-    const basketImg = new Image(); basketImg.src = 'assets/Game Catch/basketAsset.png';
-    
-    const goodImageSrcs = [
-      'assets/Game Catch/cold&fluPack.png', 
-      'assets/Game Catch/panadolAdvancePack.png', 
-      'assets/Game Catch/panadolExtraPack.png'
+    const buzzerQuestions = [
+      { q: "Which of the following ingredients differentiates the Centrum Energy SKU?", options: ["Omega-3", "Ginseng & Ginkgo Biloba", "Collagen", "Probiotics"], a: 1 },
+      { q: "What is the primary positioning of the Centrum Energy SKU?", options: ["Bone strength support", "Digestive health", "Fighting fatigue & supporting energy", "Weight loss"], a: 2 },
+      { q: "Which of the following is a key benefit of the Centrum Women SKU?", options: ["Muscle mass increase", "Skin, hair & nail health", "Joint lubrication", "Blood thinning"], a: 1 },
+      { q: "What additional benefit is emphasized in the Centrum Men SKU?", options: ["Eye lubrication", "Heart function support", "Liver detoxification", "Gut microbiome balance"], a: 1 },
+      { q: "Which pair represents the main SKUs in the Centrum Core range?", options: ["Kids & Teens", "Energy & Immunity", "Adults & 50+ (Silver)", "Prenatal & Postnatal"], a: 2 }
     ];
-    const goodImgs = goodImageSrcs.map(src => { let img = new Image(); img.src = src; return img; });
 
-    let basket = { x: 0, y: 0, w: 110, h: 100 }; // Adjusted for image dimensions
-    let items = []; let speedMultiplier = 1; let keys = { a: false, l: false }; const basketSpeed = 12; 
+    function startGame() {
+      document.getElementById('screen-start').classList.remove('active-screen');
+      document.getElementById('screen-game').classList.add('active-screen');
+      initBuzzer();
+    }
 
-    window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'a') keys.a = true; if (e.key.toLowerCase() === 'l') keys.l = true; });
-    window.addEventListener('keyup', (e) => { if (e.key.toLowerCase() === 'a') keys.a = false; if (e.key.toLowerCase() === 'l') keys.l = false; });
-    window.addEventListener('resize', resizeCanvas);
-
-    function resizeCanvas() { 
-      cw = window.innerWidth > 600 ? 600 : window.innerWidth; 
-      ch = window.innerHeight; 
-      canvas.width = cw; 
-      canvas.height = ch; 
-      canvas.style.left = (window.innerWidth - cw) / 2 + 'px'; 
-      basket.y = ch - basket.h - 30; // 30px padding from bottom
-      if(basket.x === 0) basket.x = cw / 2 - basket.w / 2; 
+    function initBuzzer() { 
+      buzzerScore1 = 0; 
+      buzzerScore2 = 0; 
+      buzzerLevel = 0; 
+      nextBuzzerLevel(); 
     }
     
-    window.onload = () => { if (!uid) document.getElementById('btn-exit-start').style.display = 'none'; };
-
-    function goBack() { if (uid) window.location.href = 'index.html'; else location.reload(); }
-
-    function proceedFromStart() { document.getElementById('screen-start').style.display = 'none'; if (uid) document.getElementById('screen-mode').style.display = 'flex'; else startGame('challenge'); }
-
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') { showToast("You've already completed this game. Playing in Test Mode."); currentMode = 'test'; } else { currentMode = mode; }
-      document.getElementById('screen-mode').style.display = 'none'; 
-      document.getElementById('screen-game').style.display = 'block';
-      resizeCanvas(); 
-      document.getElementById('instructions-modal').style.display = 'flex';
-    }
-
-    function startCatchGame() {
-      document.getElementById('instructions-modal').style.display = 'none';
-      initGame();
-    }
-
-    function initGame() {
-      score = 0; lives = 3; timeLeft = 60; items = []; speedMultiplier = 1; keys = { a: false, l: false };
-      updateHUD(); document.querySelectorAll('.heart').forEach(h => h.classList.remove('lost'));
-      canvas.addEventListener('touchmove', handleTouch, {passive: false}); 
-      canvas.addEventListener('mousemove', handleMouse);
-      
-      timerId = setInterval(() => { timeLeft--; speedMultiplier += 0.05; updateHUD(); if (timeLeft <= 0) endGame(true); }, 1000);
-      spawnItem(); gameLoopId = requestAnimationFrame(gameLoop);
-    }
-
-    function handleTouch(e) { e.preventDefault(); const touchX = e.touches[0].clientX - (window.innerWidth - cw)/2; basket.x = Math.max(0, Math.min(touchX - basket.w/2, cw - basket.w)); }
-    function handleMouse(e) { const mouseX = e.clientX - (window.innerWidth - cw)/2; basket.x = Math.max(0, Math.min(mouseX - basket.w/2, cw - basket.w)); }
-
-    function spawnItem() {
-      if(timeLeft <= 0 || lives <= 0) return;
-      const isGood = Math.random() > 0.35; 
-      let imgObj = isGood ? goodImgs[Math.floor(Math.random() * goodImgs.length)] : badImg;
-      items.push({ x: Math.random() * (cw - 80) + 40, y: -60, size: 70, dy: (Math.random() * 2 + 3) * speedMultiplier, img: imgObj, isGood: isGood });
-      const nextSpawn = Math.max(400, 1000 - (60 - timeLeft)*10);
-      spawnTimerId = setTimeout(spawnItem, nextSpawn);
-    }
-
-    function spawnFloatingText(x, y, text, isGood) {
-      const el = document.createElement('div'); 
-      el.className = `float-text ${isGood ? 'float-good' : 'float-bad'}`; 
-      el.textContent = text; 
-      el.style.left = (x + (window.innerWidth - cw)/2) + 'px'; 
-      el.style.top = y + 'px'; 
-      document.getElementById('screen-game').appendChild(el); 
-      setTimeout(() => el.remove(), 800);
-    }
-
-    function updateHUD() {
-      document.getElementById('hud-time').textContent = timeLeft + 's'; 
-      document.getElementById('hud-score').textContent = score;
-      document.getElementById('hud-time').style.color = timeLeft <= 10 ? '#E11D48' : '#0055A5';
-      if(lives < 3) document.getElementById('life-3').classList.add('lost'); 
-      if(lives < 2) document.getElementById('life-2').classList.add('lost'); 
-      if(lives < 1) document.getElementById('life-1').classList.add('lost');
-    }
-
-    function mistake(x, y) {
-      lives--; score -= 10; spawnFloatingText(x, y - 20, "-10", false); updateHUD();
-      
-      // Flash effect to indicate mistake
-      ctx.fillStyle = 'rgba(225, 29, 72, 0.3)';
-      ctx.fillRect(0, 0, cw, ch);
-
-      if(lives <= 0) endGame(false);
-    }
-
-    function gameLoop() {
-      if (keys.a) basket.x = Math.max(0, basket.x - basketSpeed); 
-      if (keys.l) basket.x = Math.min(cw - basket.w, basket.x + basketSpeed);
-      
-      // We clear rect but rely on the CSS background image beneath it
-      ctx.clearRect(0, 0, cw, ch);
-      
-      // Draw Basket
-      if (basketImg.complete) {
-        ctx.drawImage(basketImg, basket.x, basket.y, basket.w, basket.h);
-      }
-
-      for (let i = items.length - 1; i >= 0; i--) {
-        let item = items[i]; 
-        item.y += item.dy;
-        
-        // Draw falling item
-        if (item.img && item.img.complete) {
-          ctx.drawImage(item.img, item.x - item.size/2, item.y - item.size/2, item.size, item.size);
+    function nextBuzzerLevel() {
+        if (buzzerLevel >= buzzerQuestions.length) { 
+          endBuzzer(); 
+          return; 
         }
 
-        // Collision logic mapped closely to the basket's graphic "rim"
-        const itemBottom = item.y + item.size/2;
-        const basketRimTop = basket.y + 15; 
-        const itemRight = item.x + item.size/3;
-        const itemLeft = item.x - item.size/3;
+        buzzerState = 'waiting_buzz'; 
+        buzzerTime = 15;
+        
+        // Reset UI states
+        document.getElementById('btn-p1').classList.remove('dimmed');
+        document.getElementById('btn-p2').classList.remove('dimmed');
+        document.getElementById('options-area').style.display = 'none';
+        
+        const qData = buzzerQuestions[buzzerLevel];
+        document.getElementById('question-label').textContent = `Question ${buzzerLevel + 1}`;
+        document.getElementById('question-text').textContent = qData.q;
+        
+        document.getElementById('opt-0').textContent = "A) " + qData.options[0];
+        document.getElementById('opt-1').textContent = "B) " + qData.options[1];
+        document.getElementById('opt-2').textContent = "C) " + qData.options[2];
+        document.getElementById('opt-3').textContent = "D) " + qData.options[3];
 
-        const hitX = itemRight > basket.x && itemLeft < basket.x + basket.w; 
-        const hitY = itemBottom > basketRimTop && item.y < basketRimTop + 20;
+        const timerEl = document.getElementById('timer-text');
+        timerEl.textContent = '15s';
+        timerEl.style.color = 'black';
+        
+        clearInterval(buzzerTimerId);
+        buzzerTimerId = setInterval(() => {
+            buzzerTime--; 
+            
+            // Format to keep two digits for aesthetics (e.g. 09s)
+            timerEl.textContent = (buzzerTime < 10 ? "0" + buzzerTime : buzzerTime) + 's';
+            
+            if (buzzerTime <= 5) timerEl.style.color = '#E91E63'; // Turn red when low
 
-        if (hitX && hitY) {
-          if (item.isGood) { 
-            score += 10; 
-            spawnFloatingText(item.x, basket.y - 30, "+10", true); 
-            updateHUD(); 
-          } else { 
-            mistake(item.x, basket.y - 30); 
-          }
-          items.splice(i, 1); 
-          continue;
+            if (buzzerTime <= 0) { 
+              clearInterval(buzzerTimerId); 
+              showToast("Time's up! No one buzzed.");
+              buzzerLevel++; 
+              setTimeout(nextBuzzerLevel, 1500); 
+            }
+        }, 1000);
+    }
+
+    function handleTouchBuzz(player) {
+      if (buzzerState !== 'waiting_buzz') return;
+      
+      buzzerState = 'waiting_answer'; 
+      activeBuzzer = player; 
+      clearInterval(buzzerTimerId);
+      
+      // Dim the opponent to show who has control
+      if (player === 1) document.getElementById('btn-p2').classList.add('dimmed');
+      else document.getElementById('btn-p1').classList.add('dimmed');
+      
+      document.getElementById('options-area').style.display = 'block';
+    }
+
+    function handleAnswer(selectedIndex) {
+        if (buzzerState !== 'waiting_answer') return;
+        
+        buzzerState = 'idle';
+        document.getElementById('options-area').style.display = 'none';
+        
+        let isCorrect = (selectedIndex === buzzerQuestions[buzzerLevel].a);
+        
+        if (isCorrect) {
+            showToast(`Correct! Player ${activeBuzzer} +20 pts`);
+            if (activeBuzzer === 1) buzzerScore1 += 20; 
+            else buzzerScore2 += 20;
+        } else {
+            showToast(`Wrong! Player ${activeBuzzer} missed it.`);
         }
         
-        // Item hit the ground
-        if (item.y > ch + item.size) { 
-          if (item.isGood) mistake(item.x, ch - 60); 
-          items.splice(i, 1); 
-        }
-      }
-      
-      if(lives > 0 && timeLeft > 0) gameLoopId = requestAnimationFrame(gameLoop);
+        buzzerLevel++; 
+        setTimeout(nextBuzzerLevel, 1500);
     }
 
-    function endGame(survived) {
-      cancelAnimationFrame(gameLoopId); clearInterval(timerId); clearTimeout(spawnTimerId);
-      canvas.removeEventListener('touchmove', handleTouch); canvas.removeEventListener('mousemove', handleMouse);
-      if (score < 0) score = 0;
-      
-      document.getElementById('screen-game').style.display = 'none'; 
-      document.getElementById('screen-result').style.display = 'flex';
-      
-      document.getElementById('result-title').textContent = survived ? "Time's Up!" : "Out of Lives!";
-      
-      // Update result icon based on win state
-      const resultIcon = document.getElementById('result-icon');
-      if (survived && score > 0) {
-        resultIcon.textContent = "🏆";
-      } else if (survived && score <= 0) {
-        resultIcon.textContent = "⏱️";
-      } else {
-        resultIcon.textContent = "💔";
-      }
+    // Keyboard support for debugging/PC use
+    window.addEventListener('keydown', (e) => {
+        let key = e.key.toLowerCase();
+        if (document.getElementById('screen-game').classList.contains('active-screen')) {
+            if (buzzerState === 'waiting_buzz') {
+                if (key === 'q' || key === 'e') handleTouchBuzz(1);
+                if (key === 'p' || key === 'o') handleTouchBuzz(2);
+            }
+        }
+    });
 
-      const scoreDisplay = document.getElementById('result-score');
-      scoreDisplay.textContent = score + " pts";
-      scoreDisplay.style.color = survived && score > 0 ? '#4ade80' : '#ef4444';
-      
-      if (score > 0 && survived) launchConfetti(3000);
-
-      const actionsDiv = document.getElementById('result-actions');
-      const collectBtnHTML = `<img src="assets/Game Catch/collectPointsButton.png" alt="Collect Points" class="img-btn" style="max-width: 320px; margin: 0 auto 15px; display: block;" onclick="processPoints()">`;
-
-      if (currentMode === 'challenge') {
-        actionsDiv.innerHTML = collectBtnHTML;
-      } else {
+    function endBuzzer() {
+        document.getElementById('screen-game').classList.remove('active-screen');
+        document.getElementById('screen-result').classList.add('active-screen');
+        
+        if (buzzerScore1 > 0 || buzzerScore2 > 0) launchConfetti(3000);
+        
+        const actionsDiv = document.getElementById('result-actions');
         actionsDiv.innerHTML = `
-          ${collectBtnHTML}
-          <button class="btn-secondary" style="border-color: var(--c-light); color: var(--c-light);" onclick="goBack()">Play for fun (Exit)</button>
+          <div style="font-size:3.5cqi; font-weight:800; margin-bottom:30px; color: white; display: flex; justify-content: center; gap: 40px;">
+            <span style="color:#FF9800;">Player 1: ${buzzerScore1} pts</span> 
+            <span style="color:#2196F3;">Player 2: ${buzzerScore2} pts</span>
+          </div>
+          <img src="assets/buzzer battle/collectpoints_button.png" class="img-btn" style="width: 25%; display: block; margin: 0 auto;" onclick="processPoints()">
         `;
-      }
     }
 
     function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; }
-      
-      const actionsDiv = document.getElementById('result-actions'); 
-      actionsDiv.innerHTML = "<div style='color: white;'>Processing...</div>";
-      
-      if (uid) {
-        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
-      } else {
-        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
-        const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
+        const actionsDiv = document.getElementById('result-actions');
+        actionsDiv.innerHTML = "<p style='font-size: 3cqi; font-weight: 700; color: white;'>Generating Rewards...</p>";
+
+        const qr1 = qrcode(0, 'L'); 
+        qr1.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore1, nonce: Date.now() })); 
+        qr1.make();
+        
+        const qr2 = qrcode(0, 'L'); 
+        qr2.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore2, nonce: Date.now() + 1 })); 
+        qr2.make();
         
         actionsDiv.innerHTML = `
-          <div style="background:white; padding:15px; display:inline-block; border-radius:16px; margin-bottom:15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
-            ${qr.createImgTag(5)}
-          </div>
-          <p style="color:#d1d5db; font-size:1rem; margin-bottom: 25px;">Scan this QR with your Haleon app to collect points.</p>
-          <img src="assets/Game Catch/startNewGameButton.png" alt="Start New Game" class="img-btn" style="max-width: 280px; margin: 0 auto; display: block;" onclick="location.reload()">
+            <div style="display:flex; justify-content:center; gap:5%; margin-bottom:20px;">
+                <div style="background:rgba(255,255,255,0.9); padding:1.5%; border-radius:16px;">
+                    <h3 style="margin-bottom:5px; color:#FF9800; font-size: 2cqi;">P1: ${buzzerScore1} pts</h3>
+                    <div style="background:white; padding:5px; border-radius:8px;">${qr1.createImgTag(4)}</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.9); padding:1.5%; border-radius:16px;">
+                    <h3 style="margin-bottom:5px; color:#2196F3; font-size: 2cqi;">P2: ${buzzerScore2} pts</h3>
+                    <div style="background:white; padding:5px; border-radius:8px;">${qr2.createImgTag(4)}</div>
+                </div>
+            </div>
+            <p style="color:#e5e7eb; font-size:1.8cqi; margin-bottom: 20px; font-weight: 500;">Scan QR with your App to collect points.</p>
+            <img src="assets/buzzer battle/StartNewGameButton.png" class="img-btn" style="width: 18%; display: block; margin: 0 auto;" onclick="location.reload()">
         `;
-      }
     }
 
-    function showToast(msg) { 
+    function showToast(msg) {
       const toast = document.getElementById("toast"); 
       toast.textContent = msg; 
-      toast.classList.add("show"); 
-      setTimeout(() => toast.classList.remove("show"), 1500); 
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2000);
+    }
+
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas"); 
+      if(!canvas) return; 
+      const ctx = canvas.getContext("2d"); 
+      canvas.style.display = "block"; 
+      canvas.width = window.innerWidth; 
+      canvas.height = window.innerHeight; 
+      const pieces = []; 
+      const colors = ["#E91E63", "#FF9800", "#FFC107", "#4CAF50", "#2196F3", "#9C27B0"]; 
+      for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 6 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 8 }); 
+      const end = Date.now() + duration; 
+      (function frame() { 
+        ctx.clearRect(0, 0, canvas.width, canvas.height); 
+        pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rs; }); 
+        if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } 
+      })();
     }
   </script>
 </body>

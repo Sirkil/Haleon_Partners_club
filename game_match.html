@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Matching Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --green: #4ade80;
+      --green-glow: rgba(74, 222, 128, 0.6);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.6);
+      --muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    
+    body { 
+      touch-action: none; overflow: hidden; color: white;
+      background-image: url('assets/Matching Game/gameBg.png');
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+      background-color: #050a06; 
+    }
+
+    .game-container { 
+      max-width: 480px; margin: 0 auto; padding: 20px; 
+      height: 100vh; display: flex; flex-direction: column; position: relative;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    }
+    .img-btn { cursor: pointer; transition: transform 0.1s ease; }
+    .img-btn:active { transform: scale(0.95); }
+
+    /* --- HUD Styling --- */
+    .hud { 
+      display: flex; justify-content: space-between; align-items: center; 
+      background: rgba(19, 27, 22, 0.8); border-radius: 12px; padding: 10px 0; 
+      margin-bottom: 15px; border: 1px solid #1f2d24; flex-shrink: 0; z-index: 10; position: relative;
+    }
+    .hud-box { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .hud-lbl { color: #9ca3af; font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+    .hud-val { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+    .hud-val.time { color: var(--green); }
+    .hud-val.warning { color: var(--red); }
+
+    /* --- Matching Board Wrapper --- */
+    .matching-wrapper {
+      flex-grow: 1; display: flex; flex-direction: column; 
+      overflow-y: auto; overflow-x: hidden; padding: 5px 0; z-index: 5;
+    }
+
+    /* Container for successfully merged items at the top (Pushes items down) */
+    .merged-zone {
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; z-index: 2;
+    }
+    .merged-zone:empty { margin-bottom: 0; } /* Hide margin if empty */
+
+    .matching-board {
+      position: relative; display: flex; justify-content: space-between; flex-shrink: 0;
+    }
+
+    /* Columns - Updated so Left is explicitly square width, Right takes remaining */
+    .col-left { display: flex; flex-direction: column; gap: 12px; width: 85px; z-index: 10; flex-shrink: 0; }
+    .col-right { display: flex; flex-direction: column; gap: 12px; width: calc(100% - 200px); z-index: 10; }
+
+    /* Pack Square - Forced to exactly 85x85 */
+    .pack-box {
+      background: white; border: 2px solid var(--green); border-radius: 12px;
+      width: 85px; height: 85px; 
+      display: flex; align-items: center; justify-content: center;
+      position: relative; transition: opacity 0.3s, transform 0.3s;
+    }
+    .pack-box img { width: 80%; height: 80%; object-fit: contain; pointer-events: none; }
+    
+    /* Claim Rectangle - Forced to exact same height as the square */
+    .claim-box {
+      background: white; border: 2px solid var(--green); border-radius: 12px;
+      height: 85px; 
+      display: flex; align-items: center; justify-content: center;
+      position: relative; transition: opacity 0.3s, transform 0.3s;
+      padding: 8px; color: black; font-weight: 600; font-size: 0.68rem; 
+      text-align: center; line-height: 1.25;
+    }
+
+    /* Connecting Dots */
+    .dot {
+      width: 16px; height: 16px; background: var(--green); border: 2px solid white;
+      border-radius: 50%; position: absolute; top: 50%; transform: translateY(-50%);
+      cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.3); transition: transform 0.2s;
+    }
+    .pack-box .dot { right: -8px; }
+    .claim-box .dot { left: -8px; }
+    .dot.active { transform: translateY(-50%) scale(1.5); box-shadow: 0 0 10px var(--green-glow); }
+
+    /* Merged State Styling */
+    .merged-item {
+      display: flex; background: white; border: 2px solid var(--green); border-radius: 10px;
+      box-shadow: 0 0 10px var(--green-glow); overflow: hidden; animation: mergePop 0.4s ease forwards;
+      height: 60px; /* Compact height so they don't take up too much screen space */
+    }
+    .merged-img { 
+      width: 60px; padding: 5px; border-right: 2px solid var(--green); 
+      display: flex; align-items: center; justify-content: center; background: rgba(74, 222, 128, 0.1); 
+    }
+    .merged-img img { width: 100%; height: 100%; object-fit: contain; }
+    .merged-text { padding: 8px; color: black; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; flex: 1; line-height: 1.2;}
+
+    @keyframes mergePop { 0% { transform: scale(0.8); opacity: 0; } 50% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+
+    /* SVG Canvas for Lines */
+    #line-canvas {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible;
+    }
+    .connection-line {
+      fill: none; stroke: var(--green); stroke-width: 4; stroke-linecap: round;
+      stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawLine 0.5s forwards;
+    }
+    @keyframes drawLine { to { stroke-dashoffset: 0; } }
+    
+    .line-wrong { animation: flashRed 0.6s 2; }
+    @keyframes flashRed { 0%, 100% { stroke: var(--green); filter: none; } 50% { stroke: var(--red); filter: drop-shadow(0 0 8px var(--red-glow)); } }
+    
+    .line-correct { animation: flashGreen 0.6s 2; }
+    @keyframes flashGreen { 0%, 100% { stroke: var(--green); } 50% { stroke: #fff; filter: drop-shadow(0 0 10px var(--green-glow)); } }
+
+    /* Collapse animation for when items are matched */
+    .hidden-collapse { opacity: 0; transform: scale(0.7); pointer-events: none; }
+
+    .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 10px 25px; border-radius: 50px; font-weight: 700; font-size: 1.1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
+  <div class="toast" id="toast"></div>
+
+  <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; padding-top: 25%;">
+    <img src="assets/Matching Game/gameLogo.png" alt="Matching Game Logo" style="max-width: 250px; margin: 0 auto 20px; display: block;">
+    <h1 style="font-size: 3.5rem; font-weight: 700; margin-bottom: 15px; line-height: 1; letter-spacing: -1px;">Matching<br>Game</h1>
+    <p style="color: #e5e7eb; font-size: 1.05rem; margin-bottom: 10px;">Connect the product to its correct claim.</p>
+    <p style="font-weight: 700; font-size: 1.15rem; margin-bottom: 35px;">Base: 100 pts + Time Bonus.</p>
+    
+    <img src="assets/Matching Game/startGameButton.png" alt="Start Game" class="img-btn" style="max-width: 280px; margin: 0 auto; display: block;" onclick="proceedFromStart()">
+    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 20px; width: auto; padding: 8px 24px; border-color: var(--green); color: var(--green); background: transparent;" onclick="goBack()">← Back to App</button>
+
+    <div style="margin-top: auto; padding-bottom: 35px;">
+      <img src="assets/Matching Game/brought to you by.png" alt="Sponsor" style="max-width: 200px; margin: 0 auto; display: block;">
+    </div>
+  </div>
+
+  <div class="game-container" id="screen-game" style="display: none; padding: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; z-index: 20; position: relative;">
+      <button class="btn-secondary" onclick="goBack()">← Exit</button>
+    </div>
+
+    <div class="hud">
+      <div class="hud-box"><div class="hud-lbl">TIME LEFT</div><div class="hud-val time" id="timer-display">60s</div></div>
+      <div style="width: 1px; background: #2a3a30;"></div>
+      <div class="hud-box"><div class="hud-lbl">MATCHES</div><div class="hud-val" id="matches-display">0<span style="color: #6b7280; font-size: 1.2rem;">/6</span></div></div>
+    </div>
+
+    <div class="matching-wrapper">
+      <div class="merged-zone" id="merged-zone"></div>
+      
+      <div class="matching-board" id="board">
+        <svg id="line-canvas"></svg>
+        <div class="col-left" id="col-packs"></div>
+        <div class="col-right" id="col-claims"></div>
+      </div>
+    </div>
+
+    <div style="margin-top: auto; text-align: center; padding-top: 10px; padding-bottom: 25px; z-index: 10; position: relative;">
+      <img src="assets/Matching Game/brought to you by.png" alt="Sponsor" style="max-width: 200px; margin: 0 auto; display: block;">
+    </div>
+  </div>
+
+  <div class="game-container" id="screen-result" style="display: none; text-align: center; justify-content: center;">
+    <div style="font-size: 4.5rem; margin-bottom: 10px;" id="result-icon">🏆</div>
+    <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;" id="result-title">Complete!</div>
+    <div style="font-size: 4rem; font-weight:800; color: var(--green); line-height: 1; margin-bottom: 10px;" id="result-score">0 pts</div>
+    <div style="color:#d1d5db; font-size: 1rem; margin-bottom: 40px;" id="result-breakdown">Base: 100 + Time Bonus: 0</div>
+    <div id="result-actions" style="width: 100%;"></div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+    const GAME_ID = 'matching';
+    let score = 0;
+    
+    // --- GAME DATA ---
+    const gameData = [
+      { id: 1, img: 'assets/Matching Game/Panadol advance.png', claim: "Effective pain relief, gentle on stomach, faster absorbed." },
+      { id: 2, img: 'assets/Matching Game/panadol_extra.png', claim: "Faster disintegration than the standard paracetamol." },
+      { id: 3, img: 'assets/Matching Game/Centrum_energy_pack.png', claim: "World’s #1 Multivitamin." },
+      { id: 4, img: 'assets/Matching Game/CENTRUM_MEN.png', claim: "Formulated with essential nutrients to respond to health needs of active men." },
+      { id: 5, img: 'assets/Matching Game/CENTRUM_WOMEN.png', claim: "Crafted with a combination of vitamins and minerals especially tailored for women." },
+      { id: 6, img: 'assets/Matching Game/Cold & Flu Day Pack.png', claim: "Effective relief from blocked & runny nose. Does not cause drowsiness." }
+    ];
+    
+    let timeLeft = 60, timerInterval = null, matches = 0;
+    let selectedPack = null, selectedClaim = null;
+    let isAnimating = false;
+
+    window.onload = () => { if (!uid) { const btn = document.getElementById('btn-exit-start'); if (btn) btn.style.display = 'none'; } };
+    function goBack() { if (uid) window.location.href = 'index.html'; else location.reload(); }
+    function proceedFromStart() { document.getElementById('screen-start').style.display = 'none'; startGame(); }
+
+    function startGame() {
+      document.getElementById('screen-game').style.display = 'flex';
+      
+      // Shuffle data for columns
+      const packs = [...gameData].sort(() => Math.random() - 0.5);
+      const claims = [...gameData].sort(() => Math.random() - 0.5);
+
+      const colPacks = document.getElementById('col-packs');
+      const colClaims = document.getElementById('col-claims');
+      colPacks.innerHTML = ''; colClaims.innerHTML = '';
+      document.getElementById('merged-zone').innerHTML = '';
+      document.getElementById('line-canvas').innerHTML = '';
+
+      packs.forEach(p => {
+        colPacks.innerHTML += `
+          <div class="pack-box" id="pack-${p.id}">
+            <img src="${p.img}" alt="Pack">
+            <div class="dot" onclick="selectItem('pack', ${p.id}, this)"></div>
+          </div>`;
+      });
+
+      claims.forEach(c => {
+        colClaims.innerHTML += `
+          <div class="claim-box" id="claim-${c.id}">
+            ${c.claim}
+            <div class="dot" onclick="selectItem('claim', ${c.id}, this)"></div>
+          </div>`;
+      });
+
+      timeLeft = 60; matches = 0;
+      document.getElementById('matches-display').innerHTML = '0<span style="color: #6b7280; font-size: 1.2rem;">/6</span>';
+      updateTimerDisplay();
+      timerInterval = setInterval(tickTimer, 1000);
+    }
+
+    function tickTimer() {
+      timeLeft--; updateTimerDisplay();
+      if (timeLeft <= 0) { clearInterval(timerInterval); endGame(false); }
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById('timer-display');
+      el.textContent = timeLeft + 's';
+      if (timeLeft <= 10) el.classList.add('warning'); else el.classList.remove('warning');
+    }
+
+    function selectItem(type, id, dotElement) {
+      if (isAnimating) return;
+
+      // Deselect previously selected of same type
+      document.querySelectorAll(`.${type}-box .dot`).forEach(d => d.classList.remove('active'));
+      dotElement.classList.add('active');
+
+      if (type === 'pack') { selectedPack = { id, el: dotElement }; } 
+      else { selectedClaim = { id, el: dotElement }; }
+
+      if (selectedPack && selectedClaim) {
+        drawLineAndCheck();
+      }
+    }
+
+    function drawLineAndCheck() {
+      isAnimating = true;
+      const svg = document.getElementById('line-canvas');
+      const boardRect = document.getElementById('board').getBoundingClientRect();
+      const pRect = selectedPack.el.getBoundingClientRect();
+      const cRect = selectedClaim.el.getBoundingClientRect();
+
+      // Calculate relative center coordinates
+      const startX = pRect.left - boardRect.left + (pRect.width / 2);
+      const startY = pRect.top - boardRect.top + (pRect.height / 2);
+      const endX = cRect.left - boardRect.left + (cRect.width / 2);
+      const endY = cRect.top - boardRect.top + (cRect.height / 2);
+
+      // Create curved path (bezier curve)
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const ctrlX1 = startX + 50; const ctrlX2 = endX - 50;
+      path.setAttribute('d', `M ${startX} ${startY} C ${ctrlX1} ${startY}, ${ctrlX2} ${endY}, ${endX} ${endY}`);
+      path.classList.add('connection-line');
+      svg.appendChild(path);
+
+      const isMatch = (selectedPack.id === selectedClaim.id);
+
+      setTimeout(() => {
+        if (isMatch) {
+          path.classList.add('line-correct');
+          setTimeout(() => handleCorrectMatch(selectedPack.id, path), 1200);
+        } else {
+          path.classList.add('line-wrong');
+          setTimeout(() => {
+            path.remove();
+            selectedPack.el.classList.remove('active');
+            selectedClaim.el.classList.remove('active');
+            selectedPack = null; selectedClaim = null;
+            isAnimating = false;
+          }, 1200);
+        }
+      }, 500); // Wait for line draw animation
+    }
+
+    function handleCorrectMatch(id, pathElement) {
+      const packBox = document.getElementById(`pack-${id}`);
+      const claimBox = document.getElementById(`claim-${id}`);
+      const data = gameData.find(d => d.id === id);
+
+      pathElement.remove();
+
+      // Collapse animation (scales down and fades out)
+      packBox.classList.add('hidden-collapse');
+      claimBox.classList.add('hidden-collapse');
+
+      // Create merged element at the top
+      const mergedZone = document.getElementById('merged-zone');
+      mergedZone.innerHTML += `
+        <div class="merged-item">
+          <div class="merged-img"><img src="${data.img}"></div>
+          <div class="merged-text">${data.claim}</div>
+        </div>
+      `;
+
+      // Wait for collapse animation to finish, then completely remove them from the DOM flow
+      // This causes the remaining items below them to slide up cleanly.
+      setTimeout(() => {
+        packBox.style.display = 'none';
+        claimBox.style.display = 'none';
+        
+        // Update score
+        matches++;
+        document.getElementById('matches-display').innerHTML = `${matches}<span style="color: #6b7280; font-size: 1.2rem;">/6</span>`;
+
+        // Reset selection state
+        selectedPack = null; selectedClaim = null;
+        isAnimating = false;
+
+        if (matches === 6) { clearInterval(timerInterval); setTimeout(() => endGame(true), 800); }
+      }, 300);
+    }
+
+    function endGame(isWin) {
+      document.getElementById('screen-game').style.display = 'none';
+      document.getElementById('screen-result').style.display = 'flex';
+
+      if (isWin) {
+        const baseScore = 100; const timeBonus = timeLeft * 5; 
+        score = baseScore + timeBonus;
+        document.getElementById('result-title').textContent = "Complete!";
+        document.getElementById('result-icon').textContent = "🏆";
+        document.getElementById('result-score').textContent = score + " pts";
+        document.getElementById('result-breakdown').textContent = `Base: ${baseScore} + Time Bonus: ${timeBonus} (${timeLeft}s left)`;
+        document.getElementById('result-score').style.color = "var(--green)";
+        launchConfetti(3000);
+      } else {
+        score = 0;
+        document.getElementById('result-title').textContent = "Time's Up!";
+        document.getElementById('result-icon').textContent = "⏱️";
+        document.getElementById('result-score').textContent = "0 pts";
+        document.getElementById('result-breakdown').textContent = `You found ${matches} out of 6 matches.`;
+        document.getElementById('result-score').style.color = "var(--red)";
+      }
+
+      document.getElementById('result-actions').innerHTML = `<img src="assets/Matching Game/collectPoints.png" alt="Collect Points" class="img-btn" style="max-width: 280px; margin: 0 auto; display: block;" onclick="processPoints()">`;
+    }
+
+    function processPoints() {
+      const actionsDiv = document.getElementById('result-actions');
+      actionsDiv.innerHTML = "<div style='color: white;'>Processing...</div>";
+
+      if (uid) { window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`; } 
+      else {
+        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
+        const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
+        actionsDiv.innerHTML = `
+          <div style="background:white; padding:15px; display:inline-block; border-radius:16px; margin-bottom:15px;">${qr.createImgTag(5)}</div>
+          <p style="color:#d1d5db; font-size:1rem; margin-bottom: 25px;">Scan this QR with your App to collect points.</p>
+          <img src="assets/Matching Game/startNewGameButton.png" alt="Start New Game" class="img-btn" style="max-width: 250px; margin: 0 auto; display: block;" onclick="location.reload()">
+        `;
+      }
+    }
+
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas"); if(!canvas) return;
+      const ctx = canvas.getContext("2d"); canvas.style.display = "block";
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      const pieces = []; const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa"];
+      for (let i=0; i<100; i++) pieces.push({ x: Math.random()*canvas.width, y: -10-Math.random()*200, r: 4+Math.random()*6, color: colors[Math.floor(Math.random()*colors.length)], vx: (Math.random()-0.5)*4, vy: 2+Math.random()*4, rot: Math.random()*360, rs: (Math.random()-0.5)*6 });
+      const end = Date.now() + duration;
+      (function frame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((p) => {
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot*Math.PI)/180); ctx.fillStyle = p.color;
+          ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r*0.6); ctx.restore();
+          p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs;
+        });
+        if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display = "none"; }
+      })();
+    }
+  </script>
+<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
+</body>
+</html>

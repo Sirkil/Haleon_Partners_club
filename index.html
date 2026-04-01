@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Haleon Partners Club</title>
@@ -56,6 +58,16 @@
         }
       } else {
         window.showView('view-login');
+        // Pre-fill login fields from URL params (deep link)
+        const _p = new URLSearchParams(window.location.search);
+        if (_p.get('email')) {
+          const emailEl = document.getElementById('login-email');
+          if (emailEl) emailEl.value = decodeURIComponent(_p.get('email'));
+        }
+        if (_p.get('pass')) {
+          const passEl = document.getElementById('login-pass');
+          if (passEl) passEl.value = decodeURIComponent(_p.get('pass'));
+        }
       }
     });
   </script>
@@ -63,8 +75,29 @@
 <body>
 <div class="app" id="app">
 
+  <div class="global-header">
+    <img src="assets/Header.png" alt="Haleon Header">
+  </div>
+
   <div class="toast" id="toast"></div>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
+
+  <div class="dialog-overlay" id="register-reminder-dialog">
+    <div class="dialog-box">
+      <div class="dialog-icon">
+        <img src="assets/Haleon Logo (register).png" alt="Register" style="width: 180px; object-fit: contain;">
+      </div>
+      <div class="dialog-title">Register for the first Haleon Partners Club webinar</div>
+      <div class="dialog-sub" style="text-align: left; margin-bottom: 20px;">
+        1. Click the link below.<br>
+        2. Register on the Haleon Health Partner website.<br>
+        3. Receive your account confirmation<br>
+        4. Sign up for the webinar 
+      </div>
+      <button class="btn-primary" onclick="window.open('https://www.haleonhealthpartner.com/en-eg/news-events/events-and-webinars/haleon-partners-club-launch/', '_blank')">Registration Here</button>
+      <button class="btn-secondary" style="margin-top:12px" onclick="document.getElementById('register-reminder-dialog').classList.remove('open')">Close</button>
+    </div>
+  </div>
 
   <div class="loading-overlay" id="loading-overlay">
     <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" style="max-width: 180px;">
@@ -85,9 +118,7 @@
 
     <div class="auth-error" id="login-error"></div>
     <button class="btn-primary" id="btn-login" onclick="doLogin()">LOGIN</button>
-    <div class="auth-switch">No account? <a href="register.html">Register</a></div>
-    
-    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;">
+    <div class="auth-switch">No account? <a href="https://form.jotform.com/260843536266058" target="_blank">Register</a></div>
   </div>
 
   <div class="view auth-view" id="view-forgot">
@@ -127,6 +158,16 @@
     </div>
 
     <div class="section">
+      <div class="registration-reminder" onclick="document.getElementById('register-reminder-dialog').classList.add('open')" style="background: linear-gradient(135deg, #1a4a2e, #0d2818); border-radius: 16px; padding: 20px; border: 1px solid #2ee701; margin-bottom: 24px; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(46, 231, 1, 0.1);">
+         <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Register for Haleon Partner Club</div>
+         <div style="font-size: 0.85rem; color: #a1b0c0;">Don't forget to complete your registration to secure your points! Tap here for steps.</div>
+      </div>
+
+      <div class="registration-reminder" id="inline-card-banner" onclick="openCardLinkDialog()" style="background: linear-gradient(135deg, #0d1a2e, #1a3a5a); border-radius: 16px; padding: 20px; border: 1px solid #60a5fa; margin-bottom: 24px; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(96, 165, 250, 0.1);">
+        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Link Your Physical Card</div>
+        <div style="font-size: 0.85rem; color: #a1b0c0;">Tap here to scan your card and connect it to your account.</div>
+     </div>
+
       <div class="section-title">Your Badges</div>
       <div class="badges-row">
         <div class="badge-chip locked" id="badge-0" onclick="tryClaimBadge(0)">
@@ -169,80 +210,44 @@
           <div class="quiz-grid-label">Myth vs Fact</div>
           <div class="quiz-grid-status" id="gstatus-myth">Play</div>
         </div>
-
-        <!-- <div class="quiz-grid-card" onclick="openGame('game_buzzer.html', 'buzzer')">
+        <div class="quiz-grid-card" onclick="openGame('game_buzzer.html', 'buzzer')">
           <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
             <img src="assets/Buzzer Battle.png" alt="Buzzer Battle" style="width: 28px; height: 28px; object-fit: contain;">
           </div>
           <div class="quiz-grid-label">Buzzer Battle</div>
           <div class="quiz-grid-status" id="gstatus-buzzer">Play</div>
-        </div> -->
-        <div class="quiz-grid-card" onclick="openGame('game_memory.html', 'memory')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Memory Challenge.png" alt="Memory Challenge" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Memory Challenge</div>
-          <div class="quiz-grid-status" id="gstatus-memory">Play</div>
         </div>
-        <div class="quiz-grid-card" onclick="openGame('game_catch.html', 'catch')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Catch.png" alt="Catch & Win" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Catch & Win</div>
-          <div class="quiz-grid-status" id="gstatus-catch">Play</div>
-        </div>
-        <div class="quiz-grid-card" onclick="openGame('game_prescription.html', 'prescription')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Rx Challenge.png" alt="Rx Challenge" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Rx Challenge</div>
-          <div class="quiz-grid-status" id="gstatus-prescription">Play</div>
-        </div>
-        <!-- <div class="quiz-grid-card" onclick="openGame('game_placement.html', 'placement')">
+        <div class="quiz-grid-card" onclick="openGame('game_placement.html', 'placement')">
           <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
             <img src="assets/Best Place.png" alt="Best Place" style="width: 28px; height: 28px; object-fit: contain;">
           </div>
-          <div class="quiz-grid-label">Best Place</div>
+          <div class="quiz-grid-label">Perfect Shelf</div>
           <div class="quiz-grid-status" id="gstatus-placement">Play</div>
-        </div> -->
+        </div>
         <div class="quiz-grid-card" onclick="openGame('game_mitohype.html', 'mitohype')">
           <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
             <img src="assets/Panadol Challenge.png" alt="Fever Game" style="width: 28px; height: 28px; object-fit: contain;">
           </div>
-          <div class="quiz-grid-label">Panadol Game</div>
+          <div class="quiz-grid-label">Fever Smach</div>
           <div class="quiz-grid-status" id="gstatus-mitohype">Play</div>
         </div>
-        <div class="quiz-grid-card" onclick="openGame('game_spin.html', 'spin')">
+                <!-- <div class="quiz-grid-card" onclick="openGame('game_match.html', 'match')">
           <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Spin to Win.png" alt="Spin to Win" style="width: 28px; height: 28px; object-fit: contain;">
+            <img src="assets/Matching.png" alt="Fever Game" style="width: 28px; height: 28px; object-fit: contain;">
           </div>
-          <div class="quiz-grid-label">Spin to Win</div>
-          <div class="quiz-grid-status" id="gstatus-spin">Play</div>
+          <div class="quiz-grid-label">Match Game</div>
+          <div class="quiz-grid-status" id="gstatus-mitohype">Play</div>
         </div>
-        <!-- <div class="quiz-grid-card" onclick="openGame('game_spot.html', 'spot')">
+                <div class="quiz-grid-card" onclick="openGame('game_spot.html', 'spot')">
           <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Buzzer Battle.png" alt="Spot the Opportunity" style="width: 28px; height: 28px; object-fit: contain;">
+            <img src="assets/Magnifier.png" alt="Fever Game" style="width: 28px; height: 28px; object-fit: contain;">
           </div>
-          <div class="quiz-grid-label">Spot the Opportunity</div>
-          <div class="quiz-grid-status" id="gstatus-spot">Play</div>
-        </div> -->
-        <div class="quiz-grid-card" onclick="openGame('game_centrum.html', 'spot')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Buzzer Battle.png" alt="Centrum Game" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Centrum Game</div>
-          <div class="quiz-grid-status" id="gstatus-spot">Play</div>
-        </div>
-        <!-- <div class="quiz-grid-card" onclick="openGame('game_pacman.html', 'spot')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Buzzer Battle.png" alt="pacman" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Pacman</div>
+          <div class="quiz-grid-label">Spot The Opportunity</div>
           <div class="quiz-grid-status" id="gstatus-spot">Play</div>
         </div> -->
       </div>
 
-    <div class="section" style="margin-top:20px">
+    <div class="section" style="margin-top:20px;padding-bottom:10px">
       <div class="section-title">Highlights</div>
       <div class="carousel-wrap">
         <div class="carousel-track" id="carousel-track">
@@ -273,27 +278,6 @@
           <span class="dot" onclick="goToSlide(1)"></span>
           <span class="dot" onclick="goToSlide(2)"></span>
         </div>
-      </div>
-    </div>
-
-    <div class="section" style="margin-top:20px;padding-bottom:100px">
-      <div class="section-title">Rewards Preview</div>
-      <div class="rewards-grid">
-        <div class="reward-card">
-          <div class="reward-img">🖊️</div>
-          <div class="reward-info">
-            <div class="reward-title">Haleon Branded Pen</div>
-            <button class="redeem-btn" id="home-redeem-pen" disabled onclick="openRedeemQR('pen','Haleon Branded Pen',100)">100 Pts — Redeem</button>
-          </div>
-        </div>
-        <div class="reward-card">
-          <div class="reward-img">🧪</div>
-          <div class="reward-info">
-            <div class="reward-title">Haleon Flask</div>
-            <button class="redeem-btn" id="home-redeem-flask" disabled onclick="openRedeemQR('flask','Haleon Lab Flask',300)">300 Pts — Redeem</button>
-          </div>
-        </div>
-      
       </div>
     </div>
   </div>
@@ -335,14 +319,19 @@
 
     <div class="card-scene" onclick="flipCard()" tabindex="-1">
       <div class="card-inner" id="card-inner">
-        <div class="card-face card-front" id="card-face-front">
-          <img class="card-png-fill" id="card-front-bg" src="" alt="Membership card front" />
+        <div class="card-face" id="card-face-front">
+          <img class="card-png-fill" src="assets/Card-Face.png" alt="Membership Card Front" />
         </div>
         <div class="card-face card-back-face" id="card-face-back">
-          <img class="card-png-fill" id="card-back-bg" src="" alt="" />
-          <div class="cb-qr-overlay"><div class="cb-qr"><img id="card-qr-img" src="" alt="Member QR" /></div></div>
-          <div class="cb-name-overlay" id="cb-name-cell"><span id="card-name-back">User Name</span></div>
-          <div class="cb-id-overlay" id="cb-id-cell"><span id="card-num-back">——</span></div>
+          <img class="card-png-fill" src="assets/Card-Back.png" alt="Membership Card Back" />
+          <div class="cb-qr-overlay">
+            <div class="cb-qr">
+              <img id="card-qr-img" src="" alt="Member QR Code" />
+            </div>
+          </div>
+          <div class="cb-name-overlay">
+            <span id="card-name-back">User Name</span>
+          </div>
         </div>
       </div>
     </div>
@@ -363,10 +352,17 @@
     <div class="profile-section">
       <div class="section-title">Your Information</div>
       <div class="profile-info-box">
-        <div class="info-row"><span>Name</span><strong id="info-name">—</strong></div>
+        <div class="info-row"><span>First Name</span><strong id="info-fname">—</strong></div>
+        <div class="info-row"><span>Last Name</span><strong id="info-lname">—</strong></div>
         <div class="info-row"><span>Email</span><strong id="info-email">—</strong></div>
         <div class="info-row"><span>Phone</span><strong id="info-phone">—</strong></div>
         <div class="info-row"><span>Pharmacy</span><strong id="info-pharmacy">—</strong></div>
+        <div class="info-row"><span>City</span><strong id="info-city">—</strong></div>
+        <div class="info-row"><span>Profession</span><strong id="info-profession">—</strong></div>
+        
+        <div class="info-row" id="card-id-row">
+          <span>Card ID</span><strong id="info-card-id">—</strong>
+        </div>
       </div>
     </div>
 
@@ -393,6 +389,10 @@
       </button>
     </div>
   </nav>
+
+  <div class="global-footer">
+    <img src="assets/Footer.png" alt="Haleon Footer">
+  </div>
 
   <div class="dialog-overlay" id="welcome-dialog">
     <div class="dialog-box" style="position:relative;overflow:hidden;">
@@ -438,7 +438,47 @@
     </div>
   </div>
 
-</div><script src="app.js"></script>
-<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
+  <div class="dialog-overlay" id="replay-dialog">
+    <div class="dialog-box">
+      <div class="dialog-icon" id="replay-dialog-icon" style="margin-bottom:10px;">
+        <img src="assets/logo1.png" alt="Game" style="width: 80px; height: 80px; object-fit: contain;">
+      </div>
+      <div class="dialog-title" id="replay-dialog-name">Game Name</div>
+      <div class="dialog-sub" id="replay-dialog-pts" style="margin-bottom:20px; font-weight:bold; color:var(--green); font-size:1.1rem;">Points collected</div>
+      <button class="btn-primary" id="replay-dialog-play-btn" style="margin-bottom: 10px;">Play Again</button>
+      <button class="btn-secondary" onclick="document.getElementById('replay-dialog').classList.remove('open')">Close</button>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="card-link-dialog">
+    <div class="dialog-box" style="background:linear-gradient(160deg,var(--surface) 0%,#0d1a2e 100%);border-color:rgba(96, 165, 250, 0.4);">
+      
+      <div id="card-link-step-scan">
+        <div class="dialog-icon" style="margin-bottom: 4px;">
+           <img src="assets/Scanner.png" alt="Scan" style="width: 180px; object-fit: contain;">
+        </div>
+        <div class="dialog-title" style="font-size:1.2rem;">Link Your Card</div>
+        <div class="dialog-sub" style="margin-bottom:20px;">Scan the QR code on your physical card to link it to your account.</div>
+        
+        <div id="dialog-video-wrap" style="width: 100%; aspect-ratio: 1/1; border-radius: 14px; overflow: hidden; background: #000; position: relative; display: none; margin-bottom: 14px;">
+          <video id="dialog-scan-video" playsinline autoplay muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+        </div>
+        
+        <button class="btn-primary" id="btn-dialog-scan" onclick="startDialogScanner()">📷 Scan Now</button>
+        <button class="btn-secondary" id="btn-dialog-cancel" style="margin-top:10px" onclick="closeCardLinkDialog()">Close</button>
+      </div>
+
+      <div id="card-link-step-success" style="display: none;">
+        <div class="dialog-icon" style="font-size:2.5rem;">✅</div>
+        <div class="dialog-title" style="color:var(--green)">Card Linked!</div>
+        <div class="dialog-sub" style="margin-bottom:20px;">Your card has been connected successfully.</div>
+        <button class="btn-primary" onclick="finishCardLinking()">Great! 🎉</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
 </body>
 </html>

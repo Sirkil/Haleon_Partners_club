@@ -171,18 +171,7 @@
     </div>
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none; justify-content: center;">
-    <button class="btn-secondary" style="margin-bottom: 30px; align-self: flex-start; width: auto;" onclick="goBack()">← Exit Game</button>
-    <div style="text-align: center; font-size: 2.5rem; font-weight: 800; margin-bottom: 20px;">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:white; font-size:1.3rem;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:0.9rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.9rem; margin-top:8px;">Compete for real points. Faster completion = more bonus points!</p>
-    </div>
-  </div>
+
 
   <div class="game-container" id="screen-game" style="display: none; padding: 15px;">
     
@@ -246,7 +235,7 @@
     const exhausted = urlParams.get('exhausted') === 'true';
     const GAME_ID = 'memory';
     
-    let currentMode = '';
+
     let score = 0;
     
     // Ensure these paths point to your actual image locations
@@ -284,18 +273,10 @@
 
     function proceedFromStart() {
       document.getElementById('screen-start').style.display = 'none';
-      if (uid) document.getElementById('screen-mode').style.display = 'flex';
-      else startGame('challenge');
+      startGame();
     }
 
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') {
-        showToast("You've already completed this game. Playing in Test Mode.");
-        currentMode = 'test';
-      } else {
-        currentMode = mode;
-      }
-      document.getElementById('screen-mode').style.display = 'none';
+    function startGame() {
       document.getElementById('screen-game').style.display = 'flex';
       initGame();
     }
@@ -443,18 +424,10 @@
       // Using the image button for Collecting Points
       const primaryBtnHTML = `<img src="assets/memory game/Collect Points & CompleteButton.png" alt="Collect Points" class="img-btn" style="max-width: 300px; margin: 0 auto 15px; display: block;" onclick="processPoints()">`;
       
-      if (currentMode === 'challenge') {
-        actionsDiv.innerHTML = primaryBtnHTML;
-      } else {
-        actionsDiv.innerHTML = `
-          ${primaryBtnHTML}
-          <button class="btn-secondary" style="border-color: var(--green); color: var(--green);" onclick="goBack()">Play for fun (Exit)</button>
-        `;
-      }
+      actionsDiv.innerHTML = primaryBtnHTML;
     }
 
     function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; } 
 
       const actionsDiv = document.getElementById('result-actions');
       actionsDiv.innerHTML = "<div style='color: white;'>Processing...</div>";

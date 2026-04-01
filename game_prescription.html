@@ -200,19 +200,7 @@
     </div>
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none; justify-content: center;">
-    <button class="btn-secondary" style="margin-bottom: 30px; align-self: flex-start; width: auto;" onclick="goBack()">← Back</button>
 
-    <div class="auth-title" style="margin-bottom: 30px;">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:white; font-size:1.4rem; font-weight: 800;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--c-light); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Compete for real points.</p>
-    </div>
-  </div>
 
   <div class="game-container" id="screen-game" style="display: none; padding: 0; width: 100%; height: 100vh;">
     
@@ -309,7 +297,7 @@
     const uid = urlParams.get('uid');
     const exhausted = urlParams.get('exhausted') === 'true';
     const GAME_ID = 'prescription';
-    let currentMode = '';
+
 
     window.onload = () => {
       if (!uid) document.getElementById('btn-exit-start').style.display = 'none';
@@ -322,8 +310,7 @@
 
     function proceedFromStart() {
       document.getElementById('screen-start').style.display = 'none';
-      if (uid) document.getElementById('screen-mode').style.display = 'flex';
-      else startGame('challenge');
+      startGame();
     }
 
     function shuffleArray(array) {
@@ -336,14 +323,7 @@
       return array;
     }
 
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') {
-        showToast("You've already completed this game. Playing in Test Mode.");
-        currentMode = 'test';
-      } else {
-        currentMode = mode;
-      }
-      document.getElementById('screen-mode').style.display = 'none';
+    function startGame() {
       document.getElementById('screen-game').style.display = 'flex';
 
       gameCases = shuffleArray([...allCases]);
@@ -417,18 +397,10 @@
       const actionsDiv = document.getElementById('result-actions');
       const primaryBtnHTML = `<img src="assets/Rx Challenge/collectPointButton.png" alt="Collect Points" class="img-btn" style="max-width: 320px; margin: 0 auto 15px; display: block;" onclick="processPoints()">`;
 
-      if (currentMode === 'challenge') {
           actionsDiv.innerHTML = primaryBtnHTML;
-      } else {
-          actionsDiv.innerHTML = `
-            ${primaryBtnHTML}
-            <button class="btn-secondary" style="border-color: var(--c-light); color: var(--c-light);" onclick="goBack()">Play for fun (Exit)</button>
-          `;
-      }
     }
 
     function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; }
 
       const actionsDiv = document.getElementById('result-actions');
       actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600; color: white;'>Processing...</p>";

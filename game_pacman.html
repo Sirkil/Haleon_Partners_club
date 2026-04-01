@@ -142,20 +142,7 @@
     <button class="btn-secondary" id="btn-exit-start" style="margin-top: 25px; width: 300px;" onclick="goBack()">← Back to App</button>
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 30px; align-self: center; width: 200px;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center; margin-bottom: 30px;">Select Mode</div>
-    
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.4rem; font-weight: 800;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:0.95rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.95rem; margin-top:8px;">Compete for real points.</p>
-    </div>
-  </div>
+
 
   <div class="game-container" id="screen-game" style="display: none;">
     <div class="hud">
@@ -190,7 +177,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
     const GAME_ID = 'pacman';
-    let currentMode = '';
+
     let score = 0, timeLeft = 60, timerId, gameLoopId;
     
     let totalPellets = 0;
@@ -242,7 +229,7 @@
 
     function proceedFromStart() {
       document.getElementById('screen-start').style.display = 'none';
-      document.getElementById('screen-mode').style.display = 'flex';
+      startGame();
     }
 
     function initCanvas() {
@@ -250,9 +237,7 @@
       cvs.height = rows * ts; 
     }
 
-    function startGame(mode) {
-      currentMode = mode;
-      document.getElementById('screen-mode').style.display = 'none';
+    function startGame() {
       document.getElementById('screen-game').style.display = 'flex';
       
       initCanvas();
@@ -541,18 +526,10 @@
       if (score > 0) launchConfetti(3000);
       
       const actionsDiv = document.getElementById('result-actions');
-      if (currentMode === 'challenge') {
-        actionsDiv.innerHTML = `<img src="assets/pacman/collectPointsButton.png" alt="Collect Points" class="image-btn" onclick="processPoints()">`;
-      } else {
-        actionsDiv.innerHTML = `
-          <img src="assets/pacman/collectPointsButton.png" alt="Collect Points" class="image-btn" onclick="processPoints()">
-          <button class="btn-secondary" style="margin-top:20px; width: 250px;" onclick="goBack()">Play for fun (Exit)</button>
-        `;
-      }
+      actionsDiv.innerHTML = `<img src="assets/pacman/collectPointsButton.png" alt="Collect Points" class="image-btn" onclick="processPoints()">`;
     }
 
     function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; }
       const actionsDiv = document.getElementById('result-actions');
       actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600;'>Processing...</p>";
 

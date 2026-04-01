@@ -56,18 +56,51 @@ a { color: var(--green); text-decoration: none; font-weight: 600; cursor: pointe
 .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
 .auth-switch { text-align: center; margin-top: 20px; color: var(--muted); font-size: 0.9rem; }
 
+/* GLOBAL HEADER & FOOTER */
+.global-header {
+  width: 100%;
+  flex-shrink: 0;
+  z-index: 3;
+  line-height: 0;
+  position: relative;
+  background: var(--bg);
+}
+.global-header img {
+  width: 100%;
+  display: block;
+}
+
+.global-footer {
+  width: 100%;
+  flex-shrink: 0;
+  z-index: 3;
+  line-height: 0;
+  position: relative;
+  background: var(--bg);
+}
+.global-footer img {
+  width: 100%;
+  display: block;
+}
+
 /* NAVBAR */
 .top-navbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px 8px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 10; }
 .top-nav-greeting { font-weight: 700; font-size: 1.1rem; color: var(--text); }
 .top-nav-greeting span { color: var(--green); }
 .logout-btn { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 6px 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; font-family: 'Poppins', sans-serif; }
 .logout-btn:hover { background: rgba(239, 68, 68, 0.22); }
-.bottom-nav { display: none; background: var(--surface); border-top: 1px solid var(--border); padding: 10px 0 16px; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; z-index: 500; }
+
+/* Changed to relative to sit naturally above the footer */
+.bottom-nav { display: none; background: var(--surface); border-top: 1px solid var(--border); padding: 10px 0 16px; position: relative; width: 100%; z-index: 3; flex-shrink: 0; }
 .bottom-nav.visible { display: flex; }
 .nav-tabs { display: flex; width: 100%; justify-content: space-around; }
 .nav-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--muted); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.5px; padding: 4px 12px; border-radius: 10px; transition: color 0.2s; cursor: pointer; border: none; background: none; font-family: 'Poppins', sans-serif; }
 .nav-tab svg { width: 22px; height: 22px; }
 .nav-tab.active { color: var(--green); }
+
+/* Changed padding-bottom since nav is no longer fixed on top of it */
+.view { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding-bottom: 24px; }
+.view.active { display: flex; }
 
 /* HOME */
 .home-view { padding: 0; flex-direction: column; }
@@ -157,20 +190,77 @@ a { color: var(--green); text-decoration: none; font-weight: 600; cursor: pointe
 .redeem-btn:hover:not(:disabled) { opacity: 0.85; }
 .redeem-btn:disabled { background: var(--surface); color: var(--muted); border: 1px solid var(--border); cursor: not-allowed; opacity: 0.6; }
 
-/* PROFILE */
+/* PROFILE — CARD  */
 .profile-view { padding: 20px 24px 80px; flex-direction: column; } 
-.card-scene { perspective: 1000px; width: 100%; aspect-ratio: 1.586 / 1; margin-bottom: 20px; cursor: pointer; flex-shrink: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+.card-scene { perspective: 1200px; width: 100%; aspect-ratio: 1.586 / 1; margin-bottom: 20px; cursor: pointer; flex-shrink: 0; outline: none; -webkit-tap-highlight-color: transparent; }
 .card-scene:focus { outline: none; box-shadow: none; }
 .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1); }
 .card-inner.flipped { transform: rotateY(180deg); }
-.card-face { position: absolute; width: 100%; height: 100%; border-radius: 16px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
-.card-back-face { transform: rotateY(180deg); position: relative; }
-.card-png-fill { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 16px; display: block; pointer-events: none; }
-.cb-qr-overlay { position: absolute; top: 11%; right:4%; z-index: -1; }
-.cb-qr { width: 125px; height: 125px; background: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 3px; }
-.cb-qr img { width: 100px; height: 100px; display: block; }
-.cb-name-overlay { position: absolute; bottom: 85px; left: 0; width: 64%; height: 30%; display: flex; align-items: center; padding: 0 14px; z-index: 2; font-weight: 700; font-size: 24px; letter-spacing: 0.4px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
-.cb-id-overlay { position: absolute; bottom: 30px; right: 0; width: 36%; height: 30%; display: flex; align-items: center; justify-content: center; z-index: 2; font-weight: 700; font-size: 18px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+.card-face { position: absolute; width: 100%; height: 100%; border-radius: 16px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.55); }
+.card-back-face { transform: rotateY(180deg); }
+
+/* The card image fills the face completely */
+.card-png-fill {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: fill;          /* fill = stretches to exactly match, no crop */
+  border-radius: 16px;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── BACK FACE overlays — percentage-positioned so they stay locked
+      regardless of screen width. Values measured from Card-Back.png. ── */
+
+/* QR code lives in the white square: top-right of card
+   Image: ~62% from left, ~8% from top, ~32% wide, ~45% tall       */
+.cb-qr-overlay {
+  position: absolute;
+  top:   15%;
+  right: 1%;
+  width: 32%;
+  aspect-ratio: 1 / 1;
+  z-index: 2;
+  pointer-events: none;
+}
+.cb-qr {
+  width: 85%; height: 85%;
+  background: #fff;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  padding: 4%;
+}
+.cb-qr img { width: 100%; height: 100%; display: block; object-fit: contain; }
+
+/* Member name sits in the green stripe on the left
+   Image: starts ~38% from top, ends ~56%, left portion only (~62% wide) */
+.cb-name-overlay {
+  position: absolute;
+  top:    47%;
+  left:   3%;
+  width:  58%;
+  height: 18%;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+#card-name-back {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  /* font-size scales with the card width using 3vw, clamped for all screens */
+  font-size: clamp(10px, 3.5vw, 22px);
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.1;
+}
 
 .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
 .stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }

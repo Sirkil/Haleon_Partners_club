@@ -84,18 +84,7 @@
     <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;">
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none;">
-    <button class="btn-secondary" style="margin-bottom: 20px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
-    <div class="auth-title" style="text-align: center;">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.3rem;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:0.9rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--green); font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:0.9rem; margin-top:8px;">Compete for real points.</p>
-    </div>
-  </div>
+
 
   <div class="game-container" id="screen-game" style="display: none;">
     <button class="btn-secondary" style="margin-bottom: 10px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
@@ -196,7 +185,7 @@
     const exhausted = urlParams.get('exhausted') === 'true';
     const GAME_ID = 'spin';
     
-    let currentMode = '';
+
     let score = 0;
     let isSpinning = false;
     let spinCount = 0;
@@ -232,18 +221,10 @@
 
     function proceedFromStart() {
       document.getElementById('screen-start').style.display = 'none';
-      if (uid) document.getElementById('screen-mode').style.display = 'flex';
-      else startGame('challenge');
+      startGame();
     }
 
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') {
-        showToast("You've already completed this game. Playing in Test Mode.");
-        currentMode = 'test';
-      } else {
-        currentMode = mode;
-      }
-      document.getElementById('screen-mode').style.display = 'none';
+    function startGame() {
       document.getElementById('screen-game').style.display = 'flex';
     }
 
@@ -332,16 +313,9 @@
         launchConfetti(3000);
       }
 
-      if (currentMode === 'challenge') {
         actionsDiv.innerHTML = `
           <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
         `;
-      } else {
-        actionsDiv.innerHTML = `
-          <button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>
-          <button class="btn-secondary" style="margin-top:10px;" onclick="goBack()">Play for fun (Exit)</button>
-        `;
-      }
     }
 
     function processPoints() {

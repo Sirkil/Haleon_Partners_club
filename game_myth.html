@@ -99,7 +99,7 @@
       transform: scale(0.95);
     }
 
-    .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 15px 30px; border-radius: 50px; font-weight: 600; font-size: 1.1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px;}
+    .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 15px 30px; border-radius: 20px; font-weight: 600; font-size: 1.1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px;}
     .toast.show { opacity: 1; }
   </style>
 </head>
@@ -123,18 +123,7 @@
     <button id="btn-exit-start" style="margin-top: 30px; max-width: 200px; margin-left: auto; margin-right: auto; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; cursor: pointer;" onclick="goBack()">← Back to App</button>
   </div>
 
-  <div class="game-container" id="screen-mode" style="display: none; z-index: 20; justify-content: center;">
-    <button style="margin-bottom: 20px; align-self: flex-start; width: auto; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 50px; cursor: pointer;" onclick="goBack()">← Exit Game</button>
-    <div style="text-align: center; color: white; font-size: 2rem; font-weight: 800; margin-bottom: 20px;">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:white; font-size:1.3rem;">Test Mode</h3>
-      <p style="color:#9ca3af; font-size:0.85rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:#38BDF8; font-size:1.3rem;">Challenge Mode</h3>
-      <p style="color:#9ca3af; font-size:0.85rem; margin-top:8px;">Compete for real points (Max 200 pts).</p>
-    </div>
-  </div>
+
 
   <div class="game-container" id="screen-game" style="display: none; padding: 0; width: 100%; height: 100vh;">
     
@@ -171,28 +160,56 @@
     const exhausted = urlParams.get('exhausted') === 'true';
     const GAME_ID = 'myth';
     
-    let currentMode = ''; let score = 0; let currentQ = 0;
+    let score = 0; let currentQ = 0;
 
+    // UPDATED QUESTIONS ARRAY WITH NEW CONTENT
     const questions = [
-      { text: "Panadol with Optizorb dissolves 5X faster because it contains innovative Optizorb technology.", answer: "fact" },
-      { text: "Antibiotics are effective against viral infections like the common cold.", answer: "myth" },
-      { text: "Two small film-coated tablets are proven to be much easier to swallow than one large non-coated tablet.", answer: "fact" },
-      { text: "Adding caffeine significantly boosts the efficacy of the fast-absorbing formula!", answer: "fact" },
-      { text: "Cracking your knuckles causes arthritis.", answer: "myth" },
-      { text: "89% of Egyptian consumers have tried this trusted brand!", answer: "fact" },
-      { text: "79% of Egyptian consumers rely on it regularly. High trust!", answer: "fact" },
-      { text: "25% of Egyptian consumers select it as their absolute most often used brand. A true market leader!", answer: "fact" }
+      { 
+        text: "Panadol with Optizorb dissolves 5X faster because it contains innovative Optizorb technology.", 
+        answer: "fact" 
+      },
+      { 
+        text: "Panadol tablets are film-coated with 500 mg fast-absorbed paracetamol.", 
+        answer: "fact" 
+      },
+      { 
+        text: "There is no clear way to differentiate between original Panadol Extra packs and copycat products.", 
+        answer: "myth",
+        explanation: "The original pack can be identified by key features like the Optizorb logo and official branding elements."
+      },
+      { 
+        text: "Only a small percentage of consumers in Egypt consider Panadol when searching for pain relief products.", 
+        answer: "myth",
+        explanation: "Around 99% of consumers consider Panadol, showing very high awareness."
+      },
+      { 
+        text: "84% of consumers in Egypt use Panadol as part of their regular pain relief routine.", 
+        answer: "fact" 
+      },
+      { 
+        text: "Less than half of consumers in Egypt have ever tried Panadol.", 
+        answer: "myth",
+        explanation: "Around 99% of consumers in Egypt have tried Panadol."
+      },
+      { 
+        text: "Panadol Extra contains 500 mg paracetamol combined with 65 mg caffeine and uses Optizorb technology.", 
+        answer: "fact" 
+      },
+      { 
+        text: "Panadol Advance contains 500 mg paracetamol without any absorption-enhancing technology.", 
+        answer: "myth",
+        explanation: "Panadol Advance includes Optizorb technology for faster absorption."
+      }
     ];
 
     window.onload = () => { if (!uid) document.getElementById('btn-exit-start').style.display = 'none'; };
 
     function goBack() { if (uid) window.location.href = 'index.html'; else location.reload(); }
 
-    function proceedFromStart() { document.getElementById('screen-start').style.display = 'none'; if (uid) document.getElementById('screen-mode').style.display = 'flex'; else startGame('challenge'); }
+    function proceedFromStart() { document.getElementById('screen-start').style.display = 'none'; startGame(); }
 
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') { showToast("You've already completed this game. Playing in Test Mode."); currentMode = 'test'; } else { currentMode = mode; }
-      document.getElementById('screen-mode').style.display = 'none'; document.getElementById('screen-game').style.display = 'flex';
+    function startGame() {
+      document.getElementById('screen-game').style.display = 'flex';
       loadQuestion();
     }
 
@@ -203,14 +220,29 @@
     }
 
     function answer(choice) {
-      if (choice === questions[currentQ].answer) { 
+      const q = questions[currentQ];
+      const isCorrect = (choice === q.answer);
+      
+      let msg = isCorrect ? "Correct! +25 pts" : "Incorrect!";
+      
+      // If there is an explanation, append it to the toast message
+      if (q.explanation) {
+         msg += `<br><span style='font-size:0.85rem; font-weight:400; display:block; margin-top:6px; line-height:1.3;'>${q.explanation}</span>`;
+      }
+
+      if (isCorrect) { 
         score += 25; 
         document.getElementById('hud-score').textContent = score + " pts";
-        showToast("Correct! +25 pts"); 
-      } else { 
-        showToast("Incorrect!"); 
       }
-      currentQ++; setTimeout(loadQuestion, 800);
+      
+      // Display the toast. Give more time to read if there is an explanation.
+      const readTime = q.explanation ? 3500 : 1500;
+      showToast(msg, readTime); 
+      
+      currentQ++; 
+      
+      // Delay loading the next question so they have time to read the explanation
+      setTimeout(loadQuestion, readTime);
     }
 
     function finishGame() {
@@ -223,18 +255,10 @@
       const actionsDiv = document.getElementById('result-actions');
       const collectBtnHTML = `<img src="assets/Myth & Fact/Collect Points & Complete_button.png" alt="Collect Points" class="img-btn" style="width: 80%; max-width: 320px; display: block; margin: 0 auto;" onclick="processPoints()">`;
 
-      if (currentMode === 'challenge') {
-        actionsDiv.innerHTML = collectBtnHTML;
-      } else {
-        actionsDiv.innerHTML = `
-          ${collectBtnHTML}
-          <button style="margin-top:20px; background: transparent; color: #38BDF8; border: 1px solid #38BDF8; padding: 10px 20px; border-radius: 50px; font-size: 1rem; cursor: pointer;" onclick="goBack()">Play for fun (Exit)</button>
-        `;
-      }
+      actionsDiv.innerHTML = collectBtnHTML;
     }
 
     function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; }
       const actionsDiv = document.getElementById('result-actions'); actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600; color: white;'>Processing...</p>";
 
       if (uid) { window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`; } else {
@@ -251,7 +275,17 @@
       }
     }
 
-    function showToast(msg) { const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 1500); }
+    // Upgraded showToast to support custom durations and innerHTML (for the explanations)
+    let toastTimeout;
+    function showToast(msg, duration = 1500) { 
+        const toast = document.getElementById("toast"); 
+        toast.innerHTML = msg; 
+        toast.classList.add("show"); 
+        
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove("show"), duration); 
+    }
+    
     function launchConfetti(duration) { const canvas = document.getElementById("confetti-canvas"); if(!canvas) return; const ctx = canvas.getContext("2d"); canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight; const pieces = []; const colors = ["#002A6C", "#0055A5", "#FFFFFF", "#38BDF8", "#E11D48"]; for (let i = 0; i < 150; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 6 + Math.random() * 8, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 5, vy: 3 + Math.random() * 5, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 8 }); const end = Date.now() + duration; (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rs; }); if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; } })(); }
   </script>
 <div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>

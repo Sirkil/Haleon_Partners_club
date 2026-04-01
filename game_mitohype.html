@@ -181,22 +181,7 @@
     
     <button class="btn-outline" id="btn-exit-start" style="margin-top: 30px; max-width: 300px; margin-left: auto; margin-right: auto; color: #ffffff; border-color: rgba(255,255,255,0.4); z-index: 2;" onclick="goBack()" onmouseover="this.style.borderColor='#ffffff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.4)'">← Back to App</button>
   </div>
-  <div class="game-container game-container-narrow" id="screen-mode" style="display: none; z-index: 20;">
-    <div style="width: 100%; position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; min-height: 70px;">
-      <button class="btn-outline" style="position: absolute; left: 0; width: auto; padding: 10px 20px;" onclick="goBack()">← Back</button>
-      <img src="assets/Panadol_logo.png" alt="Panadol" style="height: 65px;">
-    </div>
 
-    <div class="auth-title" style="margin-bottom: 30px; color: var(--text);">Select Mode</div>
-    <div class="mode-card" onclick="startGame('test')">
-      <h3 style="color:var(--text); font-size:1.4rem; font-weight: 800;">Test Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Play for fun. Points can be collected at the end.</p>
-    </div>
-    <div class="mode-card" onclick="startGame('challenge')">
-      <h3 style="color:var(--c-light); font-size:1.4rem; font-weight: 800;">Challenge Mode</h3>
-      <p style="color:var(--muted); font-size:1rem; margin-top:8px;">Compete for real points (100 pts).</p>
-    </div>
-  </div>
 
   <div class="game-container" id="screen-game" style="display: none; padding: 0; max-width: 100%; width: 100%; height: 100dvh; max-height: 100dvh; justify-content: flex-start; overflow: hidden; position: fixed; inset: 0; z-index: 50;">
     <div class="embed-header">
@@ -211,7 +196,7 @@
       </div>
     </div>
     <div class="iframe-wrap">
-      <iframe src="https://mitohype.com/panadol-ksa/" allow="autoplay; fullscreen"></iframe>
+      <iframe src="https://mitohype.com/panadol-fever-smash-eg/" allow="autoplay; fullscreen"></iframe>
     </div>
   </div>
 
@@ -262,7 +247,7 @@
     const exhausted = urlParams.get('exhausted') === 'true';
     const GAME_ID = 'mitohype'; 
     
-    let currentMode = '';
+
     let score = 100;
     let countdownInterval;
 
@@ -278,18 +263,10 @@
 
     function proceedFromStart() {
       document.getElementById('screen-start').style.display = 'none';
-      if (uid) document.getElementById('screen-mode').style.display = 'flex';
-      else startGame('challenge');
+      startGame();
     }
 
-    function startGame(mode) {
-      if (exhausted && mode === 'challenge') {
-        showToast("You've already completed this game. Playing in Test Mode.");
-        currentMode = 'test';
-      } else {
-        currentMode = mode;
-      }
-      document.getElementById('screen-mode').style.display = 'none';
+    function startGame() {
       document.getElementById('screen-game').style.display = 'flex';
 
       let claimTimer = 30;
@@ -331,18 +308,10 @@
       launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
-      if (currentMode === 'challenge') {
-        actionsDiv.innerHTML = `<button class="btn-panadol" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>`;
-      } else {
-        actionsDiv.innerHTML = `
-          <button class="btn-panadol" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>
-          <button class="btn-outline" style="margin-top:20px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="goBack()">Play for fun (Exit)</button>
-        `;
-      }
+      actionsDiv.innerHTML = `<button class="btn-panadol" style="max-width: 400px; margin: 0 auto;" onclick="processPoints()">Collect Points & Complete</button>`;
     }
 
     function processPoints() {
-      if (score === 0 && currentMode === 'test') { goBack(); return; }
 
       const actionsDiv = document.getElementById('result-actions');
       actionsDiv.innerHTML = "<p style='font-size: 1.2rem; font-weight: 600;'>Processing...</p>";

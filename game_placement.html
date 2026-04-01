@@ -24,6 +24,53 @@
       user-select: none;
     }
 
+    /* Rotation Overlay for Portrait Mobile */
+    #rotate-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      color: white;
+      z-index: 100000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #rotate-overlay svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      animation: rotateIcon 2s infinite ease-in-out;
+    }
+
+    @keyframes rotateIcon {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(-90deg); }
+      100% { transform: rotate(-90deg); }
+    }
+
+    #rotate-overlay h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    #rotate-overlay p {
+      font-size: 16px;
+      color: #ccc;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+
+    /* Show overlay only on mobile portrait */
+    @media (orientation: portrait) and (max-width: 800px) {
+      #rotate-overlay { display: flex; }
+    }
+
     body {
       background: var(--bg);
       color: var(--text);
@@ -323,6 +370,13 @@
   </style>
 </head>
 <body>
+  <div id="rotate-overlay">
+    <svg fill="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0 10.87 0 9.78.16 8.74.45l2.42 2.42c.27-.03.55-.05.84-.05 1.55 0 2.97.58 4.05 1.55l-2.02 2.02h5.5V.95l-3.05 1.57zm-8.96 18.96c-3.27-1.55-5.61-4.72-5.97-8.48h-1.5C.56 19.16 5.71 24 12 24c1.13 0 2.22-.16 3.26-.45l-2.42-2.42c-.27.03-.55.05-.84.05-1.55 0-2.97-.58-4.05-1.55l2.02-2.02h-5.5v5.5l3.05-1.57z"/>
+    </svg>
+    <h2>Rotate Device</h2>
+    <p>Please rotate your phone to landscape mode<br>for the best gaming experience.</p>
+  </div>
 
   <div class="brand-logos" id="brand-logos">
     <img src="assets/Perfect Shelf/brought to you by.png" alt="Brought to you by Panadol and Centrum" onerror="this.style.display='none';">

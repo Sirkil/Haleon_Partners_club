@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Haleon Partners Club</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0f0d;
+      --surface:  #111b15;
+      --surface2: #182214;
+      --border:   #223322;
+      --green:    #2ee701;
+      --green-dk: #1a8a00;
+      --red:      #ff4d4d;
+      --muted:    #6b7f6b;
+      --text:     #e8f0e8;
+      --radius:   14px;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LOADING ── */
+    #loading-screen {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: none;            /* hidden by default — .visible makes it show */
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 1000; gap: 20px;
+    }
+    #loading-screen.visible { display: flex; }
+
+    /* ── CLAIM ADMIN GATE ── */
+    #claim-admin-gate {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--bg);
+      align-items: center; justify-content: center;
+      z-index: 998;
+    }
+    #claim-admin-gate.visible { display: flex; }
+    .claim-note { font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── AUTH GATE ── */
+    #auth-gate {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--bg);
+      align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    #auth-gate.visible { display: flex; }
+    .auth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 32px;
+      width: 90%; max-width: 380px;
+      text-align: center;
+    }
+    .auth-box img { max-width: 140px; margin-bottom: 24px; }
+    .auth-box h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
+    .auth-box p  { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
+    .auth-field  { margin-bottom: 14px; }
+    .auth-field input {
+      width: 100%; padding: 14px 16px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-family: inherit;
+      font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+    }
+    .auth-field input:focus { border-color: var(--green); }
+    .auth-error { color: var(--red); font-size: 0.82rem; margin-bottom: 10px; min-height: 18px; }
+    .btn-login {
+      width: 100%; padding: 14px;
+      background: var(--green); color: #0a0f0d;
+      border: none; border-radius: 10px;
+      font-family: inherit; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-login:hover { opacity: 0.88; }
+    .btn-login:disabled { opacity: 0.5; cursor: default; }
+
+    /* ── MAIN PANEL ── */
+    #main-panel { display: none; }
+    #main-panel.visible { display: block; }
+
+    .top-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .top-bar-left { display: flex; align-items: center; gap: 14px; }
+    .top-bar-left img { height: 36px; }
+    .top-bar-title { font-size: 1.1rem; font-weight: 700; }
+    .top-bar-sub   { font-size: 0.78rem; color: var(--muted); }
+    .btn-logout {
+      padding: 8px 16px; background: transparent;
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); font-family: inherit; font-size: 0.82rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    .stats-bar {
+      display: flex; gap: 14px; padding: 20px 24px; flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 22px;
+      flex: 1; min-width: 140px;
+    }
+    .stat-card .val { font-size: 2rem; font-weight: 800; color: var(--green); }
+    .stat-card .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    .toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 24px 16px; flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1; min-width: 200px;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+    }
+    .search-box input {
+      background: none; border: none; color: var(--text);
+      font-family: inherit; font-size: 0.9rem; outline: none; width: 100%;
+    }
+    .search-box span { color: var(--muted); font-size: 1rem; }
+
+    .filter-btn {
+      padding: 10px 16px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-family: inherit; font-size: 0.85rem;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--green); color: var(--green); }
+
+    .bulk-bar {
+      display: none; align-items: center; gap: 10px;
+      padding: 10px 24px; margin: 0 24px 14px;
+      background: rgba(46,231,1,0.07);
+      border: 1px solid rgba(46,231,1,0.2);
+      border-radius: 10px; flex-wrap: wrap;
+    }
+    .bulk-bar.visible { display: flex; }
+    .bulk-bar span { font-size: 0.88rem; color: var(--muted); flex: 1; }
+    .btn-bulk {
+      padding: 8px 16px; border-radius: 8px;
+      font-family: inherit; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; border: none; transition: opacity 0.2s;
+    }
+    .btn-bulk:hover { opacity: 0.85; }
+    .btn-bulk.activate   { background: var(--green);    color: #0a0f0d; }
+    .btn-bulk.deactivate { background: var(--red);      color: #fff; }
+    .btn-bulk.clear      { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      padding: 0 24px 80px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.85rem; min-width: 800px;
+    }
+    thead th {
+      background: var(--surface2);
+      padding: 12px 14px; text-align: left;
+      font-weight: 600; color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 10px 0 0 0; }
+    thead th:last-child  { border-radius: 0 10px 0 0; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 12px 14px; vertical-align: middle; }
+
+    .cb-cell { width: 40px; text-align: center; }
+    input[type="checkbox"] {
+      width: 16px; height: 16px; cursor: pointer;
+      accent-color: var(--green);
+    }
+
+    .name-cell strong { display: block; font-weight: 600; }
+    .name-cell small  { color: var(--muted); font-size: 0.78rem; }
+
+    .badge-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 600;
+    }
+    .badge-pill.active   { background: rgba(46,231,1,0.15); color: var(--green); }
+    .badge-pill.inactive { background: rgba(255,77,77,0.15); color: var(--red); }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+    }
+    .status-dot.active   { background: var(--green); }
+    .status-dot.inactive { background: var(--red); }
+
+    .card-id-cell { font-family: monospace; font-size: 0.8rem; color: var(--muted); }
+    .card-id-cell.linked { color: var(--green); }
+
+    .btn-toggle {
+      padding: 6px 12px; border-radius: 8px;
+      font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; border: 1px solid; transition: all 0.2s;
+    }
+    .btn-toggle.activate   { border-color: var(--green); color: var(--green); background: transparent; }
+    .btn-toggle.activate:hover { background: var(--green); color: #0a0f0d; }
+    .btn-toggle.deactivate { border-color: var(--red); color: var(--red); background: transparent; }
+    .btn-toggle.deactivate:hover { background: var(--red); color: #fff; }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 22px;
+      font-size: 0.9rem; color: var(--text);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease; z-index: 9999; white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      .top-bar { flex-wrap: wrap; gap: 10px; }
+      .stats-bar { gap: 10px; }
+      .stat-card .val { font-size: 1.5rem; }
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+                                   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, writeBatch }
+                                   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU",
+      authDomain:        "haleon-partners-club.firebaseapp.com",
+      projectId:         "haleon-partners-club",
+      storageBucket:     "haleon-partners-club.firebasestorage.app",
+      messagingSenderId: "1037867331058",
+      appId:             "1:1037867331058:web:0777855bac1c681ad88f6b"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // ── Webhook URL (for Sync JotForm button) ─────────────
+    const SHEETS_WEBHOOK = "https://script.google.com/macros/s/AKfycbzZjhFZRS81iUJYkXe2OStXLRyVvYmdciChGEJ5NkvgyU2CrdMT26uPC3ZsviCNruD0/exec";
+
+    // ── Show / hide helpers ───────────────────────────────
+    function show(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('visible');
+    }
+    function hide(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('visible');
+    }
+
+    let allUsers     = [];
+    let selectedUids = new Set();
+    let currentFilter = 'all';
+    let searchQuery   = '';
+
+    // ── Auth state ───────────────────────────────────────
+    onAuthStateChanged(auth, async (user) => {
+      hide('loading-screen');
+      if (user) {
+        try {
+          // Only read THIS user's own doc — not every user in the collection
+          const mySnap = await getDoc(doc(db, 'users', user.uid));
+          const isAdmin = mySnap.exists() && mySnap.data()?.isAdmin === true;
+          if (isAdmin) {
+            show('main-panel');
+            loadUsers();
+          } else {
+            // Not admin yet — show one-time claim gate
+            document.getElementById('claim-user-email').textContent = user.email;
+            show('claim-admin-gate');
+          }
+        } catch(err) {
+          console.error('isAdmin check failed:', err);
+          document.getElementById('claim-user-email').textContent = user.email;
+          show('claim-admin-gate');
+        }
+      } else {
+        show('auth-gate');
+      }
+    });
+
+    // ── Claim admin (first-time setup) ───────────────────
+    window.claimAdmin = async function() {
+      const code  = document.getElementById('claim-code').value.trim();
+      const errEl = document.getElementById('claim-error');
+      const btn   = document.getElementById('btn-claim');
+      errEl.textContent = '';
+      if (code !== 'HPC2026') {
+        errEl.textContent = 'Invalid admin code. Contact the system administrator.';
+        return;
+      }
+      const user = auth.currentUser;
+      if (!user) { show('auth-gate'); return; }
+      btn.textContent = 'Claiming…'; btn.disabled = true;
+      try {
+        const mySnap = await getDoc(doc(db, 'users', user.uid));
+        if (mySnap.exists()) {
+          await updateDoc(doc(db, 'users', user.uid), { isAdmin: true, active: true });
+        } else {
+          await setDoc(doc(db, 'users', user.uid), {
+            profile: { name: 'Admin', email: user.email, memberId: user.uid.slice(0,8).toUpperCase() },
+            isAdmin: true, active: true, score: 0, tier: 'Admin',
+            createdAt: new Date().toISOString()
+          });
+        }
+        hide('claim-admin-gate');
+        show('main-panel');
+        loadUsers();
+      } catch(err) {
+        errEl.textContent = 'Failed: ' + err.message;
+      } finally {
+        btn.textContent = 'CLAIM ACCESS'; btn.disabled = false;
+      }
+    };
+
+    window.cancelClaim = async function() {
+      await signOut(auth);
+      hide('claim-admin-gate');
+      show('auth-gate');
+    };
+
+
+    // ── Login ────────────────────────────────────────────
+    window.doAdminLogin = async function() {
+      const email  = document.getElementById('admin-email').value.trim();
+      const pass   = document.getElementById('admin-pass').value.trim();
+      const errEl  = document.getElementById('auth-error');
+      const btn    = document.getElementById('btn-admin-login');
+      errEl.textContent = '';
+      if (!email || !pass) { errEl.textContent = 'Please fill in all fields.'; return; }
+      btn.textContent = 'Signing in…'; btn.disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (e) {
+        errEl.textContent = 'Invalid credentials. Please try again.';
+      } finally {
+        btn.textContent = 'SIGN IN'; btn.disabled = false;
+      }
+    };
+
+    // ── Logout ───────────────────────────────────────────
+    window.doAdminLogout = async function() {
+      await signOut(auth);
+    };
+
+    // ── Load all users ────────────────────────────────────
+    async function loadUsers() {
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">⏳ Loading members…</div></td></tr>`;
+
+      try {
+        const snap = await getDocs(collection(db, 'users'));
+        allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+        renderStats();
+        renderTable();
+      } catch(e) {
+        showToast('Failed to load users: ' + e.message);
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">❌ Error loading members.</div></td></tr>`;
+      }
+    }
+
+    // ── Render stats ──────────────────────────────────────
+    function renderStats() {
+      const total    = allUsers.length;
+      const active   = allUsers.filter(u => u.active === true).length;
+      const inactive = total - active;
+      const linked   = allUsers.filter(u => u.cardId).length;
+      document.getElementById('stat-total').textContent    = total;
+      document.getElementById('stat-active').textContent   = active;
+      document.getElementById('stat-inactive').textContent = inactive;
+      document.getElementById('stat-linked').textContent   = linked;
+    }
+
+    // ── Render table ──────────────────────────────────────
+    function renderTable() {
+      const tbody = document.getElementById('users-tbody');
+      let filtered = allUsers.filter(u => {
+        const p = u.profile || {};
+        const name  = (p.name  || '').toLowerCase();
+        const email = (p.email || '').toLowerCase();
+        const phone = (p.phone || p.whatsapp || '').toLowerCase();
+        if (searchQuery && !name.includes(searchQuery) && !email.includes(searchQuery) && !phone.includes(searchQuery)) return false;
+        if (currentFilter === 'active'   && u.active !== true)  return false;
+        if (currentFilter === 'inactive' && u.active !== false)  return false;
+        if (currentFilter === 'unlinked' && u.cardId)            return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🔍</div>No users found.</div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(u => {
+        const p       = u.profile || {};
+        const name    = p.name  || (p.firstName + ' ' + (p.lastName||'')).trim() || '—';
+        const email   = p.email || '—';
+        const phone   = p.phone || p.whatsapp || '—';
+        const prof    = p.profession || '—';
+        const isActive = u.active === true;
+        const cardId  = u.cardId || '';
+        const sel     = selectedUids.has(u.uid);
+
+        return `
+          <tr id="row-${u.uid}">
+            <td class="cb-cell">
+              <input type="checkbox" id="cb-${u.uid}" ${sel ? 'checked' : ''}
+                onchange="toggleSelect('${u.uid}', this.checked)">
+            </td>
+            <td class="name-cell">
+              <strong>${esc(name)}</strong>
+              <small>${esc(phone)}</small>
+            </td>
+            <td><small style="color:var(--muted)">${esc(email)}</small></td>
+            <td><small>${esc(prof)}</small></td>
+            <td>
+              <span class="badge-pill ${isActive ? 'active' : 'inactive'}">
+                <span class="status-dot ${isActive ? 'active' : 'inactive'}"></span>
+                ${isActive ? 'Active' : 'Inactive'}
+              </span>
+            </td>
+            <td class="card-id-cell ${cardId ? 'linked' : ''}">
+              ${cardId ? esc(cardId) : '<span style="color:var(--muted)">Not linked</span>'}
+            </td>
+            <td><small style="color:var(--muted)">${u.tier || '—'}</small></td>
+            <td>
+              <button class="btn-toggle ${isActive ? 'deactivate' : 'activate'}"
+                onclick="toggleActive('${u.uid}', ${!isActive})">
+                ${isActive ? 'Deactivate' : 'Activate'}
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Toggle single user ────────────────────────────────
+    window.toggleActive = async function(uid, newState) {
+      try {
+        await updateDoc(doc(db, 'users', uid), { active: newState });
+        const u = allUsers.find(x => x.uid === uid);
+        if (u) u.active = newState;
+        renderStats(); renderTable();
+        showToast(newState ? 'Account activated ✓' : 'Account deactivated');
+      } catch(e) {
+        showToast('Error: ' + e.message);
+      }
+    };
+
+    // ── Select / deselect ─────────────────────────────────
+    window.toggleSelect = function(uid, checked) {
+      if (checked) selectedUids.add(uid);
+      else selectedUids.delete(uid);
+      updateBulkBar();
+    };
+
+    window.toggleSelectAll = function(checked) {
+      const allVisible = [...document.querySelectorAll('tbody input[type="checkbox"]')];
+      allVisible.forEach(cb => {
+        const uid = cb.id.replace('cb-', '');
+        if (checked) selectedUids.add(uid);
+        else selectedUids.delete(uid);
+        cb.checked = checked;
+      });
+      updateBulkBar();
+    };
+
+    function updateBulkBar() {
+      const bar = document.getElementById('bulk-bar');
+      const cnt = document.getElementById('bulk-count');
+      if (selectedUids.size > 0) {
+        bar.classList.add('visible');
+        cnt.textContent = selectedUids.size + ' selected';
+      } else {
+        bar.classList.remove('visible');
+      }
+    }
+
+    // ── Bulk actions ──────────────────────────────────────
+    window.bulkActivate = async function(state) {
+      if (selectedUids.size === 0) return;
+      const batch = writeBatch(db);
+      selectedUids.forEach(uid => {
+        batch.update(doc(db, 'users', uid), { active: state });
+      });
+      try {
+        await batch.commit();
+        allUsers.forEach(u => { if (selectedUids.has(u.uid)) u.active = state; });
+        selectedUids.clear();
+        renderStats(); renderTable(); updateBulkBar();
+        showToast(`${state ? 'Activated' : 'Deactivated'} ${selectedUids.size || 'selected'} accounts ✓`);
+      } catch(e) {
+        showToast('Bulk update failed: ' + e.message);
+      }
+    };
+
+    window.clearSelection = function() {
+      selectedUids.clear();
+      document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = false);
+      const selectAll = document.getElementById('cb-all');
+      if (selectAll) selectAll.checked = false;
+      updateBulkBar();
+    };
+
+    // ── Sync JotForm submissions via Apps Script ──────────
+    window.doSyncJotForm = async function() {
+      const btn  = document.getElementById('btn-sync-jotform');
+      const orig = btn.textContent;
+      btn.textContent = '⏳ Syncing…'; btn.disabled = true;
+      try {
+        const res  = await fetch(SHEETS_WEBHOOK, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'syncJotForm' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`✅ Sync done — ${data.newUsers} new member(s) registered`);
+          await loadUsers();
+        } else {
+          showToast('❌ Sync failed: ' + (data.error || 'unknown'));
+        }
+      } catch(e) {
+        showToast('❌ Sync error: ' + e.message);
+      } finally {
+        btn.textContent = orig; btn.disabled = false;
+      }
+    };
+
+
+
+    // ── Search + filter ───────────────────────────────────
+    window.doSearch = function(val) {
+      searchQuery = val.toLowerCase();
+      renderTable();
+    };
+
+    window.setFilter = function(f) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('filter-' + f).classList.add('active');
+      renderTable();
+    };
+
+    window.refreshUsers = async function() {
+      selectedUids.clear();
+      updateBulkBar();
+      await loadUsers();
+      showToast('Refreshed ✓');
+    };
+
+    // ── Toast ─────────────────────────────────────────────
+    window.showToast = function(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    };
+
+
+
+    // Enter key on login
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('admin-pass').addEventListener('keydown', e => {
+        if (e.key === 'Enter') window.doAdminLogin();
+      });
+    });
+  </script>
+</head>
+<body>
+
+  <!-- Loading -->
+  <div id="loading-screen" class="visible">
+    <img src="assets/logo1.png" alt="Haleon" style="max-width:120px;margin-bottom:20px;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Auth Gate -->
+  <div id="auth-gate">
+    <div class="auth-box">
+      <img src="assets/logo1.png" alt="Haleon Logo">
+      <h2>Admin Panel</h2>
+      <p>Sign in with your Haleon admin account</p>
+      <div class="auth-field">
+        <input type="email" id="admin-email" placeholder="Admin email" autocomplete="username">
+      </div>
+      <div class="auth-field">
+        <input type="password" id="admin-pass" placeholder="Password" autocomplete="current-password">
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+      <button class="btn-login" id="btn-admin-login" onclick="doAdminLogin()">SIGN IN</button>
+    </div>
+  </div>
+
+  <!-- Claim Admin Gate (shown when logged-in user doesn't have isAdmin yet) -->
+  <div id="claim-admin-gate">
+    <div class="auth-box">
+      <img src="assets/logo1.png" alt="Haleon Logo">
+      <h2>Claim Admin Access</h2>
+      <p>Signed in as: <strong id="claim-user-email" style="color:var(--green)">—</strong></p>
+      <p class="claim-note">Your account doesn't have admin privileges yet.<br>Enter the admin secret code to claim access.</p>
+      <div class="auth-field">
+        <input type="text" id="claim-code" placeholder="Admin secret code" autocomplete="off">
+      </div>
+      <div class="auth-error" id="claim-error"></div>
+      <button class="btn-login" id="btn-claim" onclick="claimAdmin()">CLAIM ACCESS</button>
+      <button class="btn-login" style="margin-top:10px;background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="cancelClaim()">Use Different Account</button>
+    </div>
+  </div>
+
+  <!-- Main Panel -->
+  <div id="main-panel">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <img src="assets/logo1.png" alt="Haleon">
+        <div>
+          <div class="top-bar-title">Admin Panel</div>
+          <div class="top-bar-sub">Haleon Partners Club</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="filter-btn" id="btn-sync-jotform" onclick="doSyncJotForm()" title="Fetch new JotForm submissions and register them">⬇️ Sync JotForm</button>
+        <button class="filter-btn" onclick="refreshUsers()">🔄 Refresh</button>
+        <button class="btn-logout" onclick="doAdminLogout()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="val" id="stat-total">—</div>
+        <div class="lbl">Total Members</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-active" style="color:var(--green)">—</div>
+        <div class="lbl">Active</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-inactive" style="color:var(--red)">—</div>
+        <div class="lbl">Inactive</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-linked" style="color:#60a5fa">—</div>
+        <div class="lbl">Cards Linked</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="Search by name, email, phone…"
+          oninput="doSearch(this.value)" id="search-input">
+      </div>
+      <button class="filter-btn active" id="filter-all"      onclick="setFilter('all')">All</button>
+      <button class="filter-btn"        id="filter-active"   onclick="setFilter('active')">Active</button>
+      <button class="filter-btn"        id="filter-inactive" onclick="setFilter('inactive')">Inactive</button>
+      <button class="filter-btn"        id="filter-unlinked" onclick="setFilter('unlinked')">No Card</button>
+    </div>
+
+    <!-- Bulk action bar -->
+    <div class="bulk-bar" id="bulk-bar">
+      <span id="bulk-count">0 selected</span>
+      <button class="btn-bulk activate"   onclick="bulkActivate(true)">✓ Activate</button>
+      <button class="btn-bulk deactivate" onclick="bulkActivate(false)">✕ Deactivate</button>
+      <button class="btn-bulk clear"      onclick="clearSelection()">Clear</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="cb-cell">
+              <input type="checkbox" id="cb-all" onchange="toggleSelectAll(this.checked)">
+            </th>
+            <th>Member</th>
+            <th>Email</th>
+            <th>Profession</th>
+            <th>Status</th>
+            <th>Card ID</th>
+            <th>Tier</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr id="loading-row">
+            <td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">
+              Loading members…
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div style="position:fixed;bottom:5px;left:0;width:100%;text-align:center;color:grey;font-size:12px;pointer-events:none;z-index:9999;">PM-EG-CNT-26-00007</div>
+</body>
+</html>

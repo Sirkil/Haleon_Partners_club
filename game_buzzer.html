@@ -13,7 +13,7 @@
       margin: 0;
       padding: 0;
       font-family: 'Poppins', sans-serif;
-      -webkit-tap-highlight-color: transparent; /* Removes blue tap shadow */
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -26,13 +26,60 @@
       overflow: hidden;
     }
 
-    /* Game Container stretches fully to fill screen, eliminating black bars */
+    /* Rotation Overlay for Portrait Mobile */
+    #rotate-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      color: white;
+      z-index: 100000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #rotate-overlay svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      animation: rotateIcon 2s infinite ease-in-out;
+    }
+
+    @keyframes rotateIcon {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(-90deg); }
+      100% { transform: rotate(-90deg); }
+    }
+
+    #rotate-overlay h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    #rotate-overlay p {
+      font-size: 16px;
+      color: #ccc;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+
+    /* Show overlay only on mobile portrait */
+    @media (orientation: portrait) and (max-width: 800px) {
+      #rotate-overlay { display: flex; }
+    }
+
+    /* Game Container */
     .game-container {
       position: relative;
       width: 100vw;
       height: 100vh;
       background-image: url('assets/buzzer battle/buzzerBattle_bg.png');
-      background-size: 100% 100%; /* Stretch to fill */
+      background-size: 100% 100%;
       background-position: center;
       container-type: inline-size; 
       overflow: hidden;
@@ -56,13 +103,11 @@
       transform: scale(0.95);
     }
 
-    /* Dimmed state for the player who didn't buzz */
     .dimmed {
       filter: brightness(0.4);
       pointer-events: none;
     }
 
-    /* --- Typography scaling via cqi (Container Queries) --- */
     .title-text {
       position: absolute; top: 52%; width: 100%; text-align: center;
       color: white; font-weight: 800; font-size: 5.5cqi; letter-spacing: -1px;
@@ -72,41 +117,36 @@
       color: #e5e7eb; font-weight: 500; font-size: 2.2cqi;
     }
 
-    /* --- Game Elements --- */
     #question-label {
-      position: absolute; top: 6%; left: 5%;
+      position: absolute; top: 26%; left: 5%;
       color: white; font-weight: 700; font-size: 2cqi;
       z-index: 5;
     }
     
-    /* Text constrained perfectly onto the paper banner part of the background */
     #question-text {
       position: absolute; top: 18%; left: 20%; width: 53%; height: 24%;
       display: flex; align-items: center; justify-content: center; text-align: center;
       color: #1e293b; font-weight: 700; font-size: 2.3cqi; line-height: 1.2; z-index: 5; padding: 0 10px;
     }
 
-    /* Timer precisely centered in the orange circle part of the background */
     #timer-text {
       position: absolute; top: 19%; right: 7.5%; width: 12%; height: 22%;
       display: flex; align-items: center; justify-content: center; text-align: center;
       color: black; font-weight: 800; font-size: 4cqi; z-index: 5;
     }
 
-    /* Options Wrapper dynamically sized for the purple box */
     #options-area {
       position: absolute; top: 68%; left: 50%; transform: translateX(-50%); 
       width: 70%; height: 25%; display: none; z-index: 5;
+      transition: top 0.3s ease;
     }
 
-    /* Grid mapped precisely onto the white pill cutouts with corrected spacing */
     #options-grid {
       position: absolute; top: 16%; left: 3%; width: 94%; height: 68%;
       display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
       gap: 8% 2%; z-index: 2; padding: 0;
     }
     
-    /* Text perfectly aligned inside the white pills */
     .opt-btn {
       display: flex; align-items: center; justify-content: flex-start;
       padding-left: 6%; color: black; font-weight: 700; font-size: 1.6cqi;
@@ -115,7 +155,6 @@
     }
     .opt-btn:active { background: rgba(0,0,0,0.05); border-radius: 50px; }
 
-    /* Toast Notification */
     .toast {
       position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
       background: white; color: black; padding: 10px 25px; border-radius: 50px;
@@ -123,31 +162,62 @@
       transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
     .toast.show { opacity: 1; }
+
+    .exit-btn {
+      position: absolute; top: 5%; left: 3%; 
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); 
+      padding: 8px 20px; border-radius: 8px; color: white; 
+      font-weight: 600; cursor: pointer; font-size: 1.5cqi; z-index: 20;
+      backdrop-filter: blur(5px);
+    }
+    .exit-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* =========================================
+       SINGLE PLAYER (MOBILE) MODE OVERRIDES 
+       ========================================= */
+    body.single-player-mode #btn-p1,
+    body.single-player-mode #btn-p2 {
+      display: none !important;
+    }
+
+    body.single-player-mode #options-area {
+      top: 50% !important; /* Centers the options box nicely when buzzers are hidden */
+    }
   </style>
 </head>
 <body>
+  <div id="rotate-overlay">
+    <svg fill="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0 10.87 0 9.78.16 8.74.45l2.42 2.42c.27-.03.55-.05.84-.05 1.55 0 2.97.58 4.05 1.55l-2.02 2.02h5.5V.95l-3.05 1.57zm-8.96 18.96c-3.27-1.55-5.61-4.72-5.97-8.48h-1.5C.56 19.16 5.71 24 12 24c1.13 0 2.22-.16 3.26-.45l-2.42-2.42c-.27.03-.55.05-.84.05-1.55 0-2.97-.58-4.05-1.55l2.02-2.02h-5.5v5.5l3.05-1.57z"/>
+    </svg>
+    <h2>Rotate Device</h2>
+    <p>Please rotate your phone to landscape mode<br>for the best gaming experience.</p>
+  </div>
+
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
   <div class="toast" id="toast"></div>
 
   <div class="game-container">
     
     <div class="screen active-screen" id="screen-start">
+      <button class="exit-btn" onclick="exitToApp()">Exit to App</button>
+      
       <img src="assets/buzzer battle/brought to you by centrum.png" alt="Sponsor" style="position: absolute; top: 6%; right: 4%; width: 16%;">
       <img src="assets/buzzer battle/buzzerBattle_gameLogo.png" alt="Logo" style="position: absolute; top: 12%; left: 50%; transform: translateX(-50%); width: 35%;">
       
       <div class="title-text">Nutrition Battle</div>
-      <div class="subtitle-text">2 Players. Read the question and be the first to buzz in!</div>
+      <div class="subtitle-text" id="start-subtitle">2 Players. Read the question and be the first to buzz in!</div>
       
       <img src="assets/buzzer battle/startGameButton.png" alt="Start Game" class="img-btn" style="position: absolute; top: 80%; left: 50%; transform: translateX(-50%); width: 18%;" onclick="startGame()">
     </div>
 
     <div class="screen" id="screen-game">
-      
       <img src="assets/buzzer battle/questionBg.png" style="width: 100%; height: 100%; object-fit: fill; position: absolute; top: 0; left: 0; z-index: 1;">
 
       <div id="question-label">Question 1</div>
       <img src="assets/buzzer battle/brought to you by centrum.png" alt="Centrum" style="position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 12%; z-index: 5;">
-      <button style="position: absolute; top: 5%; right: 3%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; font-size: 1.5cqi; z-index: 20;" onclick="location.reload()">Exit</button>
+      
+      <button class="exit-btn" onclick="exitToApp()">Exit to App</button>
 
       <div id="question-text">Loading question...</div>
       <div id="timer-text">15s</div>
@@ -167,12 +237,13 @@
     </div>
 
     <div class="screen" id="screen-result">
+      <button class="exit-btn" onclick="exitToApp()">Exit to App</button>
       <img src="assets/buzzer battle/brought to you by centrum.png" alt="Centrum" style="position: absolute; top: 10%; left: 50%; transform: translateX(-50%); width: 20%;">
       
-      <div class="title-text" style="top: 25%; font-size: 6cqi;">Battle Over!</div>
+      <div class="title-text" style="top: 25%; font-size: 6cqi; padding-top: 20px;">Battle Over!</div>
       
       <div id="result-actions" style="position: absolute; top: 45%; left: 0; width: 100%; text-align: center;">
-        </div>
+      </div>
     </div>
 
   </div>
@@ -181,6 +252,19 @@
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
     
+    // Improved Mobile/Single Player Detection (Catches landscape devices effectively)
+    const isSinglePlayerMode = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+                         ('ontouchstart' in window) || 
+                         (navigator.maxTouchPoints > 0) || 
+                         window.innerWidth <= 1024 ||
+                         uid !== null;
+    
+    // Apply CSS overrides if detected as mobile/web player
+    if (isSinglePlayerMode) {
+        document.body.classList.add('single-player-mode');
+        document.getElementById('start-subtitle').textContent = "Single Player. Read the question and choose the right answer!";
+    }
+
     let buzzerState = 'idle';
     let buzzerScore1 = 0;
     let buzzerScore2 = 0;
@@ -196,6 +280,14 @@
       { q: "What additional benefit is emphasized in the Centrum Men SKU?", options: ["Eye lubrication", "Heart function support", "Liver detoxification", "Gut microbiome balance"], a: 1 },
       { q: "Which pair represents the main SKUs in the Centrum Core range?", options: ["Kids & Teens", "Energy & Immunity", "Adults & 50+ (Silver)", "Prenatal & Postnatal"], a: 2 }
     ];
+
+    function exitToApp() {
+        if (window.opener) {
+            window.close();
+        } else {
+            history.back();
+        }
+    }
 
     function startGame() {
       document.getElementById('screen-start').classList.remove('active-screen');
@@ -216,13 +308,7 @@
           return; 
         }
 
-        buzzerState = 'waiting_buzz'; 
         buzzerTime = 15;
-        
-        // Reset UI states
-        document.getElementById('btn-p1').classList.remove('dimmed');
-        document.getElementById('btn-p2').classList.remove('dimmed');
-        document.getElementById('options-area').style.display = 'none';
         
         const qData = buzzerQuestions[buzzerLevel];
         document.getElementById('question-label').textContent = `Question ${buzzerLevel + 1}`;
@@ -236,19 +322,31 @@
         const timerEl = document.getElementById('timer-text');
         timerEl.textContent = '15s';
         timerEl.style.color = 'black';
+
+        if (isSinglePlayerMode) {
+            // Mobile: Skip buzzer, jump straight to options
+            buzzerState = 'waiting_answer';
+            activeBuzzer = 1; // Default to player 1 score
+            document.getElementById('options-area').style.display = 'block';
+        } else {
+            // Desktop: Wait for buzz
+            buzzerState = 'waiting_buzz'; 
+            document.getElementById('btn-p1').classList.remove('dimmed');
+            document.getElementById('btn-p2').classList.remove('dimmed');
+            document.getElementById('options-area').style.display = 'none';
+        }
         
         clearInterval(buzzerTimerId);
         buzzerTimerId = setInterval(() => {
             buzzerTime--; 
             
-            // Format to keep two digits for aesthetics (e.g. 09s)
             timerEl.textContent = (buzzerTime < 10 ? "0" + buzzerTime : buzzerTime) + 's';
             
-            if (buzzerTime <= 5) timerEl.style.color = '#E91E63'; // Turn red when low
+            if (buzzerTime <= 5) timerEl.style.color = '#E91E63'; 
 
             if (buzzerTime <= 0) { 
               clearInterval(buzzerTimerId); 
-              showToast("Time's up! No one buzzed.");
+              showToast("Time's up!");
               buzzerLevel++; 
               setTimeout(nextBuzzerLevel, 1500); 
             }
@@ -256,18 +354,27 @@
     }
 
     function handleTouchBuzz(player) {
-      if (buzzerState !== 'waiting_buzz') return;
+      if (buzzerState !== 'waiting_buzz' || isSinglePlayerMode) return;
       
       buzzerState = 'waiting_answer'; 
       activeBuzzer = player; 
       clearInterval(buzzerTimerId);
       
-      // Dim the opponent to show who has control
       if (player === 1) document.getElementById('btn-p2').classList.add('dimmed');
       else document.getElementById('btn-p1').classList.add('dimmed');
       
       document.getElementById('options-area').style.display = 'block';
     }
+
+    window.addEventListener('keydown', (e) => {
+        let key = e.key.toLowerCase();
+        if (document.getElementById('screen-game').classList.contains('active-screen') && !isSinglePlayerMode) {
+            if (buzzerState === 'waiting_buzz') {
+                if (key === 'q' || key === 'e') handleTouchBuzz(1);
+                if (key === 'p' || key === 'o') handleTouchBuzz(2);
+            }
+        }
+    });
 
     function handleAnswer(selectedIndex) {
         if (buzzerState !== 'waiting_answer') return;
@@ -278,27 +385,24 @@
         let isCorrect = (selectedIndex === buzzerQuestions[buzzerLevel].a);
         
         if (isCorrect) {
-            showToast(`Correct! Player ${activeBuzzer} +20 pts`);
+            if (isSinglePlayerMode) {
+                showToast("Correct! +20 pts");
+            } else {
+                showToast(`Correct! Player ${activeBuzzer} +20 pts`);
+            }
             if (activeBuzzer === 1) buzzerScore1 += 20; 
             else buzzerScore2 += 20;
         } else {
-            showToast(`Wrong! Player ${activeBuzzer} missed it.`);
+            if (isSinglePlayerMode) {
+                showToast("Wrong!");
+            } else {
+                showToast(`Wrong! Player ${activeBuzzer} missed it.`);
+            }
         }
         
         buzzerLevel++; 
         setTimeout(nextBuzzerLevel, 1500);
     }
-
-    // Keyboard support for debugging/PC use
-    window.addEventListener('keydown', (e) => {
-        let key = e.key.toLowerCase();
-        if (document.getElementById('screen-game').classList.contains('active-screen')) {
-            if (buzzerState === 'waiting_buzz') {
-                if (key === 'q' || key === 'e') handleTouchBuzz(1);
-                if (key === 'p' || key === 'o') handleTouchBuzz(2);
-            }
-        }
-    });
 
     function endBuzzer() {
         document.getElementById('screen-game').classList.remove('active-screen');
@@ -307,41 +411,73 @@
         if (buzzerScore1 > 0 || buzzerScore2 > 0) launchConfetti(3000);
         
         const actionsDiv = document.getElementById('result-actions');
-        actionsDiv.innerHTML = `
-          <div style="font-size:3.5cqi; font-weight:800; margin-bottom:30px; color: white; display: flex; justify-content: center; gap: 40px;">
-            <span style="color:#FF9800;">Player 1: ${buzzerScore1} pts</span> 
-            <span style="color:#2196F3;">Player 2: ${buzzerScore2} pts</span>
-          </div>
-          <img src="assets/buzzer battle/collectpoints_button.png" class="img-btn" style="width: 25%; display: block; margin: 0 auto;" onclick="processPoints()">
-        `;
+
+        if (isSinglePlayerMode) {
+            actionsDiv.innerHTML = `
+              <div style="font-size:4cqi; font-weight:800; margin-bottom:30px; color: white;">
+                <span style="color:#FF9800;">Your Score: ${buzzerScore1} pts</span> 
+              </div>
+              <img src="assets/buzzer battle/collectpoints_button.png" class="img-btn" style="width: 25%; display: block; margin: 0 auto;" onclick="processPoints()">
+            `;
+        } else {
+            actionsDiv.innerHTML = `
+              <div style="font-size:3.5cqi; font-weight:800; margin-bottom:30px; color: white; display: flex; justify-content: center; gap: 40px;">
+                <span style="color:#FF9800;">Player 1: ${buzzerScore1} pts</span> 
+                <span style="color:#2196F3;">Player 2: ${buzzerScore2} pts</span>
+              </div>
+              <img src="assets/buzzer battle/collectpoints_button.png" class="img-btn" style="width: 25%; display: block; margin: 0 auto;" onclick="processPoints()">
+            `;
+        }
     }
 
     function processPoints() {
         const actionsDiv = document.getElementById('result-actions');
         actionsDiv.innerHTML = "<p style='font-size: 3cqi; font-weight: 700; color: white;'>Generating Rewards...</p>";
 
-        const qr1 = qrcode(0, 'L'); 
-        qr1.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore1, nonce: Date.now() })); 
-        qr1.make();
-        
-        const qr2 = qrcode(0, 'L'); 
-        qr2.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore2, nonce: Date.now() + 1 })); 
-        qr2.make();
-        
-        actionsDiv.innerHTML = `
-            <div style="display:flex; justify-content:center; gap:5%; margin-bottom:20px;">
-                <div style="background:rgba(255,255,255,0.9); padding:1.5%; border-radius:16px;">
-                    <h3 style="margin-bottom:5px; color:#FF9800; font-size: 2cqi;">P1: ${buzzerScore1} pts</h3>
-                    <div style="background:white; padding:5px; border-radius:8px;">${qr1.createImgTag(4)}</div>
+        if (uid) {
+            window.location.href = `index.html?rewardGame=buzzer&rewardPts=${buzzerScore1}`;
+            return;
+        }
+
+        if (isSinglePlayerMode) {
+            const qr1 = qrcode(0, 'L'); 
+            qr1.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore1, nonce: Date.now() })); 
+            qr1.make();
+            
+            actionsDiv.innerHTML = `
+                <div style="display:flex; justify-content:center; gap:5%; margin-bottom:20px;">
+                    <div style="background:rgba(255,255,255,0.9); padding:1.5%; border-radius:16px;">
+                        <h3 style="margin-bottom:5px; color:#FF9800; font-size: 2cqi;">Reward: ${buzzerScore1} pts</h3>
+                        <div style="background:white; padding:5px; border-radius:8px;">${qr1.createImgTag(4)}</div>
+                    </div>
                 </div>
-                <div style="background:rgba(255,255,255,0.9); padding:1.5%; border-radius:16px;">
-                    <h3 style="margin-bottom:5px; color:#2196F3; font-size: 2cqi;">P2: ${buzzerScore2} pts</h3>
-                    <div style="background:white; padding:5px; border-radius:8px;">${qr2.createImgTag(4)}</div>
+                <p style="color:#e5e7eb; font-size:1.8cqi; margin-bottom: 20px; font-weight: 500;">Scan QR with your App to collect points.</p>
+                <img src="assets/buzzer battle/StartNewGameButton.png" class="img-btn" style="width: 18%; display: block; margin: 0 auto;" onclick="location.reload()">
+            `;
+        } else {
+            const qr1 = qrcode(0, 'L'); 
+            qr1.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore1, nonce: Date.now() })); 
+            qr1.make();
+            
+            const qr2 = qrcode(0, 'L'); 
+            qr2.addData(JSON.stringify({ type: "game_reward", gameId: "buzzer", points: buzzerScore2, nonce: Date.now() + 1 })); 
+            qr2.make();
+            
+            actionsDiv.innerHTML = `
+                <div style="display:flex; justify-content:center; gap:5%; margin-bottom:20px;">
+                    <div style="background:rgba(255,255,255,0.9); padding:1.5%; border-radius:16px;">
+                        <h3 style="margin-bottom:5px; color:#FF9800; font-size: 2cqi;">P1: ${buzzerScore1} pts</h3>
+                        <div style="background:white; padding:5px; border-radius:8px;">${qr1.createImgTag(4)}</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.9); padding:1.5%; border-radius:16px;">
+                        <h3 style="margin-bottom:5px; color:#2196F3; font-size: 2cqi;">P2: ${buzzerScore2} pts</h3>
+                        <div style="background:white; padding:5px; border-radius:8px;">${qr2.createImgTag(4)}</div>
+                    </div>
                 </div>
-            </div>
-            <p style="color:#e5e7eb; font-size:1.8cqi; margin-bottom: 20px; font-weight: 500;">Scan QR with your App to collect points.</p>
-            <img src="assets/buzzer battle/StartNewGameButton.png" class="img-btn" style="width: 18%; display: block; margin: 0 auto;" onclick="location.reload()">
-        `;
+                <p style="color:#e5e7eb; font-size:1.8cqi; margin-bottom: 20px; font-weight: 500;">Scan QR with your App to collect points.</p>
+                <img src="assets/buzzer battle/StartNewGameButton.png" class="img-btn" style="width: 18%; display: block; margin: 0 auto;" onclick="location.reload()">
+            `;
+        }
     }
 
     function showToast(msg) {
