@@ -6,6 +6,7 @@
   <title>Perfect Shelf Builder</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
   <style>
     :root {
@@ -66,7 +67,6 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
 
-    /* Show overlay only on mobile portrait */
     @media (orientation: portrait) and (max-width: 800px) {
       #rotate-overlay { display: flex; }
     }
@@ -83,6 +83,7 @@
       justify-content: center;
     }
 
+    /* Fixed Scale Container */
     .game-wrapper {
       position: relative;
       width: 100%;
@@ -91,8 +92,7 @@
       max-width: calc(100dvh * (16 / 9)); 
       max-height: calc(100vw * (9 / 16)); 
       overflow: hidden;
-      /* THIS ENABLES CONTAINER SCALING */
-      container-type: inline-size;
+      container-type: inline-size; 
     }
 
     .screen {
@@ -111,7 +111,6 @@
       display: flex;
     }
 
-    /* Top Logos - Converted to cqi so they shrink smoothly */
     .brand-logos {
       position: absolute;
       top: 3cqi;
@@ -140,7 +139,6 @@
       z-index: -1;
     }
 
-    /* Converted all fixed px/rem sizes to cqi units */
     #start-screen .game-logo {
       width: 25cqi;
       margin-bottom: 2cqi;
@@ -184,13 +182,12 @@
       display: block;
     }
 
-    /* --- Game Screen (Fullscreen Background) --- */
+    /* --- Game Screen --- */
     #game-screen {
       background: url('assets/Perfect Shelf/BG.png') no-repeat center center;
       background-size: cover; 
     }
 
-    /* Game Area to hold relative coordinates for shelves */
     .game-area {
       position: relative;
       width: 100%;
@@ -198,76 +195,73 @@
       max-width: 1600px; 
     }
 
-    /* --- Top Shelf (Centrum row) --- */
-    .shelf-row-top {
+    /* Shelves - Positioned perfectly over the background stand */
+    .shelf-row-1 {
       position: absolute;
-      top: 24%;
-      left: 23%;
-      width: 54%;
-      height: 23%; 
-      display: flex;
-      justify-content: space-between;
+      top: 30%; left: 32%; width: 35%; height: 10%;gap: 8px;
+      display: flex; align-items: flex-end; padding-bottom: 1%;
     }
 
-    /* --- Bottom Shelf (Panadol row) --- */
-    .shelf-row-bottom {
+    .shelf-row-3 {
       position: absolute;
-      top: 49%; 
-      left: 23%;
-      width: 54%;
-      height: 23%;
-      display: flex;
-      justify-content: space-between;
+      top: 54%; left: 32%; width: 41%; height: 11%; gap: 20px;
+      display: flex; align-items: flex-end; padding-bottom: 1%;
+    }
+
+    .shelf-row-4 {
+      position: absolute;
+      top: 65%; left:35%; width: 41%; height: 11%; gap: 20px;
+      display: flex; align-items: flex-end; padding-bottom: 1%;
     }
 
     .drop-zone {
-      width: 30%;
-      height: 100%;
+      height: 90%;
+      flex: 1; 
+      max-width: 15%; 
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      transition: background 0.2s;
       position: relative;
     }
 
-    /* Highlight background completely removed to prevent the stuck box issue */
     .drop-zone.highlight {
-      background: transparent;
+      background: rgba(255, 255, 255, 0.25); 
     }
 
-    /* Starting items frame - Matches the background boxes */
+    /* 2x3 Grid on the right using the Rectangle background */
     .items-container {
       position: absolute;
-      bottom: 0%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80%;
-      display: flex;
-      justify-content: center;
-      gap: 1%;
-      height: 18%;
+      top: 20%; 
+      right: 12%; /* Moved further left from the edge */
+      width: 26%; 
+      height: 60%;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 1%; /* Reduced area between packs */
       background: transparent;
-      border: none;
-      padding: 1% 0;
-      align-items: center;
+      padding: 0;
     }
 
     .start-slot {
-      width: 13.5%;
+      width: 100%; 
       height: 100%;
-      display: flex;
-      align-items: center;
+      display: flex; 
+      align-items: center; 
       justify-content: center;
-      background: transparent;
+      background: url('assets/Perfect Shelf/Rectangle.png') no-repeat center center;
+      background-size: 95%; /* Enlarged rectangle size to fill the slot */
       position: relative;
-      overflow: hidden;
     }
 
-    /* Base styles for the packs */
     .draggable-item {
       width: auto;
-      height: 90%;
-      max-width: 100%;
-      max-height: 100%;
+      height: auto;
+      max-width: 40%; /* Reduced size of the packs */
+      max-height: 40%; /* Reduced size of the packs */
       object-fit: contain;
       cursor: grab;
       touch-action: none;
@@ -277,31 +271,36 @@
       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
     }
 
-    /* Dim the original item in the box once it is successfully placed */
     .draggable-item.placed {
-      opacity: 0.4;
+      opacity: 0; 
       cursor: default;
     }
 
-    /* The cloned pack that follows your mouse/finger */
     .is-dragging {
       position: fixed !important;
       z-index: 2000 !important;
-      pointer-events: none; /* Prevents clone from interfering with drop zone calculation */
+      pointer-events: none; 
       transform: scale(1.1);
       filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
     }
 
-    /* Styles applied to the pack ONLY when it is successfully sitting on the shelf */
+/* Standardize the base size for ALL packs on the shelf */
     .drop-zone .draggable-item {
       width: auto;
-      height: 85%;
-      max-width: 80%;
+      height: 85%;      /* Set your desired standard height here */
+      max-width: 85%;   /* Set your desired standard width here */
       max-height: 85%;
       margin-bottom: 0;
       cursor: default;
+      opacity: 1; 
     }
 
+    /* Target ONLY the Centrum packs on the shelf to make them larger */
+    .drop-zone .draggable-item[data-group="centrum"] {
+      height: 100%;     /* Make this percentage larger than the base size above */
+      max-width: 100%;
+      max-height: 100%;
+    }
     /* --- Dialog Overlay --- */
     .dialog-overlay {
       position: fixed;
@@ -327,7 +326,7 @@
       border-radius: 20px;
       padding: 30px;
       text-align: center;
-      max-width: 400px;
+      max-width: 500px;
       width: 90%;
       transform: translateY(20px);
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -356,42 +355,18 @@
       font-weight: 600;
       margin-bottom: 20px;
       background: rgba(16, 185, 129, 0.1);
-      padding: 10px;
+      padding: 15px;
       border-radius: 10px;
+      line-height: 1.4;
     }
 
     .dialog-error-title {
       color: var(--red);
     }
 
-    /* End Screens Logic */
+    /* End Screens */
     .end-screen-bg {
       background: rgba(0,0,0,0.85);
-    }
-
-    .end-screen-bg h1 {
-      font-size: 5cqi;
-      color: var(--green);
-      margin-bottom: 1cqi;
-    }
-
-    .end-screen-bg p {
-      font-size: 1.8cqi;
-      margin-bottom: 3cqi;
-    }
-
-    .qr-container {
-      background: #fff;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      display: inline-block;
-    }
-
-    .qr-container img {
-      width: 150px;
-      height: 150px;
-      display: block;
     }
 
     @keyframes float {
@@ -401,6 +376,8 @@
   </style>
 </head>
 <body>
+  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
+
   <div id="rotate-overlay">
     <svg fill="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0 10.87 0 9.78.16 8.74.45l2.42 2.42c.27-.03.55-.05.84-.05 1.55 0 2.97.58 4.05 1.55l-2.02 2.02h5.5V.95l-3.05 1.57zm-8.96 18.96c-3.27-1.55-5.61-4.72-5.97-8.48h-1.5C.56 19.16 5.71 24 12 24c1.13 0 2.22-.16 3.26-.45l-2.42-2.42c-.27.03-.55.05-.84.05-1.55 0-2.97-.58-4.05-1.55l2.02-2.02h-5.5v5.5l3.05-1.57z"/>
@@ -426,46 +403,38 @@
     <div id="game-screen" class="screen">
       <div class="game-area" id="game-area">
         
-        <div class="shelf-row-top">
-          <div class="drop-zone" data-slot="1"></div>
-          <div class="drop-zone" data-slot="2"></div>
-          <div class="drop-zone" data-slot="3"></div>
+        <div class="shelf-row-1">
+          <div class="drop-zone" data-group="centrum"></div>
+          <div class="drop-zone" data-group="centrum"></div>
+          <div class="drop-zone" data-group="centrum"></div>
         </div>
 
-        <div class="shelf-row-bottom">
-          <div class="drop-zone" data-slot="4"></div>
-          <div class="drop-zone" data-slot="5"></div>
-          <div class="drop-zone" data-slot="6"></div>
+        <div class="shelf-row-3">
+          <div class="drop-zone" data-group="panadol-regular"></div>
+          <div class="drop-zone" data-group="panadol-regular"></div>
+        </div>
+
+        <div class="shelf-row-4">
+          <div class="drop-zone" data-group="panadol-extra"></div>
         </div>
 
         <div class="items-container">
-          <div class="start-slot" id="slot-1"><img src="assets/Perfect Shelf/Centrum_energy_pack.png" class="draggable-item" data-id="1" alt="Centrum Energy"></div>
-          <div class="start-slot" id="slot-2"><img src="assets/Perfect Shelf/CENTRUM_MEN.png" class="draggable-item" data-id="2" alt="Centrum Men"></div>
-          <div class="start-slot" id="slot-3"><img src="assets/Perfect Shelf/CENTRUM_WOMEN.png" class="draggable-item" data-id="3" alt="Centrum Women"></div>
-          <div class="start-slot" id="slot-4"><img src="assets/Perfect Shelf/Panadol advance.png" class="draggable-item" data-id="4" alt="Panadol Advance"></div>
-          <div class="start-slot" id="slot-5"><img src="assets/Perfect Shelf/panadol_extra.png" class="draggable-item" data-id="5" alt="Panadol Extra"></div>
-          <div class="start-slot" id="slot-6"><img src="assets/Perfect Shelf/Cold & Flu Day Pack.png" class="draggable-item" data-id="6" alt="Cold & Flu Day"></div>
+          <div class="start-slot" id="slot-1"><img src="assets/Perfect Shelf/Centrum_energy_pack.png" class="draggable-item" data-id="1" data-group="centrum" alt="Centrum Energy"></div>
+          <div class="start-slot" id="slot-2"><img src="assets/Perfect Shelf/CENTRUM_MEN.png" class="draggable-item" data-id="2" data-group="centrum" alt="Centrum Men"></div>
+          <div class="start-slot" id="slot-3"><img src="assets/Perfect Shelf/CENTRUM_WOMEN.png" class="draggable-item" data-id="3" data-group="centrum" alt="Centrum Women"></div>
+          <div class="start-slot" id="slot-4"><img src="assets/Perfect Shelf/Panadol advance.png" class="draggable-item" data-id="4" data-group="panadol-regular" alt="Panadol Advance"></div>
+          <div class="start-slot" id="slot-6"><img src="assets/Perfect Shelf/Cold & Flu Day Pack.png" class="draggable-item" data-id="6" data-group="panadol-regular" alt="Cold & Flu Day"></div>
+          <div class="start-slot" id="slot-5"><img src="assets/Perfect Shelf/panadol_extra.png" class="draggable-item" data-id="5" data-group="panadol-extra" alt="Panadol Extra"></div>
         </div>
 
       </div>
     </div>
 
-    <div id="collect-screen" class="screen end-screen-bg">
-      <h1>Perfect!</h1>
-      <p>You have successfully arranged the shelf and earned <strong>120 pts</strong>!</p>
-      <button class="btn-action" onclick="collectPoints()">Collect Points</button>
-    </div>
-
-    <div id="qr-screen" class="screen end-screen-bg">
-      <h1>Scan to Claim</h1>
-      <p>Show this QR code to the representative to collect your points.</p>
-      <div class="qr-container">
-        <img src="assets/Perfect Shelf/qrcode.png" alt="QR Code" onerror="this.outerHTML='<div style=\'width:150px; height:150px; background:#ccc; display:flex; align-items:center; justify-content:center; color:#000;\'>QR Code Placeholder</div>'">
-      </div>
-      <br>
-      <button class="btn-action" onclick="location.reload()" style="padding:0; background:none;">
-        <img src="assets/Perfect Shelf/startNewGameButton.png" alt="Play Again" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'location.reload()\'>Play Again</button>'">
-      </button>
+    <div id="screen-result" class="screen end-screen-bg" style="text-align: center; justify-content: center; z-index: 20;">
+      <div style="font-size: 5cqi; margin-bottom: 10px;">🏆</div>
+      <div style="color: white; font-size: 4cqi; font-weight: 800;" id="result-title">Perfect!</div>
+      <div style="font-weight:800; font-size: 4.5cqi; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">120 pts</div>
+      <div id="result-actions" style="width: 100%;"></div>
     </div>
 
   </div>
@@ -482,13 +451,18 @@
   </div>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+    const GAME_ID = 'placement';
+    const totalScore = 120; // Fixed score for completing the shelf
+
     const productsData = {
-      "1": { name: "Centrum Energy", claim: "Supports daily energy levels", image: "assets/Perfect Shelf/Centrum_energy_pack.png" },
-      "2": { name: "Centrum Men", claim: "Customized formula for Men", image: "assets/Perfect Shelf/CENTRUM_MEN.png" },
-      "3": { name: "Centrum Women", claim: "Customized formula for Women", image: "assets/Perfect Shelf/CENTRUM_WOMEN.png" },
-      "4": { name: "Panadol Advance", claim: "Advanced absorption for fast relief", image: "assets/Perfect Shelf/Panadol advance.png" },
-      "5": { name: "Panadol Extra", claim: "Tough on strong pain", image: "assets/Perfect Shelf/panadol_extra.png" },
-      "6": { name: "Cold & Flu Day", claim: "Non-drowsy relief for cold & flu", image: "assets/Perfect Shelf/Cold & Flu Day Pack.png" }
+      "1": { name: "Centrum Energy", claim: "World’s #1 Multivitamin", image: "assets/Perfect Shelf/Centrum_energy_pack.png" },
+      "2": { name: "Centrum Men", claim: "formulated with essential nutrients to respond to health needs of active men", image: "assets/Perfect Shelf/CENTRUM_MEN.png" },
+      "3": { name: "Centrum Women", claim: "crafted with a combination of vitamins and minerals especially tailored for women", image: "assets/Perfect Shelf/CENTRUM_WOMEN.png" },
+      "4": { name: "Panadol Advance", claim: "Effective pain relief, gentle on stomach, faster absorbed.", image: "assets/Perfect Shelf/Panadol advance.png" },
+      "5": { name: "Panadol Extra", claim: "Faster disintegration than the standard paracetamol", image: "assets/Perfect Shelf/panadol_extra.png" },
+      "6": { name: "Cold & Flu Day", claim: "Effective relief from blocked & runny nose, Does not cause drowsiness", image: "assets/Perfect Shelf/Cold & Flu Day Pack.png" }
     };
 
     function showScreen(screenId) {
@@ -501,10 +475,6 @@
       setTimeout(() => document.getElementById('brand-logos').style.display = 'none', 300);
       showScreen('game-screen');
       initDragAndDrop();
-    }
-
-    function collectPoints() {
-      showScreen('qr-screen');
     }
 
     function showDialog(type, itemId) {
@@ -539,9 +509,65 @@
     function closeDialog() {
       document.getElementById('dialog-overlay').classList.remove('show');
       if (placedItemsCount === totalItems) {
-        // Automatically go to collect screen after last success dialog is closed
-        setTimeout(() => showScreen('collect-screen'), 300);
+        setTimeout(() => finishGame(), 300);
       }
+    }
+
+    function finishGame() {
+      showScreen('screen-result');
+      document.getElementById('result-score').textContent = totalScore + " pts";
+
+      if(totalScore > 0) launchConfetti(3000); 
+
+      const actionsDiv = document.getElementById('result-actions');
+      actionsDiv.innerHTML = `<button class="btn-action" onclick="processPoints()">Collect Points</button>`;
+    }
+
+    function processPoints() {
+      const actionsDiv = document.getElementById('result-actions');
+      actionsDiv.innerHTML = "<div style='color: white;'>Processing...</div>";
+
+      if (uid) {
+        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${totalScore}`;
+      } else {
+        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: totalScore, nonce: Date.now() });
+        const qr = qrcode(0, 'L');
+        qr.addData(payload);
+        qr.make();
+        actionsDiv.innerHTML = `
+          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
+            ${qr.createImgTag(5)}
+          </div>
+          <p style="color:#ccc; font-size: 1.5cqi; margin-bottom: 20px;">Scan this QR with your representative to collect points.</p>
+          
+          <button class="btn-action" onclick="location.reload()" style="padding:0; background:none;">
+            <img src="assets/Perfect Shelf/startNewGameButton.png" alt="Play Again" onerror="this.outerHTML='<button class=\\'btn-action\\' onclick=\\'location.reload()\\'>Play Again</button>'">
+          </button>
+        `;
+      }
+    }
+
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+      canvas.style.display = "block";
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const pieces = [];
+      const colors = ["#10B981", "#22c55e", "#ffffff", "#facc15", "#60a5fa", "#f472b6"];
+      for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
+      const end = Date.now() + duration;
+      (function frame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((p) => {
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color;
+          ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore();
+          p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs;
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+        else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
+      })();
     }
 
     let draggedItem = null;
@@ -561,6 +587,7 @@
 
     function startDrag(e) {
       const original = e.target;
+      
       if (original.dataset.placed === "true") return;
 
       original.setPointerCapture(e.pointerId);
@@ -623,14 +650,15 @@
       if (!draggedItem) return;
 
       if (currentDropZone) {
+        const itemGroup = draggedItem.dataset.group;
+        const zoneGroup = currentDropZone.dataset.group;
         const itemId = draggedItem.dataset.id;
-        const slotId = currentDropZone.dataset.slot;
 
         currentDropZone.classList.remove('highlight');
 
-        if (itemId === slotId) {
+        if (itemGroup === zoneGroup && currentDropZone.children.length === 0) {
           draggedItem.classList.remove('is-dragging');
-          draggedItem.style.width = '';
+          draggedItem.style.width = ''; 
           draggedItem.style.height = '';
           draggedItem.style.left = '';
           draggedItem.style.top = '';
