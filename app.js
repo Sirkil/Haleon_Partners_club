@@ -558,23 +558,22 @@ function updateProfilePage() {
   // Set member name on the card
   document.getElementById('card-name-back').textContent = state.user.name; 
 
-  // --- 100% RELIABLE LOCAL QR CODE GENERATION ---
-  // 1. Get the phone number
-  const userPhone = state.user.phone || state.user.whatsapp || '00000000000';
+// --- 100% RELIABLE LOCAL QR CODE GENERATION ---
+  // 1. Get the phone number securely
+  const userPhone = state.user?.phone || state.user?.whatsapp || '00000000000';
   const qrText = 'H' + userPhone;
-  
+
   const qrContainer = document.querySelector('.cb-qr');
   
   if (qrContainer) {
-    // 2. Clear out the old broken <img> tag
+    // 2. Completely empty the container to prevent ghost images from a previous account
     qrContainer.innerHTML = '';
-    
-    // 3. Force the container background to white to hide the dummy QR code
     qrContainer.style.backgroundColor = '#ffffff';
     qrContainer.style.padding = '6px';
     
-    // 4. Generate the QR code locally directly in the browser!
-    new QRCode(qrContainer, {
+    // 3. Generate the QR code in an off-screen temporary div
+    const tempDiv = document.createElement('div');
+    new QRCode(tempDiv, {
         text: qrText,
         width: 150,
         height: 150,
@@ -583,13 +582,19 @@ function updateProfilePage() {
         correctLevel : QRCode.CorrectLevel.M
     });
     
-    // 5. Ensure the generated graphic fits nicely inside the box
+    // 4. Force a slight delay to ensure qrcode.js finishes drawing the new data
     setTimeout(() => {
-      const generatedGraphic = qrContainer.querySelector('img') || qrContainer.querySelector('canvas');
-      if (generatedGraphic) {
-        generatedGraphic.style.width = '100%';
-        generatedGraphic.style.height = '100%';
-        generatedGraphic.style.objectFit = 'contain';
+      const canvas = tempDiv.querySelector('canvas');
+      if (canvas) {
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL("image/png");
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'contain';
+        
+        // Clear one more time just before appending to avoid double images
+        qrContainer.innerHTML = '';
+        qrContainer.appendChild(img);
       }
     }, 50);
   }
@@ -597,8 +602,7 @@ function updateProfilePage() {
 
   // Update Stats & Profile Info
   document.getElementById('stat-pts').textContent = state.score.toLocaleString(); 
-  document.getElementById('stat-quizzes').textContent = Object.keys(state.gamesCompleted || {}).length; 
-  document.getElementById('stat-tier').textContent = tier.name; 
+  document.getElementById('stat-quizzes').textContent = Object.keys(state.gamesCompleted || {}).length;
   document.getElementById('info-fname').textContent = state.user.firstName || state.user.name || '—'; 
   document.getElementById('info-lname').textContent = state.user.lastName || '—'; 
   document.getElementById('info-email').textContent = state.user.email; 

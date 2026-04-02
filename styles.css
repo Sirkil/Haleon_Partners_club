@@ -265,7 +265,6 @@ a { color: var(--green); text-decoration: none; font-weight: 600; cursor: pointe
   /* font-size scales with the card width using 3vw, clamped for all screens */
   font-size: clamp(10px, 3.5vw, 22px);
   color: #ffffff;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -273,7 +272,7 @@ a { color: var(--green); text-decoration: none; font-weight: 600; cursor: pointe
   line-height: 1.1;
 }
 
-.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
 .stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
 .stat-val { font-weight: 700; font-size: 1.5rem; color: var(--green); }
 .stat-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; font-weight: 500;}

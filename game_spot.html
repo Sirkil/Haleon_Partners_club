@@ -3,12 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Spot the Opportunity</title>
+  <title>Spot The Oppurtuinity</title>
+  
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
-  <style>
+<style>
+    :root {
+      --bg: #000000;
+      --text: #ffffff;
+      --green: #10B981;
+      --red: #ef4444;
+      --dialog-bg: rgba(10, 10, 10, 0.95);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      user-select: none;
+    }
+
     /* Rotation Overlay for Portrait Mobile */
     #rotate-overlay {
       display: none;
@@ -26,9 +42,7 @@
     }
 
     #rotate-overlay svg {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 20px;
+      width: 80px; height: 80px; margin-bottom: 20px;
       animation: rotateIcon 2s infinite ease-in-out;
     }
 
@@ -38,53 +52,220 @@
       100% { transform: rotate(-90deg); }
     }
 
-    #rotate-overlay h2 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    }
+    #rotate-overlay h2 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+    #rotate-overlay p { font-size: 16px; color: #ccc; }
 
-    #rotate-overlay p {
-      font-size: 16px;
-      color: #ccc;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    }
-
-    /* Show overlay only on mobile portrait */
     @media (orientation: portrait) and (max-width: 800px) {
       #rotate-overlay { display: flex; }
     }
 
-    body { overflow-x: hidden; touch-action: manipulation; }
-    .game-container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; position: relative; }
-    .mode-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; text-align: center; cursor: pointer; transition: 0.2s; }
-    .mode-card:hover { border-color: var(--green); }
-    
-    /* HUD / Timer */
-    .hud { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; box-sizing: border-box;}
-    .hud-box { text-align: center; }
-    .hud-lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
-    .hud-val { font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--green); line-height: 1; }
-    .hud-val.warning { color: #ef4444; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
 
-    /* Scene Image Container */
-    .scene-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
-    .scene-img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
-    
-    /* Invisible Hotspots placed over the image */
-    .hotspot { position: absolute; cursor: pointer; border-radius: 8px; border: 2px dashed rgba(255,255,255,0.2); transition: 0.3s; z-index: 10; }
-    .hotspot:active { background: rgba(255,255,255,0.2); }
-    
-    /* Revealed state for hotspots */
-    .hotspot.found { border: 3px solid var(--green); background: rgba(74, 222, 128, 0.2); pointer-events: none; animation: pulseFound 1s infinite; }
-    @keyframes pulseFound { 0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); } 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); } }
+    /* Fixed Scale 16:9 Container */
+    .game-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 16 / 9; 
+      max-width: calc(100dvh * (16 / 9)); 
+      max-height: calc(100vw * (9 / 16)); 
+      overflow: hidden;
+      container-type: inline-size; 
+      background: #000;
+    }
 
-    /* Custom Dialog for learning moments */
-    .custom-msg-dialog { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
-    .custom-msg-dialog.show { opacity: 1; pointer-events: all; }
-    .custom-msg-box { background: var(--surface); border: 2px solid var(--green); border-radius: 20px; padding: 24px; text-align: center; width: 90%; max-width: 320px; transform: scale(0.8); transition: 0.3s; }
-    .custom-msg-dialog.show .custom-msg-box { transform: scale(1); }
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    .screen.active { display: flex; }
+
+    .brand-logos {
+      position: absolute; top: 3cqi; right: 3cqi; width: 20cqi; z-index: 10; transition: opacity 0.3s;
+    }
+    .brand-logos img { width: 100%; height: auto; }
+
+    /* --- Start Screen --- */
+    #start-screen {
+      background: url('assets/Spot Game/gameBg.png') no-repeat center center;
+      background-size: cover;
+    }
+    #start-screen::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); z-index: -1;
+    }
+    #start-screen .game-logo { width: 25cqi; margin-bottom: 2cqi; animation: float 3s ease-in-out infinite; }
+    #start-screen h1 { font-size: 4cqi; font-weight: 800; margin-bottom: 1cqi; text-align: center; }
+    #start-screen p { font-size: 1.6cqi; text-align: center; max-width: 60cqi; margin-bottom: 3cqi; line-height: 1.5; color: #ddd; }
+    
+    .btn-action {
+      cursor: pointer; border: none; background: var(--green); color: #fff;
+      padding: 1.5cqi 3cqi; border-radius: 4cqi; font-size: 1.5cqi; font-weight: 700;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .btn-action:hover { transform: scale(1.05); background: #0d9668; }
+    .btn-action img { width: 20cqi; display: block; }
+
+    /* --- Game Screen --- */
+    #game-screen {
+      background: url('assets/Spot Game/shelf.png') no-repeat center center;
+      background-size: 100% 100%; 
+    }
+
+    .game-area {
+      position: relative; width: 100%; height: 100%; max-width: 1600px; 
+    }
+
+    /* -------------------------------------------------------------
+       DROP ZONES
+       ------------------------------------------------------------- */
+    .drop-zone {
+      position: absolute;
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      transition: background 0.2s, border 0.2s;
+      z-index: 5;
+      /* Borders hidden for live gameplay */
+      border: 2px dashed transparent;
+    }
+    /* .drop-zone.highlight { background: rgba(255, 255, 255, 0.4); border-color: white; } */
+
+    /* Panadol Zones ('P' marks) */
+    #zone-p1 { top: 16%; left: 21%; width: 14%; height: 9%; }
+    #zone-p2 { top: 16%; left: 26%; width: 14%; height: 9%; }
+    #zone-p3 { top: 28%; left: 22%; width: 18%; height: 11%; }
+
+    /* Sensodyne Zone ('S' mark) */
+    #zone-s1 { top: 17%; left: 64%; width: 18%; height: 9%; }
+
+    /* Centrum Zones ('C' marks in display stand) */
+    #zone-c1 { top: 43%; left: 67%; width: 10%; height: 10%; }
+    #zone-c2 { top: 56%; left: 67%; width: 14%; height: 10%; }
+    #zone-c3 { top: 43%; left: 72%; width: 10%; height: 10%; }
+
+    /* -------------------------------------------------------------
+       START CONTAINER
+       ------------------------------------------------------------- */
+    .items-container {
+      position: absolute;
+      top: 75%; 
+      left: 30%; 
+      width: 40%; 
+      height: 25%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2%;
+      padding: 1%;
+      z-index: 10;
+    }
+
+    .start-slot {
+      flex: 1;
+      height: 100%;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    }
+
+    .draggable-item {
+      object-fit: cover;
+      cursor: grab; touch-action: none; position: static;
+      z-index: 100; transition: opacity 0.3s, transform 0.2s;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    }
+
+    /* -------------------------------------------------------------
+       GLOBAL SIZING RULES (Ensures Uniformity)
+       ------------------------------------------------------------- */
+    /* Same size for all Panadol and Centrum packs */
+    .draggable-item[data-group="panadol"],
+    .draggable-item[data-group="centrum"] {
+      height: 40%;
+      width: auto;
+    }
+
+    /* Enlarge Sensodyne explicitly */
+    .draggable-item[data-group="sensodyne"] {
+      width: 10cqi;
+      height: auto;
+    }
+
+    .draggable-item.placed { opacity: 0; cursor: default; }
+
+    .is-dragging {
+      position: fixed !important; z-index: 2000 !important;
+      pointer-events: none; transform: scale(1.2) !important;
+      filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+    }
+
+    /* Placed items on the shelf */
+    .drop-zone .draggable-item {
+      margin-bottom: 0; cursor: default; opacity: 1; 
+      transform: none !important; 
+    }
+
+    /* Make items in place much bigger */
+    .drop-zone .draggable-item[data-group="panadol"],
+    .drop-zone .draggable-item[data-group="centrum"] {
+      height: 80% !important;
+    }
+
+    .drop-zone .draggable-item[data-group="sensodyne"] {
+      width: 60% !important;
+    }
+
+    /* --- Dialog Overlay --- */
+    .dialog-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center;
+      z-index: 3000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .dialog-overlay.show { opacity: 1; pointer-events: all; }
+
+    .dialog-box {
+      background: var(--dialog-bg); border: 2px solid var(--border, #333); border-radius: 20px;
+      padding: 30px; text-align: center; max-width: 550px; width: 90%;
+      transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .dialog-overlay.show .dialog-box { transform: translateY(0); }
+
+    .dialog-img { width: 100px; height: auto; margin-bottom: 15px; }
+    .dialog-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; }
+    
+    .dialog-desc {
+      font-size: 1.1rem; color: #fff; font-weight: 500;
+      margin-bottom: 20px; background: rgba(255,255,255,0.05);
+      padding: 15px; border-radius: 10px; line-height: 1.5; text-align: left;
+    }
+
+    .dialog-correct-title { color: var(--green); }
+    .dialog-error-title { color: var(--red); }
+    .dialog-correct-text { border-left: 4px solid var(--green); }
+    .dialog-error-text { border-left: 4px solid var(--red); }
+
+    /* End Screens */
+    .end-screen-bg { background: rgba(0,0,0,0.85); }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
   </style>
 </head>
 <body>
@@ -93,217 +274,321 @@
       <path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0 10.87 0 9.78.16 8.74.45l2.42 2.42c.27-.03.55-.05.84-.05 1.55 0 2.97.58 4.05 1.55l-2.02 2.02h5.5V.95l-3.05 1.57zm-8.96 18.96c-3.27-1.55-5.61-4.72-5.97-8.48h-1.5C.56 19.16 5.71 24 12 24c1.13 0 2.22-.16 3.26-.45l-2.42-2.42c-.27.03-.55.05-.84.05-1.55 0-2.97-.58-4.05-1.55l2.02-2.02h-5.5v5.5l3.05-1.57z"/>
     </svg>
     <h2>Rotate Device</h2>
-    <p>Please rotate your phone to landscape mode<br>for the best gaming experience.</p>
+    <p>Please rotate your phone to landscape mode.</p>
   </div>
+
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
-  <div class="toast" id="toast"></div>
 
-<div class="game-container" id="screen-start" style="text-align: center; justify-content: center;">
-    <div style="font-size: 5rem; margin-bottom: 20px;">🔍</div>
-    <div class="auth-title">c</div>
-    <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.5;">
-      Look closely at the pharmacy scene.<br>
-      Tap the areas where sales are being lost or placement can be improved!<br>
-      <strong>Find all 4 before time runs out!</strong>
-    </p>
-    <button class="btn-primary" onclick="proceedFromStart()">Start Game</button>
-    <button class="btn-secondary" id="btn-exit-start" style="margin-top: 10px;" onclick="goBack()">← Back to App</button>
+  <div class="game-wrapper">
+    <div class="brand-logos" id="brand-logos">
+      <img src="assets/Spot Game/brought to you by.png" alt="Brought to you by Panadol and Centrum" onerror="this.style.display='none';">
+    </div>
 
-    <img src="assets/Brought To You By.png" alt="Brought to you by Haleon" style="max-width: 180px; margin: 40px auto 0; display: block;">
-  </div>
+    <div id="start-screen" class="screen active">
+      <img src="assets/Spot Game/gameLogo.png" alt="Game Logo" class="game-logo" onerror="this.style.display='none';">
+      <h1>Spot The Oppurtuinity</h1>
+      <p>Drag the 7 products to their scientifically correct places on the pharmacy shelves.<br><strong>Total: 175 pts (25 pts per item).</strong></p>
+      <button class="btn-action" onclick="startGame()" style="padding:0; background:none;">
+        <img src="assets/Spot Game/startGameButton.png" alt="Start Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'startGame()\'>Start Game</button>'">
+      </button>
+    </div>
 
+    <div id="game-screen" class="screen">
+      <div class="game-area" id="game-area">
+        
+        <div class="drop-zone" id="zone-p1" data-group="panadol"></div>
+        <div class="drop-zone" id="zone-p2" data-group="panadol"></div>
+        <div class="drop-zone" id="zone-p3" data-group="panadol"></div>
 
+        <div class="drop-zone" id="zone-s1" data-group="sensodyne"></div>
 
-  <div class="game-container" id="screen-game" style="display: none; justify-content: flex-start; padding-top: 40px;">
-    <button class="btn-secondary" style="margin-bottom: 16px; align-self: flex-start;" onclick="goBack()">← Exit Game</button>
-    
-    <div class="hud">
-      <div class="hud-box">
-        <div class="hud-lbl">Time Left</div>
-        <div class="hud-val" id="timer-display">60s</div>
+        <div class="drop-zone" id="zone-c1" data-group="centrum"></div>
+        <div class="drop-zone" id="zone-c2" data-group="centrum"></div>
+        <div class="drop-zone" id="zone-c3" data-group="centrum"></div>
+
+        <div class="items-container" id="items-container">
+          <div class="start-slot"><img src="assets/Spot Game/SENSODYNE.png" class="draggable-item" data-id="senso" data-group="sensodyne" alt="Sensodyne" onerror="this.src='assets/Spot Game/SENSODYNE.png'"></div>
+          <div class="start-slot"><img src="assets/Spot Game/panadol_extra.png" class="draggable-item" data-id="px" data-group="panadol" alt="Panadol Extra"></div>
+          <div class="start-slot"><img src="assets/Spot Game/Panadol advance.png" class="draggable-item" data-id="pa" data-group="panadol" alt="Panadol Advance"></div>
+          <div class="start-slot"><img src="assets/Spot Game/Cold & Flu Day Pack.png" class="draggable-item" data-id="pcf" data-group="panadol" alt="Cold & Flu Day"></div>
+          <div class="start-slot"><img src="assets/Spot Game/Centrum_energy_pack.png" class="draggable-item" data-id="ce" data-group="centrum" alt="Centrum Energy"></div>
+          <div class="start-slot"><img src="assets/Spot Game/CENTRUM_MEN.png" class="draggable-item" data-id="cm" data-group="centrum" alt="Centrum Men"></div>
+          <div class="start-slot"><img src="assets/Spot Game/CENTRUM_WOMEN.png" class="draggable-item" data-id="cw" data-group="centrum" alt="Centrum Women"></div>
+        </div>
+
       </div>
-      <div style="width:1px; height:40px; background:var(--border);"></div>
-      <div class="hud-box">
-        <div class="hud-lbl">Found</div>
-        <div class="hud-val" style="color:var(--text);" id="progress-display">0 / 4</div>
-      </div>
     </div>
 
-    <div class="scene-wrapper" id="scene-area" onclick="handleMissedTap(event)">
-      <img src="assets/image_94d92b.png" alt="Pharmacy Scene" class="scene-img">
-      
-      <div class="hotspot" id="spot-1" style="top: 60%; left: 35%; width: 25%; height: 25%;" onclick="foundOpportunity('spot-1', event)"></div>
-      <div class="hotspot" id="spot-2" style="top: 25%; left: 45%; width: 18%; height: 18%;" onclick="foundOpportunity('spot-2', event)"></div>
-      <div class="hotspot" id="spot-3" style="top: 45%; left: 15%; width: 20%; height: 35%;" onclick="foundOpportunity('spot-3', event)"></div>
-      <div class="hotspot" id="spot-4" style="top: 40%; left: 80%; width: 15%; height: 40%;" onclick="foundOpportunity('spot-4', event)"></div>
+    <div id="screen-result" class="screen end-screen-bg" style="text-align: center; justify-content: center; z-index: 20;">
+      <div style="font-size: 5cqi; margin-bottom: 10px;">🏆</div>
+      <div style="color: white; font-size: 4cqi; font-weight: 800;" id="result-title">Perfect!</div>
+      <div style="font-weight:800; font-size: 4.5cqi; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">175 pts</div>
+      <div id="result-actions" style="width: 100%;"></div>
     </div>
-    
-    <p style="color:var(--muted); text-align:center; font-size:0.9rem;">Tap the image where you spot a missed sales opportunity.</p>
+
   </div>
 
-  <div class="custom-msg-dialog" id="learning-dialog">
-    <div class="custom-msg-box">
-      <div style="font-size: 2.5rem; margin-bottom: 10px;">💡</div>
-      <div class="auth-title" style="font-size: 1.3rem; color: var(--green); margin-bottom: 8px;" id="learning-title">Opportunity Spotted!</div>
-      <p id="learning-text" style="color: var(--text); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px;">Explanation goes here</p>
-      <button class="btn-primary" onclick="closeLearningDialog()">Keep Searching</button>
+  <div class="dialog-overlay" id="dialog-overlay">
+    <div class="dialog-box" id="dialog-box">
+      <img src="" alt="Product" class="dialog-img" id="dialog-img">
+      <h2 class="dialog-title" id="dialog-title">Title</h2>
+      <div class="dialog-desc" id="dialog-desc">Description</div>
+      <button class="btn-action" onclick="closeDialog()">Continue</button>
     </div>
-  </div>
-
-  <div class="game-container" id="screen-result" style="display: none; text-align: center;">
-    <div style="font-size: 4rem; margin-bottom: 10px;" id="result-icon">🏆</div>
-    <div class="auth-title" id="result-title">Game Over</div>
-    <div style="font-size: 3.5rem; font-weight:800; color: var(--green); margin-bottom: 10px;" id="result-score">0 pts</div>
-    <div style="color:var(--muted); font-size: 0.9rem; margin-bottom: 24px;" id="result-breakdown">You found 0 opportunities.</div>
-    <div id="result-actions"></div>
   </div>
 
   <script>
-    // --- CONFETTI ENGINE ---
-    function launchConfetti(duration) {
-      const canvas = document.getElementById("confetti-canvas"); if(!canvas) return;
-      const ctx = canvas.getContext("2d"); canvas.style.display = "block"; canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-      const pieces = []; const colors = ["#4ade80", "#22c55e", "#f0f4f8", "#facc15", "#60a5fa", "#f472b6"];
-      for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
-      const end = Date.now() + duration;
-      (function frame() { ctx.clearRect(0, 0, canvas.width, canvas.height); pieces.forEach((p) => { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color; ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore(); p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs; });
-        if (Date.now() < end) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
-      })();
-    }
-
-    // --- GAME LOGIC ---
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
-    const exhausted = urlParams.get('exhausted') === 'true';
-    const GAME_ID = 'spot';
-    
+    const GAME_ID = 'placement';
+    const totalScore = 175; 
 
-    let score = 0;
-    let foundCount = 0;
-    let timeLeft = 60;
-    let timerInterval = null;
-
-    // The educational content for each hotspot
-    const opportunitiesData = {
-      'spot-1': { title: 'Impulse Buy Missed!', text: "This empty counter space is perfect for a Point-of-Sale display to drive impulse buys!" },
-      'spot-2': { title: 'Empty Shelf Space!', text: "Out of stock on the eye-level shelf. High visibility areas must always be fully stocked with top sellers." },
-      'spot-3': { title: 'Cross-Selling Missed!', text: "The customer is buying tissues, but there's no cold & flu relief placed nearby to prompt a combo purchase." },
-      'spot-4': { title: 'Unclear Category!', text: "This side display lacks clear signage. Shoppers need navigation aids to find categories faster." }
+    // EXACT TEXT PROVIDED IN PROMPT
+    const productsData = {
+      "senso": { 
+        name: "Sensodyne", img: "assets/Spot Game/SENSODYNE.png",
+        correct: "This product belongs in the oral care section at eye level, because shoppers browse and compare within this category.",
+        wrong: "The correct placement is the oral care section, because this is a routine category purchase, not a pharmacist-led recommendation."
+      },
+      "px": { 
+        name: "Panadol Extra", img: "assets/Spot Game/panadol_extra.png",
+        correct: "This product belongs in the pain relief / OTC section, because it provides fast relief for headache and fatigue and needs high visibility.",
+        wrong: "The correct placement is the pain relief section, because it is a symptom-driven product, not a daily supplement."
+      },
+      "pa": { 
+        name: "Panadol Advance", img: "assets/Spot Game/Panadol advance.png",
+        correct: "This product belongs in the pain relief / OTC section, because patients actively look for quick pain relief solutions.",
+        wrong: "The correct placement is the pain relief section, because it’s used for immediate symptom relief, not preventive care."
+      },
+      "pcf": { 
+        name: "Panadol Cold & Flu", img: "assets/Spot Game/Cold & Flu Day Pack.png",
+        correct: "This product belongs in the cold & flu / OTC section, because it targets specific symptoms like fever, congestion, and body aches.",
+        wrong: "The correct placement is the cold & flu section, because grouping by condition helps patients find the right solution faster."
+      },
+      "ce": { 
+        name: "Centrum Energy", img: "assets/Spot Game/Centrum_energy_pack.png",
+        correct: "This product belongs in the vitamins & supplements section (and near checkout), because it supports energy and can drive impulse purchase.",
+        wrong: "The correct placement is the vitamins section, because it’s a daily energy supplement, not an immediate pain relief product."
+      },
+      "cm": { 
+        name: "Centrum Men", img: "assets/Spot Game/CENTRUM_MEN.png",
+        correct: "This product belongs in the vitamins & supplements section, because it provides daily nutritional support tailored for men.",
+        wrong: "The correct placement is the vitamins section, because it’s a preventive wellness product, not a treatment for symptoms."
+      },
+      "cw": { 
+        name: "Centrum Women", img: "assets/Spot Game/CENTRUM_WOMEN.png",
+        correct: "This product belongs in the vitamins & supplements section, because it supports women’s daily health and specific nutritional needs.",
+        wrong: "The correct placement is the vitamins section, because it’s a routine supplement, not for immediate symptom relief."
+      }
     };
 
-    window.onload = () => { if (!uid) document.getElementById('btn-exit-start').style.display = 'none'; };
-    function goBack() { if (uid) window.location.href = 'index.html'; else location.reload(); }
-    
-    function proceedFromStart() {
-      document.getElementById('screen-start').style.display = 'none';
-      startGame();
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
     }
 
     function startGame() {
-      document.getElementById('screen-game').style.display = 'flex';
-      
-      timeLeft = 60;
-      foundCount = 0;
-      score = 0;
-      updateTimerDisplay();
-      timerInterval = setInterval(tickTimer, 1000);
+      document.getElementById('brand-logos').style.opacity = '0';
+      setTimeout(() => document.getElementById('brand-logos').style.display = 'none', 300);
+      showScreen('game-screen');
+      initDragAndDrop();
     }
 
-    function tickTimer() {
-      timeLeft--;
-      updateTimerDisplay();
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        endGame(false);
+    function showDialog(type, itemId) {
+      const overlay = document.getElementById('dialog-overlay');
+      const title = document.getElementById('dialog-title');
+      const desc = document.getElementById('dialog-desc');
+      const img = document.getElementById('dialog-img');
+      const data = productsData[itemId];
+
+      img.src = data.img;
+      img.onerror = () => { img.src = 'assets/Spot Game/SENSODYNE.png'; };
+
+      if (type === 'correct') {
+        title.innerText = "Correct Placement!";
+        title.className = "dialog-title dialog-correct-title";
+        desc.innerText = data.correct;
+        desc.className = "dialog-desc dialog-correct-text";
+      } else if (type === 'wrong') {
+        title.innerText = "Oops! Wrong Position";
+        title.className = "dialog-title dialog-error-title";
+        desc.innerText = data.wrong;
+        desc.className = "dialog-desc dialog-error-text";
+      }
+
+      overlay.classList.add('show');
+    }
+
+    function closeDialog() {
+      document.getElementById('dialog-overlay').classList.remove('show');
+      if (placedItemsCount === totalItems) {
+        setTimeout(() => finishGame(), 300);
       }
     }
 
-    function updateTimerDisplay() {
-      const el = document.getElementById('timer-display');
-      el.textContent = timeLeft + 's';
-      if (timeLeft <= 10) el.classList.add('warning'); else el.classList.remove('warning');
-    }
-
-    function handleMissedTap(e) {
-        // If they tap the image background but NOT a hotspot
-        if(e.target.id === 'scene-area' || e.target.classList.contains('scene-img')) {
-            showToast("Nothing there! Keep looking.");
-        }
-    }
-
-    function foundOpportunity(spotId, event) {
-      event.stopPropagation(); // Prevent the handleMissedTap from firing
-      const spotElement = document.getElementById(spotId);
-      
-      if (spotElement.classList.contains('found')) return; // Already found
-
-      spotElement.classList.add('found');
-      foundCount++;
-      score += 25;
-      
-      document.getElementById('progress-display').textContent = `${foundCount} / 4`;
-      
-      // Show Educational Dialog
-      const data = opportunitiesData[spotId];
-      document.getElementById('learning-title').textContent = data.title;
-      document.getElementById('learning-text').textContent = data.text;
-      document.getElementById('learning-dialog').classList.add('show');
-    }
-
-    function closeLearningDialog() {
-      document.getElementById('learning-dialog').classList.remove('show');
-      if (foundCount >= 4) {
-        clearInterval(timerInterval);
-        setTimeout(() => endGame(true), 400);
-      }
-    }
-
-    function endGame(isWin) {
-      document.getElementById('screen-game').style.display = 'none';
-      document.getElementById('screen-result').style.display = 'flex';
-
-      document.getElementById('result-score').textContent = score + " pts";
-      document.getElementById('result-breakdown').textContent = `You found ${foundCount} out of 4 opportunities.`;
-
-      if (isWin) {
-        document.getElementById('result-title').textContent = "Eagle Eye!";
-        document.getElementById('result-icon').textContent = "🏆";
-        document.getElementById('result-score').style.color = "var(--green)";
-        launchConfetti(3000);
-      } else {
-        document.getElementById('result-title').textContent = "Time's Up!";
-        document.getElementById('result-icon').textContent = "⏱️";
-        document.getElementById('result-score').style.color = (score > 0) ? "var(--green)" : "#ef4444";
-      }
+    function finishGame() {
+      showScreen('screen-result');
+      document.getElementById('result-score').textContent = totalScore + " pts";
+      launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = `<button class="btn-primary" onclick="processPoints()">Collect Points & Complete</button>`;
+      actionsDiv.innerHTML = `<button class="btn-action" onclick="processPoints()">Collect Points</button>`;
     }
 
     function processPoints() {
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = "Processing...";
+      actionsDiv.innerHTML = "<div style='color: white;'>Processing...</div>";
 
       if (uid) {
-        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${score}`;
+        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${totalScore}`;
       } else {
-        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: score, nonce: Date.now() });
+        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: totalScore, nonce: Date.now() });
         const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
         actionsDiv.innerHTML = `
-          <div style=\"background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;\">
+          <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
             ${qr.createImgTag(5)}
           </div>
-          <p style=\"color:var(--muted); font-size:0.9rem;\">Scan this QR with your Haleon app to collect points.</p>
-          <button class=\"btn-secondary\" style=\"margin-top:20px;\" onclick=\"location.reload()\">Start New Game</button>
+          <p style="color:#ccc; font-size: 1.5cqi; margin-bottom: 20px;">Scan this QR with your representative to collect points.</p>
+          <button class="btn-action" onclick="location.reload()" style="padding:0; background:none;">
+            <img src="assets/Spot Game/startNewGameButton.png" alt="Play Again" onerror="this.outerHTML='<button class=\\'btn-action\\' onclick=\\'location.reload()\\'>Play Again</button>'">
+          </button>
         `;
       }
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById("toast"); toast.textContent = msg; toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 1500);
+    function launchConfetti(duration) {
+      const canvas = document.getElementById("confetti-canvas");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d"); canvas.style.display = "block";
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      const pieces = []; const colors = ["#10B981", "#22c55e", "#ffffff", "#facc15", "#60a5fa", "#f472b6"];
+      for (let i = 0; i < 100; i++) pieces.push({ x: Math.random() * canvas.width, y: -10 - Math.random() * 200, r: 4 + Math.random() * 6, color: colors[Math.floor(Math.random() * colors.length)], vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 4, rot: Math.random() * 360, rs: (Math.random() - 0.5) * 6 });
+      const end = Date.now() + duration;
+      (function frame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((p) => {
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180); ctx.fillStyle = p.color;
+          ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6); ctx.restore();
+          p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs;
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+        else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = "none"; }
+      })();
+    }
+
+    let draggedItem = null;
+    let offsetX = 0; let offsetY = 0;
+    let currentDropZone = null;
+    let placedItemsCount = 0;
+    const totalItems = 7;
+
+    function initDragAndDrop() {
+      const items = document.querySelectorAll('.start-slot .draggable-item');
+      items.forEach(item => {
+        item.addEventListener('pointerdown', startDrag, { passive: false });
+      });
+      document.addEventListener('pointermove', drag, { passive: false });
+      document.addEventListener('pointerup', endDrag);
+    }
+
+    function startDrag(e) {
+      const original = e.target;
+      if (original.dataset.placed === "true") return;
+
+      original.setPointerCapture(e.pointerId);
+
+      const rect = original.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+
+      draggedItem = original.cloneNode(true);
+      draggedItem.classList.add('is-dragging');
+      
+      draggedItem.style.width = rect.width + 'px';
+      draggedItem.style.height = rect.height + 'px';
+      draggedItem.style.objectFit = 'contain';
+      draggedItem.originalSource = original;
+
+      document.body.appendChild(draggedItem);
+      moveItem(e.clientX, e.clientY);
+
+      e.preventDefault();
+    }
+
+    function drag(e) {
+      if (!draggedItem) return;
+      e.preventDefault();
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      moveItem(clientX, clientY);
+      checkDropZones(clientX, clientY);
+    }
+
+    function moveItem(clientX, clientY) {
+      if (!draggedItem) return;
+      draggedItem.style.left = (clientX - offsetX) + 'px';
+      draggedItem.style.top = (clientY - offsetY) + 'px';
+    }
+
+    function checkDropZones(mouseX, mouseY) {
+      const dropZones = document.querySelectorAll('.drop-zone');
+      let foundZone = null;
+
+      dropZones.forEach(zone => {
+        const rect = zone.getBoundingClientRect();
+        if (mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom) {
+          // Highlight ONLY if the zone is empty
+          if(zone.children.length === 0) {
+            zone.classList.add('highlight');
+            foundZone = zone;
+          }
+        } else {
+          zone.classList.remove('highlight');
+        }
+      });
+      currentDropZone = foundZone;
+    }
+
+    function endDrag(e) {
+      if (!draggedItem) return;
+
+      const itemId = draggedItem.dataset.id;
+      const itemGroup = draggedItem.dataset.group;
+
+      if (currentDropZone) {
+        currentDropZone.classList.remove('highlight');
+        const zoneGroup = currentDropZone.dataset.group;
+
+        // Correct Group Match
+        if (itemGroup === zoneGroup && currentDropZone.children.length === 0) {
+          draggedItem.classList.remove('is-dragging');
+          draggedItem.style.width = ''; draggedItem.style.height = '';
+          draggedItem.style.left = ''; draggedItem.style.top = '';
+          
+          currentDropZone.appendChild(draggedItem);
+          draggedItem.originalSource.dataset.placed = "true";
+          draggedItem.originalSource.classList.add('placed');
+          
+          placedItemsCount++;
+          showDialog('correct', itemId);
+        } else {
+          // Dropped on a shelf, but the WRONG shelf group
+          document.body.removeChild(draggedItem);
+          showDialog('wrong', itemId);
+        }
+      } else {
+        // Dropped randomly outside any drop zone (but not inside the start container area)
+        const startRect = document.getElementById('items-container').getBoundingClientRect();
+        if (!(e.clientX >= startRect.left && e.clientX <= startRect.right && e.clientY >= startRect.top && e.clientY <= startRect.bottom)) {
+           // It was dropped on the wall / empty space
+           showDialog('wrong', itemId);
+        }
+        document.body.removeChild(draggedItem);
+      }
+
+      draggedItem = null;
+      currentDropZone = null;
     }
   </script>
-<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>

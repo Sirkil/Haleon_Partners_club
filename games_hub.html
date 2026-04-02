@@ -16,6 +16,7 @@
       --text: #ffffff;
       --muted: #aaaaaa;
       --green: #10B981;
+      --blue: #3b82f6;
       --icon-bg: rgba(255, 255, 255, 0.08);
       --icon-border: #555555;
     }
@@ -67,6 +68,99 @@
       padding: 0 20px;
     }
 
+    /* View Management */
+    .view {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Category Cards View */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .category-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .category-card.earn:hover {
+      border-color: var(--green);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
+    }
+
+    .category-card.learn:hover {
+      border-color: var(--blue);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
+    }
+
+    .category-icon {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+    }
+
+    .category-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .category-desc {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    /* Back Button */
+    .back-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 25px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .back-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 10px;
+      display: inline-block;
+    }
+
+    .section-title.earn-title { border-color: var(--green); }
+    .section-title.learn-title { border-color: var(--blue); }
+
+    /* Games Grid */
     .games-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -90,9 +184,17 @@
     }
 
     .game-card:hover {
-      border-color: var(--green);
       transform: translateY(-5px);
+    }
+
+    #view-earn .game-card:hover {
+      border-color: var(--green);
       box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
+    }
+
+    #view-learn .game-card:hover {
+      border-color: var(--blue);
+      box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
     }
 
     .game-icon-wrap {
@@ -108,9 +210,14 @@
       transition: all 0.2s ease-in-out;
     }
 
-    .game-card:hover .game-icon-wrap {
+    #view-earn .game-card:hover .game-icon-wrap {
       background: var(--green);
       border-color: var(--green);
+    }
+
+    #view-learn .game-card:hover .game-icon-wrap {
+      background: var(--blue);
+      border-color: var(--blue);
     }
 
     .game-icon {
@@ -145,10 +252,8 @@
       transition: all 0.2s;
     }
 
-    .game-card:hover .play-badge {
-      background: var(--green);
-      color: #ffffff;
-    }
+    #view-earn .game-card:hover .play-badge { background: var(--green); color: #ffffff; }
+    #view-learn .game-card:hover .play-badge { background: var(--blue); color: #ffffff; }
 
     .footer-disclaimer {
       position: fixed;
@@ -177,70 +282,111 @@
   <header class="header">
     <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" onerror="this.style.display='none';">
     <h1 class="page-title">Games Hub</h1>
-    <p class="page-sub">Select a game to start playing and earning points!</p>
+    <p class="page-sub">Select a category to start playing!</p>
   </header>
 
   <main class="container">
-    <div class="games-grid">
-      
-      <a href="game_basket.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Build Basket.png" alt="Build Basket" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+    
+    <div id="view-main" class="view active">
+      <div class="category-grid">
+        
+        <div class="category-card earn" onclick="showView('view-earn')">
+          <div class="category-icon">💰</div>
+          <h2 class="category-title">Earn Games</h2>
+          <p class="category-desc">Play to earn points and climb the leaderboard.</p>
         </div>
-        <div class="game-title">Build Basket(V) (Earn)</div>
-        <div class="play-badge">Play</div>
-      </a>
 
-      <a href="game_myth.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Myth & Fact.png" alt="Myth vs Fact" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+        <div class="category-card learn" onclick="showView('view-learn')">
+          <div class="category-icon">🧠</div>
+          <h2 class="category-title">Learn Games</h2>
+          <p class="category-desc">Test your knowledge and learn new facts.</p>
         </div>
-        <div class="game-title">Myth vs Fact(H/V) (Learn)</div>
-        <div class="play-badge">Play</div>
-      </a>
 
-      <a href="game_buzzer.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Buzzer Battle.png" alt="Buzzer Battle" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
-        </div>
-        <div class="game-title">Buzzer Battle(H) (Learn)</div>
-        <div class="play-badge">Play</div>
-      </a>
-
-      <a href="game_placement.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Best Place.png" alt="Best Place" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
-        </div>
-        <div class="game-title">Perfect Shelf(H) (Earn)</div>
-        <div class="play-badge">Play</div>
-      </a>
-
-      <a href="game_mitohype.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Panadol Challenge.png" alt="Panadol Challenge" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
-        </div>
-        <div class="game-title">Fever Smach(H/V) (Earn)</div>
-        <div class="play-badge">Play</div>
-      </a>
-            <a href="game_match.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Matching.png" alt="match Game" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
-        </div>
-        <div class="game-title">Matching Challenge(V) (Earn)</div>
-        <div class="play-badge">Play</div>
-      </a>
-      <!-- <a href="game_spot.html" class="game-card">
-        <div class="game-icon-wrap">
-          <img src="assets/Best Place.png" alt="Spot The Oppurtuinity" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
-        </div>
-        <div class="game-title">Perfect Shelf(H) (Earn)</div>
-        <div class="play-badge">Play</div>
-      </a> -->
-
+      </div>
     </div>
+
+    <div id="view-earn" class="view">
+      <button class="back-btn" onclick="showView('view-main')">← Back to Categories</button>
+      <h2 class="section-title earn-title">Earn Games</h2>
+      
+      <div class="games-grid">
+        <a href="game_basket.html" class="game-card">
+          <div class="game-icon-wrap">
+            <img src="assets/Build Basket.png" alt="Build Basket" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+          </div>
+          <div class="game-title">Build Basket (V)</div>
+          <div class="play-badge">Play</div>
+        </a>
+
+        <a href="game_placement.html" class="game-card">
+          <div class="game-icon-wrap">
+            <img src="assets/Best Place.png" alt="Best Place" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+          </div>
+          <div class="game-title">Perfect Shelf (H)</div>
+          <div class="play-badge">Play</div>
+        </a>
+
+        <a href="game_mitohype.html" class="game-card">
+          <div class="game-icon-wrap">
+            <img src="assets/Panadol Challenge.png" alt="Panadol Challenge" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+          </div>
+          <div class="game-title">Fever Smach (H/V)</div>
+          <div class="play-badge">Play</div>
+        </a>
+
+        <a href="game_match.html" class="game-card">
+          <div class="game-icon-wrap">
+            <img src="assets/Matching.png" alt="match Game" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+          </div>
+          <div class="game-title">Matching Challenge (V)</div>
+          <div class="play-badge">Play</div>
+        </a>
+      </div>
+    </div>
+
+    <div id="view-learn" class="view">
+      <button class="back-btn" onclick="showView('view-main')">← Back to Categories</button>
+      <h2 class="section-title learn-title">Learn Games</h2>
+      
+      <div class="games-grid">
+        <a href="game_myth.html" class="game-card">
+          <div class="game-icon-wrap">
+            <img src="assets/Myth & Fact.png" alt="Myth vs Fact" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+          </div>
+          <div class="game-title">Myth vs Fact (H/V)</div>
+          <div class="play-badge">Play</div>
+        </a>
+
+        <a href="game_buzzer.html" class="game-card">
+          <div class="game-icon-wrap">
+            <img src="assets/Buzzer Battle.png" alt="Buzzer Battle" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+          </div>
+          <div class="game-title">Buzzer Battle (H)</div>
+          <div class="play-badge">Play</div>
+        </a>
+                <a href="game_spot.html" class="game-card">
+          <div class="game-icon-wrap">
+            <img src="assets/Magnifier.png" alt="Spot The Oppurtuinity" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
+          </div>
+          <div class="game-title">Spot The Oppurtuinity (H)</div>
+          <div class="play-badge">Play</div>
+        </a>
+      </div>
+    </div>
+
   </main>
 
   <div class="footer-disclaimer">PM-EG-CNT-26-00007</div>
+
+  <script>
+    // Simple JavaScript to handle switching between views
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(view => {
+        view.classList.remove('active');
+      });
+      document.getElementById(viewId).classList.add('active');
+    }
+  </script>
 
 </body>
 </html>
