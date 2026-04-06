@@ -545,28 +545,12 @@
       confirmBtn.textContent = 'Deleting…'; confirmBtn.disabled = true;
 
       try {
-        // 1. Delete Firestore document
+        // Delete Firestore document — this locks the user out immediately.
+        // (The app checks for a Firestore doc on login; without it, access is denied.)
         const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
         await deleteDoc(doc(db, 'users', uid));
 
-        // 2. Attempt Firebase Auth deletion via REST API using admin token
-        try {
-          const adminToken = await auth.currentUser.getIdToken();
-          await fetch(
-            `https://identitytoolkit.googleapis.com/v1/accounts:delete?key=AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ localId: uid, idToken: adminToken })
-            }
-          );
-        } catch(authErr) {
-          // Auth deletion failed silently — Firestore doc is already deleted
-          // User won't be able to log in without a Firestore document
-          console.warn('Auth deletion skipped:', authErr);
-        }
-
-        // 3. Remove from local state
+        // Remove from local state
         allUsers = allUsers.filter(u => u.uid !== uid);
         selectedUids.delete(uid);
         renderStats(); renderTable(); updateBulkBar();
