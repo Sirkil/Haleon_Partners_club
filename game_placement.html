@@ -251,18 +251,21 @@
   width: 15%; 
   height: 100%;
   display: flex; 
-  align-items: center; 
-  justify-content: center;
+  align-items: center;     /* Centers the pack vertically */
+  justify-content: center; /* Centers the pack horizontally */
   position: relative;
-  background: transparent; 
+  
+  /* Add your image here (make sure the path matches your project structure) */
+  background: url('assets/Perfect Shelf/Rectangle.png') no-repeat center center; 
+  background-size: 140%; 
 }
 
 /* Size the packs to fit the containers nicely and guarantee centering */
 .draggable-item {
   width: auto;
   height: auto;
-  max-width: 65%; /* Increased from 40% so they fill the bottom boxes nicely */
-  max-height: 70%;
+  max-width: 60%; /* Increased from 40% so they fill the bottom boxes nicely */
+  max-height: 60%;
   object-fit: contain;
   cursor: grab;
   touch-action: none;
