@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bulk Import Users</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU",
+      authDomain:        "haleon-partners-club.firebaseapp.com",
+      projectId:         "haleon-partners-club",
+      storageBucket:     "haleon-partners-club.firebasestorage.app",
+      messagingSenderId: "1037867331058",
+      appId:             "1:1037867331058:web:0777855bac1c681ad88f6b"
+    };
+
+    const fbApp = initializeApp(firebaseConfig);
+    const auth  = getAuth(fbApp);
+    const db    = getFirestore(fbApp);
+
+    window.processImport = async function() {
+      const data = document.getElementById("data").value;
+      const lines = data.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+      const log = document.getElementById("log");
+      const btn = document.getElementById("btn-import");
+      
+      btn.disabled = true;
+      btn.textContent = "Importing...";
+
+      log.innerHTML = "";
+      const logMsg = (m) => { log.innerHTML += m + "<br>"; console.log(m); };
+
+      logMsg(`Found ${lines.length} records to import.<br><hr>`);
+      
+      for (let i = 0; i < lines.length; i++) {
+        // Expected format from Excel (tab separated)
+        let cols = lines[i].split("\t");
+        
+        // Fallback for CSV (comma separated) if tabs aren't present
+        if (cols.length < 8 && lines[i].includes(",")) {
+            cols = lines[i].split(",");
+        }
+
+        if (cols.length < 8) {
+          logMsg(`<span style="color:red">[SKIP] Row ${i+1}: Not enough columns (Expected 8, got ${cols.length}). Check the format.</span>`);
+          continue;
+        }
+
+        const fname = cols[0].trim();
+        const lname = cols[1].trim();
+        const email = cols[2].trim();
+        const phone = cols[3].trim();
+        const pharmacy = cols[4].trim();
+        const city = cols[5].trim();
+        const profession = cols[6].trim();
+        let pass = cols[7].trim();
+        
+        // Pad password just like the registration page does
+        while (pass.length > 0 && pass.length < 6) pass += "0";
+
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, pass);
+          const uid = cred.user.uid; 
+          const memberId = uid.slice(0, 8).toUpperCase();
+
+          const t = profession.toLowerCase();
+          let computedTier = "Student";
+          if (t === "pharmacy owner") computedTier = "Pharmacy Owner";
+          else if (t === "community pharmacist" || t === "pharmacist") computedTier = "Community Pharmacist";
+
+          const name = fname + " " + lname;
+
+          const profile = { 
+            firstName: fname, lastName: lname, name, 
+            email, phone, pharmacy, city, profession, pin: pass, memberId 
+          };
+          
+          const userData = { 
+            profile, score: 0, quizzesCompleted: 0, claimedBadges: [], answeredQuestions: [], 
+            gamesCompleted: {}, tier: computedTier, active: false, attendance: false, cardId: "", 
+            createdAt: new Date().toISOString() 
+          };
+          
+          await setDoc(doc(db, "users", uid), userData);
+          
+          logMsg(`<span style="color:#4ade80">[SUCCESS] Row ${i+1}: User ${email} created successfully.</span>`);
+          
+          // Sign out immediately so the next user can be created
+          await signOut(auth);
+
+          // Small delay to prevent hitting Firebase Auth rate limits
+          await new Promise(r => setTimeout(r, 600));
+
+        } catch (err) {
+          logMsg(`<span style="color:red">[ERROR] Row ${i+1} (${email}): ${err.message}</span>`);
+        }
+      }
+      
+      logMsg("<hr><b>Import Script Finished.</b>");
+      btn.disabled = false;
+      btn.textContent = "Start Import";
+    };
+  </script>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background: #111418; color: #fff; max-width: 1000px; margin: 0 auto; }
+    h2 { color: #4ade80; margin-bottom: 5px; }
+    p { color: #9ca3af; line-height: 1.5; }
+    textarea { width: 100%; height: 250px; padding: 15px; font-family: monospace; font-size: 14px; white-space: pre; background: #1e2329; color: #fff; border: 1px solid #333; border-radius: 8px; outline: none; }
+    textarea:focus { border-color: #4ade80; }
+    button { padding: 12px 24px; font-size: 16px; background: #4ade80; border: none; cursor: pointer; color: #000; font-weight: 700; margin-top: 15px; border-radius: 8px; transition: 0.2s; }
+    button:disabled { background: #333; color: #777; cursor: not-allowed; }
+    button:hover:not(:disabled) { transform: scale(0.98); opacity: 0.9; }
+    #log { margin-top: 25px; background: #000; padding: 20px; font-family: monospace; height: 350px; overflow-y: auto; border-radius: 8px; border: 1px solid #222; }
+  </style>
+</head>
+<body>
+  <h2>Bulk Account Creator</h2>
+  <p>To use this, open your Excel/Google Sheets file and copy the rows. Paste them directly into the text box below. The script expects the columns to be exactly in this order:</p>
+  <p style="background: rgba(74,222,128,0.1); padding: 10px; border-radius: 6px; font-family: monospace; color: #4ade80; font-weight: 600;">First Name &nbsp; | &nbsp; Last Name &nbsp; | &nbsp; Email &nbsp; | &nbsp; Phone &nbsp; | &nbsp; Pharmacy &nbsp; | &nbsp; City &nbsp; | &nbsp; Profession &nbsp; | &nbsp; Password</p>
+  <textarea id="data" placeholder="Format Example:&#10;John&#9;Doe&#9;johndoe@email.com&#9;01022334455&#9;Hope Pharmacy&#9;Cairo&#9;Student&#9;1234&#10;Jane&#9;Smith&#9;jane@email.com&#9;01199887766&#9;Care Pharm&#9;Alex&#9;Pharmacy Owner&#9;5678"></textarea>
+  <br>
+  <button id="btn-import" onclick="processImport()">Start Import</button>
+  <div id="log">Logs will appear here...</div>
+</body>
+</html>
