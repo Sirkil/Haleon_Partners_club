@@ -47,10 +47,11 @@
   <script type="module">
     import { initializeApp }                                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword,
-             signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
+             signInWithEmailAndPassword, signOut,
              onAuthStateChanged }                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc,
-             updateDoc, serverTimestamp, onSnapshot }         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+             updateDoc, serverTimestamp, onSnapshot,
+             collection, query, where, getDocs }             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey:            "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU",
@@ -68,9 +69,10 @@
     window._fb = {
       auth, db,
       doc, setDoc, getDoc, updateDoc, serverTimestamp, onSnapshot,
+      collection, query, where, getDocs,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
-      signOut, sendPasswordResetEmail
+      signOut
     };
 
     onAuthStateChanged(auth, async user => {
@@ -159,12 +161,25 @@
       <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" style="max-width: 180px;">
       <div class="sub">Password Recovery</div>
     </div>
-    <div class="auth-title">Reset Password.</div>
-    <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; text-align: center;">Enter your email and we'll send you a link to reset your password.</p>
+    <div class="auth-title">Find Your PIN.</div>
+    <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; text-align: center;">Enter your registered email address to retrieve your PIN code.</p>
     <div class="field"><input type="email" id="forgot-email" placeholder="Email address" /></div>
     <div class="auth-error" id="forgot-error"></div>
-    <button class="btn-primary" id="btn-forgot" onclick="doResetPassword()">RESET PASSWORD</button>
+    <button class="btn-primary" id="btn-forgot" onclick="doFindPin()">CHECK</button>
     <div class="auth-switch"><a onclick="showView('view-login')">← Back to Login</a></div>
+  </div>
+
+  <!-- PIN Reveal Dialog -->
+  <div class="dialog-overlay" id="pin-reveal-dialog">
+    <div class="dialog-box">
+      <div class="dialog-icon" style="font-size:2.5rem;">🔑</div>
+      <div class="dialog-title">Your PIN Code</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 30px;margin:16px 0;">
+        <div id="pin-reveal-value" style="font-size:2.2rem;font-weight:800;letter-spacing:0.3em;color:var(--green);text-align:center;">—</div>
+      </div>
+      <div class="dialog-sub" style="margin-bottom:16px;">Use this PIN as your password when logging in.</div>
+      <button class="btn-primary" onclick="closePinRevealDialog()">Got It!</button>
+    </div>
   </div>
 
   <div class="view home-view" id="view-home">

@@ -171,12 +171,43 @@ window.doRegister = async function() {
   } catch (e) { errEl.textContent = friendlyError(e.code); } finally { btn.textContent = "CREATE ACCOUNT"; btn.disabled = false; }
 };
 
-window.doResetPassword = async function() {
-  const email = document.getElementById("forgot-email").value.trim(); const errEl = document.getElementById("forgot-error"); const btn = document.getElementById("btn-forgot");
-  errEl.textContent = ""; if (!email) { errEl.textContent = "Please enter your email address."; return; }
-  btn.textContent = "Sending link..."; btn.disabled = true;
-  try { await window._fb.sendPasswordResetEmail(window._fb.auth, email); showToast("Password reset email sent! Please check your inbox."); showView("view-login"); } catch (e) { errEl.textContent = friendlyError(e.code); } finally { btn.textContent = "RESET PASSWORD"; btn.disabled = false; }
+window.doFindPin = async function() {
+  const email  = document.getElementById("forgot-email").value.trim();
+  const errEl  = document.getElementById("forgot-error");
+  const btn    = document.getElementById("btn-forgot");
+  errEl.textContent = "";
+  if (!email) { errEl.textContent = "Please enter your email address."; return; }
+  btn.textContent = "Searching…"; btn.disabled = true;
+  try {
+    const { collection, query, where, getDocs } = window._fb;
+    const usersRef = collection(window._fb.db, "users");
+    const q = query(usersRef, where("profile.email", "==", email.toLowerCase()));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      errEl.textContent = "No account found with this email address.";
+    } else {
+      const userData = snap.docs[0].data();
+      const pin = userData.profile?.pin || "";
+      if (!pin) {
+        errEl.textContent = "PIN not found for this account. Please contact support.";
+      } else {
+        document.getElementById("pin-reveal-value").textContent = pin;
+        document.getElementById("pin-reveal-dialog").classList.add("open");
+      }
+    }
+  } catch (e) {
+    errEl.textContent = "An error occurred. Please try again.";
+    console.error("doFindPin error:", e);
+  } finally {
+    btn.textContent = "CHECK"; btn.disabled = false;
+  }
 };
+
+window.closePinRevealDialog = function() {
+  document.getElementById("pin-reveal-dialog").classList.remove("open");
+  showView("view-login");
+};
+
 
 window.doLogout = async function() {
   await window._fb.signOut(window._fb.auth); state.uid = null; state.user = null; state.score = 0; state.quizzesCompleted = 0; state.claimedBadges = []; state.answeredQuestions = []; state.gamesCompleted = {};
