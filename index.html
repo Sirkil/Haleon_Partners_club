@@ -204,34 +204,24 @@
     </div>
 
     <div class="section">
-      <style>
-        .banner-carousel {
-          display: flex;
-          overflow-x: auto;
-          scroll-snap-type: x mandatory;
-          gap: 16px;
-          margin-bottom: 24px;
-          scrollbar-width: none; /* Firefox */
-          -ms-overflow-style: none; /* IE/Edge */
-        }
-        .banner-carousel::-webkit-scrollbar {
-          display: none; /* Chrome/Safari */
-        }
-        .banner-carousel > div {
-          scroll-snap-align: start;
-          flex: 0 0 100%;
-          margin-bottom: 0 !important;
-        }
-      </style>
-      <div class="banner-carousel" id="top-banners-carousel">
-        <div class="registration-reminder" onclick="document.getElementById('register-reminder-dialog').classList.add('open')" style="background: linear-gradient(135deg, #1a4a2e, #0d2818); border-radius: 16px; padding: 20px; border: 1px solid #2ee701; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(46, 231, 1, 0.1);">
-           <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Register for Haleon Partner Club</div>
-           <div style="font-size: 0.85rem; color: #a1b0c0;">Don't forget to complete your registration to secure your points! Tap here for steps.</div>
+      <div class="carousel-wrap" id="top-banners-wrap" style="margin-bottom: 24px;">
+        <div class="carousel-track" id="banner-carousel-track" style="display: flex; flex-wrap: nowrap; width: 100%;">
+          <div class="carousel-slide" id="slide-banner-reg" style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
+            <div class="registration-reminder" onclick="document.getElementById('register-reminder-dialog').classList.add('open')" style="width: 100%; background: linear-gradient(135deg, #1a4a2e, #0d2818); border-radius: 16px; padding: 20px; border: 1px solid #2ee701; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(46, 231, 1, 0.1);">
+               <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Register for Haleon Partner Club</div>
+               <div style="font-size: 0.85rem; color: #a1b0c0;">Don't forget to complete your registration to secure your points! Tap here for steps.</div>
+            </div>
+          </div>
+          <div class="carousel-slide" id="slide-banner-card" style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
+            <div class="registration-reminder" onclick="openCardLinkDialog()" style="width: 100%; background: linear-gradient(135deg, #0d1a2e, #1a3a5a); border-radius: 16px; padding: 20px; border: 1px solid #60a5fa; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(96, 165, 250, 0.1);">
+              <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Link Your Physical Card</div>
+              <div style="font-size: 0.85rem; color: #a1b0c0;">Tap here to scan your card and connect it to your account.</div>
+            </div>
+          </div>
         </div>
-
-        <div class="registration-reminder" id="inline-card-banner" onclick="openCardLinkDialog()" style="background: linear-gradient(135deg, #0d1a2e, #1a3a5a); border-radius: 16px; padding: 20px; border: 1px solid #60a5fa; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(96, 165, 250, 0.1);">
-          <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Link Your Physical Card</div>
-          <div style="font-size: 0.85rem; color: #a1b0c0;">Tap here to scan your card and connect it to your account.</div>
+        <div class="carousel-dots" id="banner-carousel-dots">
+          <span class="dot active" id="dot-banner-reg" onclick="goToBannerSlide(0)"></span>
+          <span class="dot" id="dot-banner-card" onclick="goToBannerSlide(1)"></span>
         </div>
       </div>
 
@@ -319,23 +309,23 @@
 
     <div class="section" style="margin-top:20px;padding-bottom:10px">
       <div class="section-title">Highlights</div>
-      <div class="carousel-wrap">
-        <div class="carousel-track" id="carousel-track">
-          <div class="carousel-slide" style="background:linear-gradient(135deg,#0d2818,#1a4a2e)">
+      <div class="carousel-wrap" style="margin-bottom: 24px;">
+        <div class="carousel-track" id="carousel-track" style="display: flex; flex-wrap: nowrap; width: 100%;">
+          <div class="carousel-slide" style="flex: 0 0 100%; width: 100%; min-width: 100%; background:linear-gradient(135deg,#0d2818,#1a4a2e)">
             <div class="carousel-text">
               <div class="carousel-title">Boost Your Wellness</div>
               <div class="carousel-sub">Complete quizzes to earn more points</div>
             </div>
             <div class="carousel-emoji">💊</div>
           </div>
-          <div class="carousel-slide" style="background:linear-gradient(135deg,#1a1a0d,#3a3a10)">
+          <div class="carousel-slide" style="flex: 0 0 100%; width: 100%; min-width: 100%; background:linear-gradient(135deg,#1a1a0d,#3a3a10)">
             <div class="carousel-text">
               <div class="carousel-title">Exclusive Rewards</div>
               <div class="carousel-sub">Redeem points for premium products</div>
             </div>
             <div class="carousel-emoji">🎁</div>
           </div>
-          <div class="carousel-slide" style="background:linear-gradient(135deg,#0d1a2e,#1a3a5a)">
+          <div class="carousel-slide" style="flex: 0 0 100%; width: 100%; min-width: 100%; background:linear-gradient(135deg,#0d1a2e,#1a3a5a)">
             <div class="carousel-text">
               <div class="carousel-title">Reach Top Tier</div>
               <div class="carousel-sub">Unlock elite benefits and consultations</div>
@@ -343,7 +333,7 @@
             <div class="carousel-emoji">🏆</div>
           </div>
         </div>
-        <div class="carousel-dots">
+        <div class="carousel-dots" id="highlights-dots-container">
           <span class="dot active" onclick="goToSlide(0)"></span>
           <span class="dot" onclick="goToSlide(1)"></span>
           <span class="dot" onclick="goToSlide(2)"></span>

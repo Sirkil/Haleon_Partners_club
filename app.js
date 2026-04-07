@@ -69,31 +69,44 @@ window.bootApp = function (uid, data, showWelcome) {
   
   updateHomeUI(); updateGamesUI(); renderRewardsPage(); updateProfilePage();
 
-  // Always go to Profile on login and animate card
-  showView("view-profile"); currentTab = 3;
+  // Go to Home on login
+  showView("view-home"); currentTab = 0;
   document.querySelectorAll(".nav-tab").forEach((t) => t.classList.remove("active"));
-  document.getElementById("tab-profile").classList.add("active");
+  document.getElementById("tab-home").classList.add("active");
   startCarousel();
   
-  // Card animation: flip immediately, stay for 2s, flip back
-  const cardInner = document.getElementById('card-inner');
-  if (cardInner) {
-    // start unflipped
-    cardInner.classList.remove('flipped');
-    // flip to back quickly
-    setTimeout(() => {
-      cardInner.classList.add('flipped');
-      // wait 2s, then flip back to front
-      setTimeout(() => {
-        cardInner.classList.remove('flipped');
-      }, 2000);
-    }, 400); // 400ms delay before initial flip so user sees it flip
-  }
-
   // Manage inline card banner visibility based on if the card is linked
-  const inlineBanner = document.getElementById('inline-card-banner');
-  if (inlineBanner) {
-    inlineBanner.style.display = state.cardId ? 'none' : 'block';
+  const slideBannerCard = document.getElementById('slide-banner-card');
+  const bannerDotsWrapper = document.getElementById('banner-carousel-dots');
+  const bannerTrack = document.getElementById('banner-carousel-track');
+  const topBannersWrap = document.getElementById('top-banners-wrap');
+
+  if (slideBannerCard) {
+    if (state.cardId) {
+      slideBannerCard.style.display = 'none';
+      if (bannerDotsWrapper) bannerDotsWrapper.style.display = 'none';
+      if (topBannersWrap) {
+        topBannersWrap.style.marginLeft = '0';
+        topBannersWrap.style.marginRight = '0';
+        topBannersWrap.style.padding = '0';
+      }
+      if (bannerTrack) {
+        bannerTrack.style.display = 'block';
+        bannerTrack.style.transform = 'none';
+      }
+      goToBannerSlide(0);
+    } else {
+      slideBannerCard.style.display = 'block';
+      if (bannerDotsWrapper) bannerDotsWrapper.style.display = 'flex';
+      if (topBannersWrap) {
+        topBannersWrap.style.marginLeft = '';
+        topBannersWrap.style.marginRight = '';
+        topBannersWrap.style.padding = '';
+      }
+      if (bannerTrack) {
+        bannerTrack.style.display = 'flex';
+      }
+    }
   }
 
   if (showWelcome === true && state.user) {
@@ -113,14 +126,26 @@ window.switchTab = function switchTab(tab) {
   if (tab === "home") { showView("view-home"); updateHomeUI(); } 
   else if (tab === "rewards") { showView("view-rewards"); renderRewardsPage(); } 
   else if (tab === "scanner") { showView("view-scanner"); } 
-  else if (tab === "profile") { showView("view-profile"); updateProfilePage(); }
+  else if (tab === "profile") { 
+    showView("view-profile"); 
+    updateProfilePage(); 
+    // Card animation: flip, wait 2s, flip back
+    const cardInner = document.getElementById('card-inner');
+    if (cardInner) {
+      cardInner.classList.remove('flipped');
+      setTimeout(() => {
+        cardInner.classList.add('flipped');
+        setTimeout(() => {
+          cardInner.classList.remove('flipped');
+        }, 2000);
+      }, 400);
+    }
+  }
 
   if (tab !== "scanner") stopPointScanner();
 };
 
-let swipeX = 0, swipeY = 0;
-document.addEventListener("touchstart", (e) => { const a = document.querySelector(".view.active"); if (!a || !["view-home", "view-rewards", "view-scanner", "view-profile"].includes(a.id)) return; swipeX = e.touches[0].clientX; swipeY = e.touches[0].clientY; }, { passive: true });
-document.addEventListener("touchend", (e) => { const a = document.querySelector(".view.active"); if (!a || !["view-home", "view-rewards", "view-scanner", "view-profile"].includes(a.id)) return; const dx = e.changedTouches[0].clientX - swipeX; const dy = e.changedTouches[0].clientY - swipeY; if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return; if (dx < 0 && currentTab < tabOrder.length - 1) switchTab(tabOrder[currentTab + 1]); else if (dx > 0 && currentTab > 0) switchTab(tabOrder[currentTab - 1]); }, { passive: true });
+// Swipe navigation removed per request
 
 window.doLogin = async function() {
   const email = document.getElementById("login-email").value.trim(); 
@@ -513,10 +538,25 @@ window.finishCardLinking = function() {
   window.closeCardLinkDialog();
   
   // Remove the banner from the Home View so it doesn't show again
-  const banner = document.getElementById('inline-card-banner');
-  if (banner) {
-    banner.style.display = 'none';
+  const slideBannerCard = document.getElementById('slide-banner-card');
+  const bannerDotsWrapper = document.getElementById('banner-carousel-dots');
+  const bannerTrack = document.getElementById('banner-carousel-track');
+  const topBannersWrap = document.getElementById('top-banners-wrap');
+
+  if (slideBannerCard) slideBannerCard.style.display = 'none';
+  if (bannerDotsWrapper) bannerDotsWrapper.style.display = 'none';
+  
+  if (topBannersWrap) {
+    topBannersWrap.style.marginLeft = '0';
+    topBannersWrap.style.marginRight = '0';
+    topBannersWrap.style.padding = '0';
   }
+  if (bannerTrack) {
+    bannerTrack.style.display = 'block';
+    bannerTrack.style.transform = 'none';
+  }
+  
+  if (window.goToBannerSlide) window.goToBannerSlide(0);
 };
 
 // ════════════════════════════════════════
@@ -555,9 +595,61 @@ window.tryClaimBadge = async function(id) {
 window.closeWelcomeDialog = function() { document.getElementById("welcome-dialog").classList.remove("open"); };
 window.closeBadgeDialog = function() { document.getElementById("badge-dialog").classList.remove("open"); updateHomeUI(); if (document.getElementById("view-profile").classList.contains("active")) updateProfilePage(); };
 
-let carouselIdx = 0; let carouselTimer = null;
-window.goToSlide = function(idx) { carouselIdx = idx; const track = document.getElementById("carousel-track"); if (!track) return; track.style.transform = `translateX(-${idx * 100}%)`; document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === idx)); };
-function startCarousel() { if (carouselTimer) clearInterval(carouselTimer); carouselTimer = setInterval(() => { const total = document.querySelectorAll(".carousel-slide").length; goToSlide((carouselIdx + 1) % total); }, 3500); }
+let highlightIdx = 0; let highlightTimer = null;
+window.goToSlide = function(idx) { 
+  highlightIdx = idx; 
+  const track = document.getElementById("carousel-track"); 
+  if (!track || !track.parentElement) return; 
+  track.style.transform = `translateX(-${idx * track.parentElement.clientWidth}px)`; 
+  const dotsContainer = document.getElementById("highlights-dots-container");
+  if (dotsContainer) {
+    dotsContainer.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === idx)); 
+  }
+};
+
+let bannerIdx = 0; let bannerTimer = null;
+window.goToBannerSlide = function(idx) {
+  bannerIdx = idx;
+  const track = document.getElementById("banner-carousel-track");
+  if (!track || !track.parentElement) return;
+  track.style.transform = `translateX(-${idx * track.parentElement.clientWidth}px)`;
+  const dotsContainer = document.getElementById("banner-carousel-dots");
+  if (dotsContainer) {
+    const dotsArray = Array.from(dotsContainer.querySelectorAll(".dot"));
+    // Since some dots may be hidden, we toggle them directly by index within the array
+    dotsArray.forEach((d, i) => d.classList.toggle("active", i === idx));
+  }
+};
+
+function startCarousel() { 
+  if (highlightTimer) clearInterval(highlightTimer); 
+  highlightTimer = setInterval(() => { 
+    const track = document.getElementById("carousel-track");
+    if(track) {
+      const slides = track.querySelectorAll(".carousel-slide");
+      const total = slides.length; 
+      if (total > 0) goToSlide((highlightIdx + 1) % total); 
+    }
+  }, 3500); 
+
+  if (bannerTimer) clearInterval(bannerTimer);
+  bannerTimer = setInterval(() => {
+    const track = document.getElementById("banner-carousel-track");
+    if(track) {
+      const slides = Array.from(track.querySelectorAll(".carousel-slide"));
+      const total = slides.length;
+      if (total > 0) {
+        let nextIdx = (bannerIdx + 1) % total;
+        // Skip hidden slides
+        while(slides[nextIdx].style.display === 'none') {
+           nextIdx = (nextIdx + 1) % total;
+           if(nextIdx === bannerIdx) break; // Avoid infinite loop if all hide/none are hidden
+        }
+        goToBannerSlide(nextIdx); 
+      }
+    }
+  }, 3500);
+}
 
 function renderRewardsPage() { 
   const grid = document.getElementById("rewards-full-grid"); 
