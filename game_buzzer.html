@@ -150,7 +150,7 @@
     .opt-btn {
       display: flex; align-items: center; justify-content: flex-start;
       padding-left: 6%; 
-      padding-right: 25%; color: black; font-weight: 700; font-size: 1.25cqi; /* Reduced text size */
+      padding-right: 25%; color: black; font-weight: 700; font-size: 1.25cqi; 
       cursor: pointer; line-height: 1.2; text-align: left;
       overflow: hidden;
     }
@@ -182,7 +182,7 @@
     }
 
     body.single-player-mode #options-area {
-      top: 50% !important; /* Centers the options box nicely when buzzers are hidden */
+      top: 50% !important;
     }
   </style>
 </head>
@@ -252,15 +252,21 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
+    const mode = urlParams.get('mode');
     
-    // Improved Mobile/Single Player Detection (Catches landscape devices effectively)
-    const isSinglePlayerMode = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
-                         ('ontouchstart' in window) || 
-                         (navigator.maxTouchPoints > 0) || 
-                         window.innerWidth <= 1024 ||
-                         uid !== null;
+    // Improved Mobile/Single Player Detection with 2-player override
+    let isSinglePlayerMode = false;
+
+    // If it was opened from Games Hub with ?mode=2p, force 2-player mode. Otherwise check for mobile natively.
+    if (mode !== '2p') {
+        isSinglePlayerMode = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+                             ('ontouchstart' in window) || 
+                             (navigator.maxTouchPoints > 0) || 
+                             window.innerWidth <= 1024 ||
+                             uid !== null;
+    }
     
-    // Apply CSS overrides if detected as mobile/web player
+    // Apply CSS overrides if detected as single-player mode
     if (isSinglePlayerMode) {
         document.body.classList.add('single-player-mode');
         document.getElementById('start-subtitle').textContent = "Single Player. Read the question and choose the right answer!";
@@ -274,7 +280,6 @@
     let buzzerTime = 15;
     let buzzerTimerId;
 
-    // --- UPDATED QUESTIONS ---
     const buzzerQuestions = [
       { 
         q: "What is the correct claim for Centrum Energy?", 
@@ -351,12 +356,10 @@
         timerEl.style.color = 'black';
 
         if (isSinglePlayerMode) {
-            // Mobile: Skip buzzer, jump straight to options
             buzzerState = 'waiting_answer';
-            activeBuzzer = 1; // Default to player 1 score
+            activeBuzzer = 1; 
             document.getElementById('options-area').style.display = 'block';
         } else {
-            // Desktop: Wait for buzz
             buzzerState = 'waiting_buzz'; 
             document.getElementById('btn-p1').classList.remove('dimmed');
             document.getElementById('btn-p2').classList.remove('dimmed');

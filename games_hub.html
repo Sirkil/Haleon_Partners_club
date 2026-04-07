@@ -9,9 +9,8 @@
 
   <style>
     :root {
-      /* Fixed Black & White Theme */
       --bg: #000000; 
-      --surface: #0a0a0a; /* Very dark gray for cards to slightly pop against pure black */
+      --surface: #0a0a0a; 
       --border: #333333;
       --text: #ffffff;
       --muted: #aaaaaa;
@@ -32,7 +31,7 @@
       background-color: var(--bg);
       color: var(--text);
       -webkit-font-smoothing: antialiased;
-      padding-bottom: 60px; /* Space for the PM code */
+      padding-bottom: 60px;
     }
 
     .header {
@@ -68,7 +67,6 @@
       padding: 0 20px;
     }
 
-    /* View Management */
     .view {
       display: none;
       animation: fadeIn 0.3s ease-in-out;
@@ -82,7 +80,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Category Cards View */
     .category-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -129,7 +126,6 @@
       font-size: 1rem;
     }
 
-    /* Back Button */
     .back-btn {
       background: transparent;
       border: 1px solid var(--border);
@@ -160,14 +156,12 @@
     .section-title.earn-title { border-color: var(--green); }
     .section-title.learn-title { border-color: var(--blue); }
 
-    /* Games Grid */
     .games-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 20px;
     }
 
-    /* Game Card Styles */
     .game-card {
       background: var(--surface);
       border: 2px solid var(--border);
@@ -227,7 +221,6 @@
       transition: filter 0.2s;
     }
 
-    /* Force the icon to be white for high contrast */
     .game-card .game-icon {
       filter: brightness(0) invert(1);
     }
@@ -267,7 +260,6 @@
       z-index: 9999;
     }
 
-    /* Responsive */
     @media (max-width: 480px) {
       .games-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -357,14 +349,15 @@
           <div class="play-badge">Play</div>
         </a>
 
-        <a href="game_buzzer.html" class="game-card">
+        <a href="game_buzzer.html?mode=2p" class="game-card">
           <div class="game-icon-wrap">
             <img src="assets/Buzzer Battle.png" alt="Buzzer Battle" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
           </div>
           <div class="game-title">Buzzer Battle (H)</div>
           <div class="play-badge">Play</div>
         </a>
-                <a href="game_spot.html" class="game-card">
+        
+        <a href="game_spot.html" class="game-card">
           <div class="game-icon-wrap">
             <img src="assets/Magnifier.png" alt="Spot The Oppurtuinity" class="game-icon" onerror="this.src='assets/logo1.png'; this.style.opacity='0.5';">
           </div>
@@ -379,7 +372,6 @@
   <div class="footer-disclaimer">PM-EG-CNT-26-00007</div>
 
   <script>
-    // Simple JavaScript to handle switching between views
     function showView(viewId) {
       document.querySelectorAll('.view').forEach(view => {
         view.classList.remove('active');
