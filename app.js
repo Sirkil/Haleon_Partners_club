@@ -8,7 +8,7 @@ const SHEETS_WEBHOOK = "https://script.google.com/macros/s/AKfycbwHj5I-AiO5mQhxJ
 const state = {
   uid: null, user: null, score: 0, quizzesCompleted: 0,
   claimedBadges: [], answeredQuestions: [], gamesCompleted: {},
-  active: false, attendance: false, cardId: ""
+  active: false, attendance: false, cardId: "", redeemedReward: null
 };
 
 let currentTab = 0;
@@ -42,6 +42,7 @@ window.bootApp = function (uid, data, showWelcome) {
   state.active = data.active !== undefined ? data.active : false;
   state.attendance = data.attendance !== undefined ? data.attendance : false;
   state.cardId = data.cardId || "";
+  state.redeemedReward = data.redeemedReward || null;
 
   answeredSet.clear();
   state.answeredQuestions.forEach((i) => answeredSet.add(i));
@@ -68,30 +69,25 @@ window.bootApp = function (uid, data, showWelcome) {
   
   updateHomeUI(); updateGamesUI(); renderRewardsPage(); updateProfilePage();
 
-  // First login detection
-  const isFirstLogin = !localStorage.getItem('hpc_firstLogin_' + uid);
-
-  if (isFirstLogin) {
-    // First time: go to Profile, animate card
-    localStorage.setItem('hpc_firstLogin_' + uid, '1');
-    showView("view-profile"); currentTab = 3;
-    document.querySelectorAll(".nav-tab").forEach((t) => t.classList.remove("active"));
-    document.getElementById("tab-profile").classList.add("active");
-    startCarousel();
-    // Card animation: sit 2s → flip to back → user clicks to flip back
-    const cardInner = document.getElementById('card-inner');
-    if (cardInner) {
-      cardInner.classList.remove('flipped');
+  // Always go to Profile on login and animate card
+  showView("view-profile"); currentTab = 3;
+  document.querySelectorAll(".nav-tab").forEach((t) => t.classList.remove("active"));
+  document.getElementById("tab-profile").classList.add("active");
+  startCarousel();
+  
+  // Card animation: flip immediately, stay for 2s, flip back
+  const cardInner = document.getElementById('card-inner');
+  if (cardInner) {
+    // start unflipped
+    cardInner.classList.remove('flipped');
+    // flip to back quickly
+    setTimeout(() => {
+      cardInner.classList.add('flipped');
+      // wait 2s, then flip back to front
       setTimeout(() => {
-        cardInner.classList.add('flipped');
+        cardInner.classList.remove('flipped');
       }, 2000);
-    }
-  } else {
-    // Returning user: go to Home
-    showView("view-home"); currentTab = 0;
-    document.querySelectorAll(".nav-tab").forEach((t) => t.classList.remove("active"));
-    document.getElementById("tab-home").classList.add("active");
-    startCarousel();
+    }, 400); // 400ms delay before initial flip so user sees it flip
   }
 
   // Manage inline card banner visibility based on if the card is linked
@@ -485,9 +481,13 @@ async function handleSuccessfulCardLink(qrData) {
     return;
   }
 
+  // Extract just the ID value after '=' from a URL like:
+  // https://www.sirkil.com/hpc.html?hid=HPC000501
+  const cardId = extractCardId(qrData);
+
   try {
-    await window._fb.updateDoc(window._fb.doc(window._fb.db, 'users', state.uid), { cardId: qrData });
-    state.cardId = qrData;
+    await window._fb.updateDoc(window._fb.doc(window._fb.db, 'users', state.uid), { cardId: cardId });
+    state.cardId = cardId;
     
     // Update local UI
     updateProfilePage();
@@ -499,6 +499,14 @@ async function handleSuccessfulCardLink(qrData) {
     console.error("Error saving card ID", e);
     showToast('Failed to link card. Please try again.');
   }
+}
+
+function extractCardId(raw) {
+  // If it's a URL, extract the value after the last '='
+  if (raw.includes('=')) {
+    return raw.split('=').pop().trim();
+  }
+  return raw.trim();
 }
 
 window.finishCardLinking = function() {
@@ -553,16 +561,25 @@ function startCarousel() { if (carouselTimer) clearInterval(carouselTimer); caro
 
 function renderRewardsPage() { 
   const grid = document.getElementById("rewards-full-grid"); 
+  const noteContainer = document.getElementById("rewards-note-container");
   const ptsEl = document.getElementById("rewards-pts-display"); 
   if (!grid) return; 
   if (ptsEl) ptsEl.textContent = state.score.toLocaleString() + " pts"; 
   
   grid.innerHTML = ""; 
   
+  if (noteContainer) {
+    noteContainer.innerHTML = `<div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.4);border-radius:12px;padding:14px 16px;color:#fbbf24;font-size:0.88rem;font-weight:600;text-align:center;max-width:600px;margin:0 auto;">
+      ⚠️ You can only redeem <strong>one reward</strong>. Choose your reward wisely.
+    </div>`;
+  }
+  
   rewardsData.forEach((r) => { 
-    const canRedeem = state.score >= r.pts; 
+    const canRedeem = !state.redeemedReward && state.score >= r.pts; 
+    const isLocked = !!state.redeemedReward && state.redeemedReward !== r.key;
     grid.innerHTML += `
-      <div class="reward-card">
+      <div class="reward-card" style="position:relative;overflow:hidden;">
+        ${isLocked ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:10;border-radius:inherit;display:flex;align-items:center;justify-content:center;"><img src="assets/Lock.png" alt="Locked" style="width:48px;height:48px;object-fit:contain;opacity:0.9;"></div>` : ''}
         <div class="reward-img" style="background: linear-gradient(135deg, #1a2820, #0d1a12); padding: 12px; height: 120px;">
           <img src="${r.image}" alt="${r.title}" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
@@ -576,10 +593,10 @@ function renderRewardsPage() {
   }); 
 }
 let qrTimerInterval = null; let redeemUnsubscribe = null; let redeemOpenedAt = 0;
-window.openRedeemQR = function(key, title, pts) { redeemOpenedAt = Date.now(); document.getElementById('qr-dialog-title').textContent = 'Redeem: ' + title; const payload = JSON.stringify({ uid: state.uid, memberId: state.user?.memberId || '', name: state.user?.name || '', email: state.user?.email || '', phone: state.user?.phone || '', pharmacy: state.user?.pharmacy || '', reward: title, pts, key, ts: Date.now() }); const imgEl = document.getElementById('qr-dialog-img'); imgEl.style.opacity = '0.2'; imgEl.src = ''; setTimeout(() => { imgEl.onload = () => { imgEl.style.opacity = '1'; }; imgEl.onerror = () => { imgEl.style.opacity = '1'; }; imgEl.src = makeQRUrl(payload, 200) + '&t=' + Date.now(); }, 80); let secs = 60; document.getElementById('qr-timer').textContent = secs; if (qrTimerInterval) clearInterval(qrTimerInterval); qrTimerInterval = setInterval(() => { secs--; const el = document.getElementById('qr-timer'); if (el) el.textContent = secs; if (secs <= 0) { clearInterval(qrTimerInterval); closeQRDialog(); } }, 1000); document.getElementById('qr-dialog').classList.add('open'); stopRedeemListener(); if (window._fb?.onSnapshot && state.uid) { redeemUnsubscribe = window._fb.onSnapshot(window._fb.doc(window._fb.db, 'users', state.uid), snap => { if (!snap.exists()) return; const d = snap.data(); if (d.lastRedemptionAt && d.lastRedemptionAt > redeemOpenedAt) { stopRedeemListener(); showRedeemSuccess(d.lastRedemptionReward || title, d.lastRedemptionPts || pts, d.score ?? state.score); } }); } };
+window.openRedeemQR = function(key, title, pts) { redeemOpenedAt = Date.now(); document.getElementById('qr-dialog-title').textContent = 'Redeem: ' + title; const payload = JSON.stringify({ uid: state.uid, memberId: state.user?.memberId || '', name: state.user?.name || '', email: state.user?.email || '', phone: state.user?.phone || '', pharmacy: state.user?.pharmacy || '', reward: title, pts, key, ts: Date.now() }); const imgEl = document.getElementById('qr-dialog-img'); imgEl.style.opacity = '0.2'; imgEl.src = ''; setTimeout(() => { imgEl.onload = () => { imgEl.style.opacity = '1'; }; imgEl.onerror = () => { imgEl.style.opacity = '1'; }; imgEl.src = makeQRUrl(payload, 200) + '&t=' + Date.now(); }, 80); let secs = 60; document.getElementById('qr-timer').textContent = secs; if (qrTimerInterval) clearInterval(qrTimerInterval); qrTimerInterval = setInterval(() => { secs--; const el = document.getElementById('qr-timer'); if (el) el.textContent = secs; if (secs <= 0) { clearInterval(qrTimerInterval); closeQRDialog(); } }, 1000); document.getElementById('qr-dialog').classList.add('open'); stopRedeemListener(); if (window._fb?.onSnapshot && state.uid) { redeemUnsubscribe = window._fb.onSnapshot(window._fb.doc(window._fb.db, 'users', state.uid), snap => { if (!snap.exists()) return; const d = snap.data(); if (d.lastRedemptionAt && d.lastRedemptionAt > redeemOpenedAt) { stopRedeemListener(); showRedeemSuccess(d.lastRedemptionReward || title, d.lastRedemptionPts || pts, d.score ?? state.score, key); } }); } };
 function stopRedeemListener() { if (redeemUnsubscribe) { redeemUnsubscribe(); redeemUnsubscribe = null; } }
 window.closeQRDialog = function() { stopRedeemListener(); if (qrTimerInterval) clearInterval(qrTimerInterval); document.getElementById('qr-dialog').classList.remove('open'); };
-function showRedeemSuccess(reward, pts, newScore) { closeQRDialog(); state.score = newScore; updateHomeUI(); renderRewardsPage(); if (document.getElementById('view-profile')?.classList.contains('active')) updateProfilePage(); document.getElementById('redeem-success-reward').textContent = reward; document.getElementById('redeem-success-pts').textContent = '−' + pts + ' pts deducted · New balance: ' + newScore.toLocaleString() + ' pts'; document.getElementById('redeem-success-dialog').classList.add('open'); launchConfetti(3000); }
+function showRedeemSuccess(reward, pts, newScore, rewardKey) { closeQRDialog(); state.score = newScore; state.redeemedReward = rewardKey; updateHomeUI(); renderRewardsPage(); if (document.getElementById('view-profile')?.classList.contains('active')) updateProfilePage(); document.getElementById('redeem-success-reward').textContent = reward; document.getElementById('redeem-success-pts').textContent = '−' + pts + ' pts deducted · New balance: ' + newScore.toLocaleString() + ' pts'; document.getElementById('redeem-success-dialog').classList.add('open'); launchConfetti(3000); }
 window.closeRedeemSuccessDialog = function() { document.getElementById('redeem-success-dialog').classList.remove('open'); };
 
 function updateProfilePage() { 
@@ -645,7 +662,11 @@ function updateProfilePage() {
   // Set the Physical Card ID safely 
   const cardIdEl = document.getElementById('info-card-id');
   if (cardIdEl) {
-    cardIdEl.textContent = state.cardId ? state.cardId : '—';
+    if (state.cardId) {
+      cardIdEl.textContent = state.cardId;
+    } else {
+      cardIdEl.innerHTML = '<a href="#" onclick="openCardLinkDialog(); return false;" style="color:var(--green); text-decoration:underline; font-weight:bold;">Link Card</a>';
+    }
   }
   
   // Update Badges

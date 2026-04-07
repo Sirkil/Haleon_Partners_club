@@ -113,7 +113,7 @@
     <div style="color: white; font-size: 2.8rem; font-weight: 800; margin-bottom: 10px;">Myth vs Fact</div>
     <p style="color: #d1d5db; margin-bottom: 30px; line-height: 1.5; font-size: 1.05rem;">
       Test your knowledge. Is the statement<br>a Myth or a Fact?<br><br>
-      <strong style="color: white; font-size: 1.15rem;">Correct answers: +25 pts.</strong>
+      <strong style="color: white; font-size: 1.15rem;">Correct answers: +5 pts. Max 40 pts.</strong>
     </p>
     
     <img src="assets/Myth & Fact/startgameButton.png" alt="Start Game" class="img-btn" style="max-width: 300px; margin: 0 auto 40px; display: block;" onclick="proceedFromStart()">
@@ -223,7 +223,7 @@
       const q = questions[currentQ];
       const isCorrect = (choice === q.answer);
       
-      let msg = isCorrect ? "Correct! +25 pts" : "Incorrect!";
+      let msg = isCorrect ? "Correct! +5 pts" : "Incorrect!";
       
       // If there is an explanation, append it to the toast message
       if (q.explanation) {
@@ -231,7 +231,7 @@
       }
 
       if (isCorrect) { 
-        score += 25; 
+        score += 5; 
         document.getElementById('hud-score').textContent = score + " pts";
       }
       

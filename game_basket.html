@@ -224,7 +224,7 @@
     <div style="color: white; font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Build Basket</div>
     <p style="color: #d1d5db; margin-bottom: 25px; line-height: 1.4; font-size: 0.95rem;">
       Read the patient case, then drag and drop<br>the correct medications into their basket.<br><br>
-      <strong style="color: white; font-size: 1.05rem;">+10 pts for correct items, -10 pts for wrong ones</strong>
+      <strong style="color: white; font-size: 1.05rem;">+5 pts for correct items, -5 pts for wrong ones (max 50 pts)</strong>
     </p>
     
     <img src="assets/build basket/Start_Game_Button.png" alt="Start Game" style="max-width: 300px; cursor: pointer; margin: 0 auto; box-shadow: none;" onclick="proceedFromStart()">
@@ -508,13 +508,13 @@
         const optData = cases[currentCaseIndex].options.find(o => o.name === itemName);
 
         if (isCorrect) {
-          casePoints += 10;
+          casePoints += 5;
           feedbackHTML += `<div class="claim-item">
             <strong style="color: var(--green); display: block; margin-bottom: 3px;">✅ ${itemName}</strong>
             ${optData.claim}
           </div>`;
         } else {
-          casePoints -= 10;
+          casePoints -= 5;
           feedbackHTML += `<div class="claim-item" style="border-left-color: #ef4444;">
             <strong style="color: #ef4444; display: block; margin-bottom: 3px;">❌ ${itemName}</strong>
             Incorrect selection for this patient's symptoms.
@@ -532,6 +532,7 @@
       // Update total score in the background
       totalScore += casePoints;
       if (totalScore < 0) totalScore = 0;
+      if (totalScore > 50) totalScore = 50;
       document.getElementById('hud-score').textContent = totalScore + " pts";
     }
 

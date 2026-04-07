@@ -188,8 +188,6 @@
       <button class="logout-btn" onclick="doLogout()">Log Out</button>
     </div>
     <div class="home-header">
-      <img src="assets/logo3.png" alt="Haleon Logo" class="app-logo" style="max-width: 160px; margin-bottom: 18px;">
-      
       <div class="points-big" id="pts-display">0 Points</div>
       <div class="tier-badge" id="tier-badge-home">Student Tier</div>
       <div class="progress-wrap">
@@ -206,17 +204,93 @@
     </div>
 
     <div class="section">
-      <div class="registration-reminder" onclick="document.getElementById('register-reminder-dialog').classList.add('open')" style="background: linear-gradient(135deg, #1a4a2e, #0d2818); border-radius: 16px; padding: 20px; border: 1px solid #2ee701; margin-bottom: 24px; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(46, 231, 1, 0.1);">
-         <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Register for Haleon Partner Club</div>
-         <div style="font-size: 0.85rem; color: #a1b0c0;">Don't forget to complete your registration to secure your points! Tap here for steps.</div>
+      <style>
+        .banner-carousel {
+          display: flex;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          gap: 16px;
+          margin-bottom: 24px;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE/Edge */
+        }
+        .banner-carousel::-webkit-scrollbar {
+          display: none; /* Chrome/Safari */
+        }
+        .banner-carousel > div {
+          scroll-snap-align: start;
+          flex: 0 0 100%;
+          margin-bottom: 0 !important;
+        }
+      </style>
+      <div class="banner-carousel" id="top-banners-carousel">
+        <div class="registration-reminder" onclick="document.getElementById('register-reminder-dialog').classList.add('open')" style="background: linear-gradient(135deg, #1a4a2e, #0d2818); border-radius: 16px; padding: 20px; border: 1px solid #2ee701; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(46, 231, 1, 0.1);">
+           <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Register for Haleon Partner Club</div>
+           <div style="font-size: 0.85rem; color: #a1b0c0;">Don't forget to complete your registration to secure your points! Tap here for steps.</div>
+        </div>
+
+        <div class="registration-reminder" id="inline-card-banner" onclick="openCardLinkDialog()" style="background: linear-gradient(135deg, #0d1a2e, #1a3a5a); border-radius: 16px; padding: 20px; border: 1px solid #60a5fa; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(96, 165, 250, 0.1);">
+          <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Link Your Physical Card</div>
+          <div style="font-size: 0.85rem; color: #a1b0c0;">Tap here to scan your card and connect it to your account.</div>
+        </div>
       </div>
 
-      <div class="registration-reminder" id="inline-card-banner" onclick="openCardLinkDialog()" style="background: linear-gradient(135deg, #0d1a2e, #1a3a5a); border-radius: 16px; padding: 20px; border: 1px solid #60a5fa; margin-bottom: 24px; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(96, 165, 250, 0.1);">
-        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Link Your Physical Card</div>
-        <div style="font-size: 0.85rem; color: #a1b0c0;">Tap here to scan your card and connect it to your account.</div>
-     </div>
 
-      <div class="section-title">Your Badges</div>
+    <div class="section-title" style="padding: 0 24px;">Games Hub</div>
+      <div class="quiz-grid" id="games-grid">
+        <div class="quiz-grid-card" onclick="openGame('game_basket.html', 'basket')">
+          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
+            <img src="assets/build basket/buildBasket_gameLogo.png" alt="Build Basket" style="width: 28px; height: 28px; object-fit: contain;">
+          </div>
+          <div class="quiz-grid-label">Build Basket</div>
+          <div class="quiz-grid-status" id="gstatus-basket">Play</div>
+        </div>
+        <div class="quiz-grid-card" onclick="openGame('game_myth.html', 'myth')">
+          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
+            <img src="assets/Myth & Fact/Myth&Fact_gameLogo.png" alt="Myth vs Fact" style="width: 28px; height: 28px; object-fit: contain;">
+          </div>
+          <div class="quiz-grid-label">Myth vs Fact</div>
+          <div class="quiz-grid-status" id="gstatus-myth">Play</div>
+        </div>
+        <div class="quiz-grid-card" onclick="openGame('game_buzzer.html', 'buzzer')">
+          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
+            <img src="assets/buzzer battle/buzzerBattle_gameLogo.png" alt="Buzzer Battle" style="width: 28px; height: 28px; object-fit: contain;">
+          </div>
+          <div class="quiz-grid-label">Buzzer Battle</div>
+          <div class="quiz-grid-status" id="gstatus-buzzer">Play</div>
+        </div>
+        <div class="quiz-grid-card" onclick="openGame('game_mitohype.html', 'mitohype')">
+          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
+            <img src="assets/Fever Smach/gameLogo.png" alt="Fever Game" style="width: 28px; height: 28px; object-fit: contain;">
+          </div>
+          <div class="quiz-grid-label">Fever Smach</div>
+          <div class="quiz-grid-status" id="gstatus-mitohype">Play</div>
+        </div>
+        <div class="quiz-grid-card" onclick="openGame('game_match.html', 'match')">
+          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
+            <img src="assets/Matching Game/gameLogo.png" alt="Fever Game" style="width: 28px; height: 28px; object-fit: contain;">
+          </div>
+          <div class="quiz-grid-label">Match Game</div>
+          <div class="quiz-grid-status" id="gstatus-mitohype">Play</div>
+        </div>
+        <div class="quiz-grid-card" onclick="openGame('game_spot.html', 'spot')">
+          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
+            <img src="assets/Spot Game/gameLogo.png" alt="spot Game" style="width: 28px; height: 28px; object-fit: contain;">
+          </div>
+          <div class="quiz-grid-label">Spot the Opportunity</div>
+          <div class="quiz-grid-status" id="gstatus-spot">Play</div>
+        </div>
+        <div class="quiz-grid-card" onclick="openGame('game_placement.html', 'placement')">
+          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
+            <img src="assets/Perfect Shelf/gameLogo.png" alt="perfect shelf" style="width: 28px; height: 28px; object-fit: contain;">
+          </div>
+          <div class="quiz-grid-label">Perfect Shelf Builder</div>
+          <div class="quiz-grid-status" id="gstatus-palcement">Play</div>
+        </div>
+                
+      </div>
+
+            <div class="section-title">Your Badges</div>
       <div class="badges-row">
         <div class="badge-chip locked" id="badge-0" onclick="tryClaimBadge(0)">
           <div class="badge-icon" style="background:rgba(74,222,128,0.06)">
@@ -242,59 +316,6 @@
       </div>
     </div>
     
-    <div class="section-title" style="padding: 0 24px;">Games Hub</div>
-      <div class="quiz-grid" id="games-grid">
-        <div class="quiz-grid-card" onclick="openGame('game_basket.html', 'basket')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Build Basket.png" alt="Build Basket" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Build Basket</div>
-          <div class="quiz-grid-status" id="gstatus-basket">Play</div>
-        </div>
-        <div class="quiz-grid-card" onclick="openGame('game_myth.html', 'myth')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Myth & Fact.png" alt="Myth vs Fact" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Myth vs Fact</div>
-          <div class="quiz-grid-status" id="gstatus-myth">Play</div>
-        </div>
-        <div class="quiz-grid-card" onclick="openGame('game_buzzer.html', 'buzzer')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Buzzer Battle.png" alt="Buzzer Battle" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Buzzer Battle</div>
-          <div class="quiz-grid-status" id="gstatus-buzzer">Play</div>
-        </div>
-        <div class="quiz-grid-card" onclick="openGame('game_mitohype.html', 'mitohype')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Panadol Challenge.png" alt="Fever Game" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Fever Smach</div>
-          <div class="quiz-grid-status" id="gstatus-mitohype">Play</div>
-        </div>
-        <div class="quiz-grid-card" onclick="openGame('game_match.html', 'match')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Matching.png" alt="Fever Game" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Match Game</div>
-          <div class="quiz-grid-status" id="gstatus-mitohype">Play</div>
-        </div>
-        <div class="quiz-grid-card" onclick="openGame('game_spot.html', 'spot')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Magnifier.png" alt="spot Game" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Spot the Opportunity</div>
-          <div class="quiz-grid-status" id="gstatus-spot">Play</div>
-        </div>
-        <div class="quiz-grid-card" onclick="openGame('game_placement.html', 'placement')">
-          <div class="quiz-grid-num" style="background:rgba(96, 165, 250, 0.15); border-color:#60a5fa;">
-            <img src="assets/Best Place.png" alt="perfect shelf" style="width: 28px; height: 28px; object-fit: contain;">
-          </div>
-          <div class="quiz-grid-label">Perfect Shelf Builder</div>
-          <div class="quiz-grid-status" id="gstatus-palcement">Play</div>
-        </div>
-                
-      </div>
 
     <div class="section" style="margin-top:20px;padding-bottom:10px">
       <div class="section-title">Highlights</div>
@@ -333,7 +354,7 @@
 
   <div class="view rewards-view" id="view-scanner" style="padding: 20px;">
     <div class="page-title">Collect Points</div>
-    <div class="page-sub" style="margin-bottom: 20px;">Scan QR codes from game stations</div>
+    <div class="page-sub" style="margin-bottom: 20px;">Scan QR codes from Physical Game Stations</div>
     
     <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; text-align: center;">
       <div class="status-pill" id="scan-status-pill" style="display:inline-flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:0.84rem; color:var(--muted); margin-bottom:12px;">
@@ -354,10 +375,11 @@
     <div class="rewards-header">
       <div class="page-title">Rewards</div>
       <div class="page-sub">Redeem your points for exclusive perks</div>
-      <div class="rewards-pts-bar">
+      <div class="rewards-pts-bar" style="margin-bottom: 20px;">
         <span class="rewards-pts-label">Your Points</span>
         <span class="rewards-pts-val" id="rewards-pts-display">0 pts</span>
       </div>
+      <div id="rewards-note-container"></div>
     </div>
     <div class="rewards-grid" id="rewards-full-grid" style="padding:16px;"></div>
   </div>

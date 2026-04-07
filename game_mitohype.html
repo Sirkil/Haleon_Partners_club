@@ -186,7 +186,7 @@
     
     <p style="color: #ffffff; margin-bottom: 40px; line-height: 1.6; font-size: 1.2rem; text-align: center; font-weight: 500; z-index: 2; max-width: 450px;">
       Play the interactive Panadol game.<br>
-      Once you finish, tap the claim button to earn 100 pts!
+      Once you finish, tap the claim button to earn 50 pts!
     </p>
     
     <img src="assets/Fever Smach/startGameButton.png" alt="Start Game" style="max-width: 280px; width: 100%; cursor: pointer; z-index: 2; transition: transform 0.2s;" onclick="proceedFromStart()" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
@@ -229,7 +229,7 @@
   <div class="game-container game-container-narrow" id="screen-result" style="display: none; text-align: center; z-index: 20;">
     <img src="assets/Panadol_logo.png" alt="Panadol" style="max-width: 200px; margin-bottom: 20px;">
     <div class="auth-title" id="result-title">Game Complete!</div>
-    <div style="font-size: 3.5rem; font-weight: 900; color: var(--c-green); margin-bottom: 10px; line-height: 1;" id="result-score">100 pts</div>
+    <div style="font-size: 3.5rem; font-weight: 900; color: var(--c-green); margin-bottom: 10px; line-height: 1;" id="result-score">50 pts</div>
     <div style="color:var(--muted); font-size: 1.1rem; margin-bottom: 30px; font-weight: 500;">Hope you enjoyed the game!</div>
     <div id="result-actions" style="width: 100%;"></div>
   </div>
@@ -264,7 +264,7 @@
     const GAME_ID = 'mitohype'; 
     
 
-    let score = 100;
+    let score = 50;
     let countdownInterval;
 
     window.onload = () => {

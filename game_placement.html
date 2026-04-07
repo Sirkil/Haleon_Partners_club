@@ -184,7 +184,7 @@
 
     /* --- Game Screen --- */
     #game-screen {
-      background: url('assets/Perfect Shelf/shelfBg.png') no-repeat center center;
+      background: url('assets/Perfect Shelf/BG.png') no-repeat center center;
       background-size: cover; 
     }
 
@@ -195,22 +195,22 @@
       max-width: 1600px; 
     }
 
-    /* Shelves - Positioned perfectly over the background stand */
+    /* Shelves - Positioned perfectly over the background stand (UNTOUCHED) */
     .shelf-row-1 {
       position: absolute;
-      top: 22%; left: 32%; width: 60%; height: 12%;gap: 8px;
+      top: 28%; left: 29%; width: 35%; height: 12%;
       display: flex; align-items: flex-end; padding-bottom: 1%;
     }
 
     .shelf-row-3 {
       position: absolute;
-      top: 40%; left: 38%; width: 60%; height: 12%; gap: 20px;
+      top: 54%; left: 28%; width: 60%; height: 10%;
       display: flex; align-items: flex-end; padding-bottom: 1%;
     }
 
     .shelf-row-4 {
       position: absolute;
-      top: 60%; left:32%; width: 180%; height: 12%; gap: 20px;
+      top: 65%; left:29%; width: 105%; height: 10%; gap: 20px;
       display: flex; align-items: flex-end; padding-bottom: 1%;
     }
 
@@ -231,50 +231,52 @@
       background: rgba(255, 255, 255, 0.25); 
     }
 
-/* Move the container to the bottom row to overlay the background boxes */
-.items-container {
-  position: absolute;
-  bottom:5%; /* Adjust this slightly up or down to align with your background */
-  left: 49%;
-  transform: translateX(-50%);
-  width: 70%; /* Spans across the 6 bottom white boxes */
-  height: 15%; 
-  display: flex;
-  justify-content: center; /* Spaces the 6 slots evenly in a row */
-  align-items: center;
-  background: transparent;
-  padding: 0;
-}
+    /* New Container for 2x3 Grid on the Right Side */
+    .items-container {
+      position: absolute;
+      top: 50%; 
+      right: 15%;
+      transform: translateY(-50%);
+      width: 20%; 
+      height: 65%; 
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 15px; 
+      background: transparent;
+      padding: 10px;
+    }
 
-/* Center items inside the slots and remove the old background */
-.start-slot {
-  width: 15%; 
-  height: 100%;
-  display: flex; 
-  align-items: center;     /* Centers the pack vertically */
-  justify-content: center; /* Centers the pack horizontally */
-  position: relative;
-  
-  /* Add your image here (make sure the path matches your project structure) */
-  background: url('assets/Perfect Shelf/Rectangle.png') no-repeat center center; 
-  background-size: 140%; 
-}
+    /* UPDATED: Size, padding, and centering to work perfectly inside the grid.
+       The background fills the slot, and padding forces the item uniformly smaller.
+    */
+    .start-slot {
+      width: 170%; 
+      height: 170%;
+      display: flex; 
+      align-items: center;     
+      justify-content: center; 
+      position: relative;
+      background: url('assets/Perfect Shelf/Rectangle.png') no-repeat center center; 
+      background-size: 100%; 
+      box-sizing: border-box;
+    }
 
-/* Size the packs to fit the containers nicely and guarantee centering */
-.draggable-item {
-  width: auto;
-  height: auto;
-  max-width: 60%; /* Increased from 40% so they fill the bottom boxes nicely */
-  max-height: 60%;
-  object-fit: contain;
-  cursor: grab;
-  touch-action: none;
-  position: static;
-  z-index: 100;
-  transition: opacity 0.3s;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-  margin: auto; /* Helps guarantee flex centering */
-}
+    /* UPDATED: Size the packs dynamically so they all match within the exact same boundaries. 
+    */
+    .draggable-item {
+      width: 40%;
+      height: 40%;
+      object-fit: contain; /* Forces all images to scale uniformly and center without stretching */
+      cursor: grab;
+      touch-action: none;
+      position: static;
+      z-index: 100;
+      transition: opacity 0.3s;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+      margin: auto; 
+    }
+    
     .draggable-item.placed {
       opacity: 0; 
       cursor: default;
@@ -288,11 +290,11 @@
       filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
     }
 
-/* Standardize the base size for ALL packs on the shelf */
+    /* Standardize the base size for ALL packs on the shelf once dropped */
     .drop-zone .draggable-item {
       width: auto;
-      height: 85%;      /* Set your desired standard height here */
-      max-width: 85%;   /* Set your desired standard width here */
+      height: 85%;      
+      max-width: 85%;   
       max-height: 85%;
       margin-bottom: 0;
       cursor: default;
@@ -301,10 +303,11 @@
 
     /* Target ONLY the Centrum packs on the shelf to make them larger */
     .drop-zone .draggable-item[data-group="centrum"] {
-      height: 100%;     /* Make this percentage larger than the base size above */
+      height: 100%;     
       max-width: 100%;
       max-height: 100%;
     }
+    
     /* --- Dialog Overlay --- */
     .dialog-overlay {
       position: fixed;
@@ -398,7 +401,7 @@
     <div id="start-screen" class="screen active">
       <img src="assets/Perfect Shelf/gameLogo.png" alt="Game Logo" class="game-logo" onerror="this.style.display='none';">
       <h1>Perfect Shelf Builder</h1>
-      <p>Drag the 6 products to their correct places on the pharmacy shelves.<br><strong>Total: 120 pts (20 pts per item).</strong></p>
+      <p>Drag the 6 products to their correct places on the pharmacy shelves.<br><strong>Finish within 60s: 60 pts! Or 10 pts per item placed.</strong></p>
       <button class="btn-action" onclick="startGame()" style="padding:0; background:none;">
         <img src="assets/Perfect Shelf/startGameButton.png" alt="Start Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'startGame()\'>Start Game</button>'">
       </button>
@@ -406,6 +409,10 @@
 
     <div id="game-screen" class="screen">
       <div class="game-area" id="game-area">
+
+        <div id="shelf-timer-hud" style="position: absolute; top: 2%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); border: 2px solid #10B981; border-radius: 12px; padding: 6px 18px; color: #10B981; font-weight: 800; font-size: 2cqi; z-index: 50; letter-spacing: 1px;">
+          ⏱ <span id="shelf-timer-display">60s</span>
+        </div>
         
         <div class="shelf-row-1">
           <div class="drop-zone" data-group="centrum"></div>
@@ -458,7 +465,12 @@
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
     const GAME_ID = 'placement';
-    const totalScore = 120; // Fixed score for completing the shelf
+
+    let placedItemsCount = 0;
+    const totalItems = 6;
+    let shelfTimerInterval = null;
+    let shelfTimeLeft = 60;
+    let dynamicScore = 0;
 
     const productsData = {
       "1": { name: "Centrum Energy", claim: "World’s #1 Multivitamin", image: "assets/Perfect Shelf/Centrum_energy_pack.png" },
@@ -479,6 +491,31 @@
       setTimeout(() => document.getElementById('brand-logos').style.display = 'none', 300);
       showScreen('game-screen');
       initDragAndDrop();
+
+      // Start 60s timer
+      shelfTimeLeft = 60;
+      placedItemsCount = 0;
+      dynamicScore = 0;
+      updateShelfTimer();
+      shelfTimerInterval = setInterval(() => {
+        shelfTimeLeft--;
+        updateShelfTimer();
+        if (shelfTimeLeft <= 0) {
+          clearInterval(shelfTimerInterval);
+          // Timer ran out — score what's placed
+          dynamicScore = placedItemsCount * 10;
+          finishGame();
+        }
+      }, 1000);
+    }
+
+    function updateShelfTimer() {
+      const el = document.getElementById('shelf-timer-display');
+      if (el) {
+        el.textContent = shelfTimeLeft + 's';
+        el.parentElement.style.borderColor = shelfTimeLeft <= 10 ? '#ef4444' : '#10B981';
+        el.parentElement.style.color = shelfTimeLeft <= 10 ? '#ef4444' : '#10B981';
+      }
     }
 
     function showDialog(type, itemId) {
@@ -513,15 +550,21 @@
     function closeDialog() {
       document.getElementById('dialog-overlay').classList.remove('show');
       if (placedItemsCount === totalItems) {
+        clearInterval(shelfTimerInterval);
+        dynamicScore = 60; // All items placed within time!
         setTimeout(() => finishGame(), 300);
       }
     }
 
     function finishGame() {
       showScreen('screen-result');
-      document.getElementById('result-score').textContent = totalScore + " pts";
+      document.getElementById('result-score').textContent = dynamicScore + " pts";
+      const breakdown = dynamicScore === 60 
+        ? 'All 6 items placed — Speed Bonus! (60 pts)' 
+        : `${placedItemsCount} items placed × 10 pts each`;
+      document.getElementById('result-title').textContent = dynamicScore === 60 ? 'Perfect!' : 'Time\'s Up!';
 
-      if(totalScore > 0) launchConfetti(3000); 
+      if(dynamicScore > 0) launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
       actionsDiv.innerHTML = `<button class="btn-action" onclick="processPoints()">Collect Points</button>`;
@@ -532,9 +575,9 @@
       actionsDiv.innerHTML = "<div style='color: white;'>Processing...</div>";
 
       if (uid) {
-        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${totalScore}`;
+        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${dynamicScore}`;
       } else {
-        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: totalScore, nonce: Date.now() });
+        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: dynamicScore, nonce: Date.now() });
         const qr = qrcode(0, 'L');
         qr.addData(payload);
         qr.make();
@@ -577,8 +620,6 @@
     let draggedItem = null;
     let offsetX = 0; let offsetY = 0;
     let currentDropZone = null;
-    let placedItemsCount = 0;
-    const totalItems = 6;
 
     function initDragAndDrop() {
       const items = document.querySelectorAll('.start-slot .draggable-item');

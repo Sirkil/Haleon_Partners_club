@@ -413,12 +413,12 @@
         
         if (isCorrect) {
             if (isSinglePlayerMode) {
-                showToast("Correct! +20 pts");
+                showToast("Correct! +15 pts");
             } else {
-                showToast(`Correct! Player ${activeBuzzer} +20 pts`);
+                showToast(`Correct! Player ${activeBuzzer} +15 pts`);
             }
-            if (activeBuzzer === 1) buzzerScore1 += 20; 
-            else buzzerScore2 += 20;
+            if (activeBuzzer === 1) buzzerScore1 += 15; 
+            else buzzerScore2 += 15;
         } else {
             if (isSinglePlayerMode) {
                 showToast("Wrong!");

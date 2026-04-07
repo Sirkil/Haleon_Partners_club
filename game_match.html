@@ -146,7 +146,7 @@
     <img src="assets/Matching Game/gameLogo.png" alt="Matching Game Logo" style="max-width: 250px; margin: 0 auto 20px; display: block;">
     <h1 style="font-size: 3.5rem; font-weight: 700; margin-bottom: 15px; line-height: 1; letter-spacing: -1px;">Matching<br>Game</h1>
     <p style="color: #e5e7eb; font-size: 1.05rem; margin-bottom: 10px;">Connect the product to its correct claim.</p>
-    <p style="font-weight: 700; font-size: 1.15rem; margin-bottom: 35px;">+25 Point To Each Correct Match</p>
+    <p style="font-weight: 700; font-size: 1.15rem; margin-bottom: 35px;">Match within 60s: 60 pts! Or 10 pts per match</p>
     
     <img src="assets/Matching Game/startGameButton.png" alt="Start Game" class="img-btn" style="max-width: 280px; margin: 0 auto; display: block;" onclick="proceedFromStart()">
     <button class="btn-secondary" id="btn-exit-start" style="position: absolute; top: 15px; left: 15px; width: auto; padding: 6px 12px; font-size: 0.8rem; z-index: 50; border-color: var(--green); color: var(--green); background: transparent;" onclick="goBack()">← Back to App</button>
@@ -186,7 +186,7 @@
     <div style="font-size: 4.5rem; margin-bottom: 10px;" id="result-icon">🏆</div>
     <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;" id="result-title">Complete!</div>
     <div style="font-size: 4rem; font-weight:800; color: var(--green); line-height: 1; margin-bottom: 10px;" id="result-score">0 pts</div>
-    <div style="color:#d1d5db; font-size: 1rem; margin-bottom: 40px;" id="result-breakdown">Base: 100 + Time Bonus: 0</div>
+    <div style="color:#d1d5db; font-size: 1rem; margin-bottom: 40px;" id="result-breakdown">Matches: 0/6</div>
     <div id="result-actions" style="width: 100%;"></div>
   </div>
 
@@ -362,21 +362,20 @@
       document.getElementById('screen-result').style.display = 'flex';
 
       if (isWin) {
-        const baseScore = 100; const timeBonus = timeLeft * 5; 
-        score = baseScore + timeBonus;
+        score = 60; // Completed within time — full 60 pts
         document.getElementById('result-title').textContent = "Complete!";
         document.getElementById('result-icon').textContent = "🏆";
         document.getElementById('result-score').textContent = score + " pts";
-        document.getElementById('result-breakdown').textContent = `Base: ${baseScore} + Time Bonus: ${timeBonus} (${timeLeft}s left)`;
+        document.getElementById('result-breakdown').textContent = `You finished all 6 matches in time! (+${score} pts)`;
         document.getElementById('result-score').style.color = "var(--green)";
         launchConfetti(3000);
       } else {
-        score = 0;
+        score = matches * 10; // 10 pts per match made
         document.getElementById('result-title').textContent = "Time's Up!";
         document.getElementById('result-icon').textContent = "⏱️";
-        document.getElementById('result-score').textContent = "0 pts";
-        document.getElementById('result-breakdown').textContent = `You found ${matches} out of 6 matches.`;
-        document.getElementById('result-score').style.color = "var(--red)";
+        document.getElementById('result-score').textContent = score + " pts";
+        document.getElementById('result-breakdown').textContent = `You found ${matches} out of 6 matches. (${matches} × 10 pts)`;
+        document.getElementById('result-score').style.color = score > 0 ? "var(--green)" : "var(--red)";
       }
 
       document.getElementById('result-actions').innerHTML = `<img src="assets/Matching Game/collectPoints.png" alt="Collect Points" class="img-btn" style="max-width: 280px; margin: 0 auto; display: block;" onclick="processPoints()">`;

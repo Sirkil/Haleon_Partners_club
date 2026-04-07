@@ -287,7 +287,7 @@
     <div id="start-screen" class="screen active">
       <img src="assets/Spot Game/gameLogo.png" alt="Game Logo" class="game-logo" onerror="this.style.display='none';">
       <h1>Spot The Oppurtuinity</h1>
-      <p>Drag the 7 products to their scientifically correct places on the pharmacy shelves.<br><strong>Total: 175 pts (25 pts per item).</strong></p>
+      <p>Drag the 7 products to their scientifically correct places on the pharmacy shelves.<br><strong>Finish within 60s: 50 pts! Or 5 pts per item placed.</strong></p>
       <button class="btn-action" onclick="startGame()" style="padding:0; background:none;">
         <img src="assets/Spot Game/startGameButton.png" alt="Start Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'startGame()\'>Start Game</button>'">
       </button>
@@ -322,7 +322,7 @@
     <div id="screen-result" class="screen end-screen-bg" style="text-align: center; justify-content: center; z-index: 20;">
       <div style="font-size: 5cqi; margin-bottom: 10px;">🏆</div>
       <div style="color: white; font-size: 4cqi; font-weight: 800;" id="result-title">Perfect!</div>
-      <div style="font-weight:800; font-size: 4.5cqi; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">175 pts</div>
+      <div style="font-weight:800; font-size: 4.5cqi; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">50 pts</div>
       <div id="result-actions" style="width: 100%;"></div>
     </div>
 
@@ -340,8 +340,13 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const uid = urlParams.get('uid');
-    const GAME_ID = 'placement';
-    const totalScore = 175; 
+    const GAME_ID = 'spot';
+
+    let placedItemsCount = 0;
+    const totalItems = 7;
+    let spotTimerInterval = null;
+    let spotTimeLeft = 60;
+    let dynamicScore = 0;
 
     // EXACT TEXT PROVIDED IN PROMPT
     const productsData = {
@@ -392,6 +397,43 @@
       setTimeout(() => document.getElementById('brand-logos').style.display = 'none', 300);
       showScreen('game-screen');
       initDragAndDrop();
+
+      // Add timer HUD
+      const gameArea = document.getElementById('game-area');
+      if (!document.getElementById('spot-timer-hud')) {
+        const timerHud = document.createElement('div');
+        timerHud.id = 'spot-timer-hud';
+        timerHud.style.cssText = 'position:absolute;top:2%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);border:2px solid #10B981;border-radius:12px;padding:6px 18px;color:#10B981;font-weight:800;font-size:2cqi;z-index:50;letter-spacing:1px;';
+        timerHud.innerHTML = '⏱ <span id="spot-timer-display">60s</span>';
+        gameArea.appendChild(timerHud);
+      }
+
+      // Start 60s timer
+      spotTimeLeft = 60;
+      placedItemsCount = 0;
+      dynamicScore = 0;
+      updateSpotTimer();
+      spotTimerInterval = setInterval(() => {
+        spotTimeLeft--;
+        updateSpotTimer();
+        if (spotTimeLeft <= 0) {
+          clearInterval(spotTimerInterval);
+          dynamicScore = placedItemsCount * 5;
+          finishGame();
+        }
+      }, 1000);
+    }
+
+    function updateSpotTimer() {
+      const el = document.getElementById('spot-timer-display');
+      if (el) {
+        el.textContent = spotTimeLeft + 's';
+        const hud = document.getElementById('spot-timer-hud');
+        if (hud) {
+          hud.style.borderColor = spotTimeLeft <= 10 ? '#ef4444' : '#10B981';
+          hud.style.color = spotTimeLeft <= 10 ? '#ef4444' : '#10B981';
+        }
+      }
     }
 
     function showDialog(type, itemId) {
@@ -422,14 +464,17 @@
     function closeDialog() {
       document.getElementById('dialog-overlay').classList.remove('show');
       if (placedItemsCount === totalItems) {
+        clearInterval(spotTimerInterval);
+        dynamicScore = 50; // All items placed — full score!
         setTimeout(() => finishGame(), 300);
       }
     }
 
     function finishGame() {
       showScreen('screen-result');
-      document.getElementById('result-score').textContent = totalScore + " pts";
-      launchConfetti(3000); 
+      document.getElementById('result-score').textContent = dynamicScore + " pts";
+      document.getElementById('result-title').textContent = dynamicScore === 50 ? 'Perfect!' : 'Time\'s Up!';
+      if (dynamicScore > 0) launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
       actionsDiv.innerHTML = `<button class="btn-action" onclick="processPoints()">Collect Points</button>`;
@@ -440,9 +485,9 @@
       actionsDiv.innerHTML = "<div style='color: white;'>Processing...</div>";
 
       if (uid) {
-        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${totalScore}`;
+        window.location.href = `index.html?rewardGame=${GAME_ID}&rewardPts=${dynamicScore}`;
       } else {
-        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: totalScore, nonce: Date.now() });
+        const payload = JSON.stringify({ type: "game_reward", gameId: GAME_ID, points: dynamicScore, nonce: Date.now() });
         const qr = qrcode(0, 'L'); qr.addData(payload); qr.make();
         actionsDiv.innerHTML = `
           <div style="background:white; padding:10px; display:inline-block; border-radius:10px; margin-bottom:10px;">
@@ -479,8 +524,6 @@
     let draggedItem = null;
     let offsetX = 0; let offsetY = 0;
     let currentDropZone = null;
-    let placedItemsCount = 0;
-    const totalItems = 7;
 
     function initDragAndDrop() {
       const items = document.querySelectorAll('.start-slot .draggable-item');
