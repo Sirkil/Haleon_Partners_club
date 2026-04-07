@@ -69,11 +69,14 @@ window.bootApp = function (uid, data, showWelcome) {
   
   updateHomeUI(); updateGamesUI(); renderRewardsPage(); updateProfilePage();
 
-  // Go to Home on login
-  showView("view-home"); currentTab = 0;
-  document.querySelectorAll(".nav-tab").forEach((t) => t.classList.remove("active"));
-  document.getElementById("tab-home").classList.add("active");
   startCarousel();
+
+  // Set start page based on card link status
+  if (!state.cardId) {
+    switchTab("profile");
+  } else {
+    switchTab("home");
+  }
   
   // Manage inline card banner visibility based on if the card is linked
   const slideBannerCard = document.getElementById('slide-banner-card');
@@ -537,13 +540,15 @@ function extractCardId(raw) {
 window.finishCardLinking = function() {
   window.closeCardLinkDialog();
   
-  // Remove the banner from the Home View so it doesn't show again
+  // Remove the banner from everywhere so it doesn't show again
   const slideBannerCard = document.getElementById('slide-banner-card');
   const bannerDotsWrapper = document.getElementById('banner-carousel-dots');
   const bannerTrack = document.getElementById('banner-carousel-track');
   const topBannersWrap = document.getElementById('top-banners-wrap');
+  const profileBannerCard = document.getElementById('profile-banner-card');
 
   if (slideBannerCard) slideBannerCard.style.display = 'none';
+  if (profileBannerCard) profileBannerCard.style.display = 'none';
   if (bannerDotsWrapper) bannerDotsWrapper.style.display = 'none';
   
   if (topBannersWrap) {
@@ -557,6 +562,9 @@ window.finishCardLinking = function() {
   }
   
   if (window.goToBannerSlide) window.goToBannerSlide(0);
+  
+  // Navigate back to home
+  switchTab("home");
 };
 
 // ════════════════════════════════════════
@@ -759,6 +767,12 @@ function updateProfilePage() {
     } else {
       cardIdEl.innerHTML = '<a href="#" onclick="openCardLinkDialog(); return false;" style="color:var(--green); text-decoration:underline; font-weight:bold;">Link Card</a>';
     }
+  }
+  
+  // Handle profile banner visibility
+  const profileBannerCard = document.getElementById('profile-banner-card');
+  if (profileBannerCard) {
+    profileBannerCard.style.display = state.cardId ? 'none' : 'block';
   }
   
   // Update Badges
