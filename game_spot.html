@@ -53,7 +53,7 @@
     }
 
     #rotate-overlay h2 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
-    #rotate-overlay p { font-size: 16px; color: #ccc; }
+    #rotate-overlay p { font-size: 16px; color: #ccc; max-width: 80%; line-height: 1.4; }
 
     @media (orientation: portrait) and (max-width: 800px) {
       #rotate-overlay { display: flex; }
@@ -63,6 +63,7 @@
       background: var(--bg);
       color: var(--text);
       overflow: hidden;
+      width: 100vw;
       height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -158,7 +159,7 @@
 
     /* Centrum Zones ('C' marks in display stand) */
     #zone-c1 { top: 43%; left: 67%; width: 10%; height: 10%; }
-    #zone-c2 { top: 56%; left: 67%; width: 14%; height: 10%; }
+    #zone-c2 { top: 56%; left: 67%; width: 20%; height: 10%; }
     #zone-c3 { top: 43%; left: 72%; width: 10%; height: 10%; }
 
     /* -------------------------------------------------------------
@@ -235,7 +236,7 @@
 
     /* --- Dialog Overlay --- */
     .dialog-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.85); display: flex; align-items: center; justify-content: center;
       z-index: 3000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
     }
@@ -332,15 +333,15 @@
       <div id="result-actions" style="width: 100%;"></div>
     </div>
 
-  </div>
-
-  <div class="dialog-overlay" id="dialog-overlay">
-    <div class="dialog-box" id="dialog-box">
-      <img src="" alt="Product" class="dialog-img" id="dialog-img">
-      <h2 class="dialog-title" id="dialog-title">Title</h2>
-      <div class="dialog-desc" id="dialog-desc">Description</div>
-      <button class="btn-action" onclick="closeDialog()">Continue</button>
+    <div class="dialog-overlay" id="dialog-overlay">
+      <div class="dialog-box" id="dialog-box">
+        <img src="" alt="Product" class="dialog-img" id="dialog-img">
+        <h2 class="dialog-title" id="dialog-title">Title</h2>
+        <div class="dialog-desc" id="dialog-desc">Description</div>
+        <button class="btn-action" onclick="closeDialog()">Continue</button>
+      </div>
     </div>
+
   </div>
 
   <script>
