@@ -22,7 +22,7 @@
       align-items: center;
       justify-content: center;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
     }
 
@@ -76,13 +76,17 @@
     /* Game Container */
     .game-container {
       position: relative;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 16 / 9;
+      max-width: calc(100dvh * (16 / 9)); 
+      max-height: calc(100vw * (9 / 16)); 
       background-image: url('assets/buzzer battle/buzzerBattle_bg.png');
       background-size: 100% 100%;
       background-position: center;
       container-type: inline-size; 
       overflow: hidden;
+      margin: 0 auto;
     }
 
     .screen {

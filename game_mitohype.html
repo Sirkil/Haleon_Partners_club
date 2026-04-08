@@ -208,7 +208,7 @@
         <img src="assets/Panadol_logo.png" alt="Panadol" style="height: 65px; vertical-align: middle;">
       </div>
       <div style="text-align: right;">
-        <button id="btn-claim" class="btn-panadol" style="width: auto; padding: 8px 16px; font-size: 0.95rem;" onclick="finishGame()" disabled>Wait (30s)</button>
+        <button id="btn-claim" class="btn-panadol" style="width: auto; padding: 8px 16px; font-size: 0.95rem;" onclick="finishGame()" disabled>60s</button>
       </div>
     </div>
     <div class="iframe-wrap">
@@ -216,13 +216,16 @@
     </div>
   </div>
 
-  <div id="pin-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:var(--surface2); padding:30px; border-radius:20px; text-align:center; max-width: 400px; width: 90%;">
+  <div id="pin-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;" onclick="document.getElementById('pin-modal').style.display='none'">
+    <div style="background:var(--surface2); padding:30px; border-radius:20px; text-align:center; max-width: 400px; width: 90%;" onclick="event.stopPropagation()">
       <h2 style="color:var(--c-blue); margin-bottom:15px; font-size: 2rem;">Enter PIN</h2>
-      <p style="color:var(--muted); margin-bottom:20px;">Please enter the PIN code to claim your points.</p>
+      <p style="color:var(--muted); margin-bottom:20px;">Please enter the PIN code to claim your points.<br><br><strong>(You can ask the usher for the pin code)</strong></p>
       <input type="number" id="pin-input" style="padding:10px; font-size:1.5rem; width:100%; border:2px solid var(--border); border-radius:10px; margin-bottom:15px; text-align:center;">
       <p id="pin-error" style="color:red; display:none; margin-bottom:15px; font-weight: 600;">Incorrect PIN. Try again.</p>
-      <button class="btn-panadol" onclick="checkPin()">Submit</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-outline" style="flex:1;" onclick="document.getElementById('pin-modal').style.display='none'">Cancel</button>
+        <button class="btn-panadol" style="flex:1;" onclick="checkPin()">Submit</button>
+      </div>
     </div>
   </div>
 
@@ -285,15 +288,15 @@
     function startGame() {
       document.getElementById('screen-game').style.display = 'flex';
 
-      let claimTimer = 30;
+      let claimTimer = 60;
       const claimBtn = document.getElementById('btn-claim');
       claimBtn.disabled = true;
-      claimBtn.textContent = `Wait (${claimTimer}s)`;
+      claimBtn.textContent = `${claimTimer}s`;
 
       countdownInterval = setInterval(() => {
         claimTimer--;
         if (claimTimer > 0) {
-          claimBtn.textContent = `Wait (${claimTimer}s)`;
+          claimBtn.textContent = `${claimTimer}s`;
         } else {
           clearInterval(countdownInterval);
           claimBtn.disabled = false;
@@ -355,6 +358,5 @@
       setTimeout(() => toast.classList.remove("show"), 1500);
     }
   </script>
-<div style="position: fixed; bottom: 5px; left: 0; width: 100%; text-align: center; color: grey; font-size: 12px; pointer-events: none; z-index: 9999;">PM-EG-CNT-26-00007</div>
 </body>
 </html>

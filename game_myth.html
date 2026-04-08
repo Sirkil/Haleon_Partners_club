@@ -68,9 +68,7 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
 
-    @media (orientation: portrait) and (max-width: 800px) {
-      #rotate-overlay { display: flex; }
-    }
+    /* Dynamic Rotation Overlay (Controlled via JS) */
 
     .game-container { 
       width: 100vw; 
@@ -147,6 +145,25 @@
     .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 15px 30px; border-radius: 20px; font-weight: 600; font-size: 1.1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px;}
     .toast.show { opacity: 1; }
   </style>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const isMobileApp = !!new URLSearchParams(window.location.search).get('uid');
+      const style = document.createElement('style');
+      if (isMobileApp) {
+        document.querySelector('#rotate-overlay p').innerHTML = "Please rotate your phone to portrait mode<br>for the best gaming experience.";
+        style.innerHTML = `
+          @media (orientation: landscape) and (max-height: 600px) { #rotate-overlay { display: flex !important; } }
+          @media (orientation: portrait) { #rotate-overlay { display: none !important; } }
+        `;
+      } else {
+        style.innerHTML = `
+          @media (orientation: portrait) and (max-width: 800px) { #rotate-overlay { display: flex !important; } }
+        `;
+      }
+      document.head.appendChild(style);
+    });
+  </script>
 </head>
 <body>
   <div id="rotate-overlay">

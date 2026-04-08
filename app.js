@@ -285,7 +285,7 @@ function updateHomeUI() {
 function updateHomeRedeemBtns() { const flask = document.getElementById("home-redeem-flask"); const pen = document.getElementById("home-redeem-pen"); if (flask) flask.disabled = state.score < 300; if (pen) pen.disabled = state.score < 100; }
 
 function updateGamesUI() {
-  const games = ['basket', 'myth', 'buzzer', 'memory', 'catch', 'prescription', 'placement', 'mitohype', 'spin'];
+  const games = ['basket', 'myth', 'buzzer', 'mitohype', 'match', 'spot', 'placement'];
   games.forEach(g => { 
     const statusEl = document.getElementById('gstatus-' + g); 
     if (statusEl) { 
