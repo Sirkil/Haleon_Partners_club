@@ -480,7 +480,17 @@
       activeItem.style.height = '';
 
       if (itemCX > cartRect.left && itemCX < cartRect.right && itemCY > cartRect.top && itemCY < cartRect.bottom) {
-        cart.appendChild(activeItem);
+        // --- NEW LIMIT LOGIC ---
+        const itemsInCart = cart.querySelectorAll('.drag-item');
+        const isAlreadyInCart = activeItem.parentNode === cart;
+        
+        if (itemsInCart.length >= 2 && !isAlreadyInCart) {
+          showToast("You can only add 2 items to the basket!");
+          activeItem.originalSlot.appendChild(activeItem);
+        } else {
+          cart.appendChild(activeItem);
+        }
+        // ------------------------
       } else {
         activeItem.originalSlot.appendChild(activeItem);
       }
