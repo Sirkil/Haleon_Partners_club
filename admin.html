@@ -433,10 +433,39 @@
       const active   = allUsers.filter(u => u.active === true).length;
       const inactive = total - active;
       const linked   = allUsers.filter(u => u.cardId).length;
+
+      // Calculate Tier/Profession counts
+      const students = allUsers.filter(u => {
+        const val = (u.tier || (u.profile && u.profile.profession) || '').toLowerCase();
+        return val.includes('student');
+      }).length;
+
+      const owners = allUsers.filter(u => {
+        const val = (u.tier || (u.profile && u.profile.profession) || '').toLowerCase();
+        return val.includes('owner');
+      }).length;
+
+      const pharmacists = allUsers.filter(u => {
+        const val = (u.tier || (u.profile && u.profile.profession) || '').toLowerCase();
+        // Ensure we don't accidentally count "Pharmacy Owners" as regular "Pharmacists"
+        return val.includes('pharmacist') && !val.includes('owner');
+      }).length;
+
+      // Update existing DOM elements
       document.getElementById('stat-total').textContent    = total;
       document.getElementById('stat-active').textContent   = active;
       document.getElementById('stat-inactive').textContent = inactive;
       document.getElementById('stat-linked').textContent   = linked;
+
+      // Update new DOM elements
+      const elStudent = document.getElementById('stat-student');
+      if (elStudent) elStudent.textContent = students;
+
+      const elPharmacist = document.getElementById('stat-pharmacist');
+      if (elPharmacist) elPharmacist.textContent = pharmacists;
+
+      const elOwner = document.getElementById('stat-owner');
+      if (elOwner) elOwner.textContent = owners;
     }
 
     // ── Render table ──────────────────────────────────────
@@ -716,13 +745,11 @@
 </head>
 <body>
 
-  <!-- Loading -->
   <div id="loading-screen" class="visible">
     <img src="assets/logo1.png" alt="Haleon" style="max-width:120px;margin-bottom:20px;">
     <div class="spinner"></div>
   </div>
 
-  <!-- Auth Gate -->
   <div id="auth-gate">
     <div class="auth-box">
       <img src="assets/logo1.png" alt="Haleon Logo">
@@ -739,7 +766,6 @@
     </div>
   </div>
 
-  <!-- Claim Admin Gate (shown when logged-in user doesn't have isAdmin yet) -->
   <div id="claim-admin-gate">
     <div class="auth-box">
       <img src="assets/logo1.png" alt="Haleon Logo">
@@ -755,10 +781,8 @@
     </div>
   </div>
 
-  <!-- Main Panel -->
   <div id="main-panel">
 
-    <!-- Top bar -->
     <div class="top-bar">
       <div class="top-bar-left">
         <img src="assets/logo1.png" alt="Haleon">
@@ -775,7 +799,6 @@
       </div>
     </div>
 
-    <!-- Stats -->
     <div class="stats-bar">
       <div class="stat-card">
         <div class="val" id="stat-total">—</div>
@@ -793,9 +816,20 @@
         <div class="val" id="stat-linked" style="color:#60a5fa">—</div>
         <div class="lbl">Cards Linked</div>
       </div>
+      <div class="stat-card">
+        <div class="val" id="stat-student" style="color:#facc15">—</div>
+        <div class="lbl">Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-pharmacist" style="color:#2dd4bf">—</div>
+        <div class="lbl">Pharmacists</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-owner" style="color:#c084fc">—</div>
+        <div class="lbl">Pharmacy Owners</div>
+      </div>
     </div>
 
-    <!-- Toolbar -->
     <div class="toolbar">
       <div class="search-box">
         <span>🔍</span>
@@ -808,7 +842,6 @@
       <button class="filter-btn"        id="filter-unlinked" onclick="setFilter('unlinked')">No Card</button>
     </div>
 
-    <!-- Bulk action bar -->
     <div class="bulk-bar" id="bulk-bar">
       <span id="bulk-count">0 selected</span>
       <button class="btn-bulk activate"   onclick="bulkActivate(true)">✓ Activate</button>
@@ -816,7 +849,6 @@
       <button class="btn-bulk clear"      onclick="clearSelection()">Clear</button>
     </div>
 
-    <!-- Table -->
     <div class="table-wrap">
       <table>
         <thead>
@@ -848,7 +880,6 @@
   <div class="toast" id="toast"></div>
   <div style="position:fixed;bottom:5px;left:0;width:100%;text-align:center;color:grey;font-size:12px;pointer-events:none;z-index:9999;">PM-EG-CNT-26-00007</div>
 
-  <!-- Delete Confirm Dialog -->
   <div class="del-overlay" id="del-overlay">
     <div class="del-box">
       <div class="del-icon">🗑️</div>
