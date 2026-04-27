@@ -128,6 +128,16 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 16px 22px;
       flex: 1; min-width: 140px;
+      cursor: pointer; /* Makes it look clickable */
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--green);
+    }
+    .stat-card.active-filter {
+      border-color: var(--green);
+      box-shadow: 0 4px 15px rgba(46, 231, 1, 0.15);
     }
     .stat-card .val { font-size: 2rem; font-weight: 800; color: var(--green); }
     .stat-card .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
@@ -434,38 +444,35 @@
       const inactive = total - active;
       const linked   = allUsers.filter(u => u.cardId).length;
 
-      // Calculate Tier/Profession counts
-      const students = allUsers.filter(u => {
-        const val = (u.tier || (u.profile && u.profile.profession) || '').toLowerCase();
-        return val.includes('student');
-      }).length;
+      let studentCount = 0;
+      let pharmacistCount = 0;
+      let ownerCount = 0;
+      let otherCount = 0;
 
-      const owners = allUsers.filter(u => {
-        const val = (u.tier || (u.profile && u.profile.profession) || '').toLowerCase();
-        return val.includes('owner');
-      }).length;
+      allUsers.forEach(u => {
+        const p = u.profile || {};
+        const prof = (p.profession || '').toLowerCase().trim();
+        
+        if (prof === 'student') {
+          studentCount++;
+        } else if (prof === 'pharmacist') {
+          pharmacistCount++;
+        } else if (prof === 'pharmacy owner' || prof === 'owner') {
+          ownerCount++;
+        } else {
+          otherCount++; // The unassigned/other accounts will end up here
+        }
+      });
 
-      const pharmacists = allUsers.filter(u => {
-        const val = (u.tier || (u.profile && u.profile.profession) || '').toLowerCase();
-        // Ensure we don't accidentally count "Pharmacy Owners" as regular "Pharmacists"
-        return val.includes('pharmacist') && !val.includes('owner');
-      }).length;
-
-      // Update existing DOM elements
       document.getElementById('stat-total').textContent    = total;
       document.getElementById('stat-active').textContent   = active;
       document.getElementById('stat-inactive').textContent = inactive;
       document.getElementById('stat-linked').textContent   = linked;
-
-      // Update new DOM elements
-      const elStudent = document.getElementById('stat-student');
-      if (elStudent) elStudent.textContent = students;
-
-      const elPharmacist = document.getElementById('stat-pharmacist');
-      if (elPharmacist) elPharmacist.textContent = pharmacists;
-
-      const elOwner = document.getElementById('stat-owner');
-      if (elOwner) elOwner.textContent = owners;
+      
+      document.getElementById('stat-student').textContent    = studentCount;
+      document.getElementById('stat-pharmacist').textContent = pharmacistCount;
+      document.getElementById('stat-owner').textContent      = ownerCount;
+      document.getElementById('stat-other').textContent      = otherCount;
     }
 
     // ── Render table ──────────────────────────────────────
@@ -476,15 +483,27 @@
         const name  = (p.name  || '').toLowerCase();
         const email = (p.email || '').toLowerCase();
         const phone = (p.phone || p.whatsapp || '').toLowerCase();
+        const prof  = (p.profession || '').toLowerCase().trim();
+        
+        // Search Filter
         if (searchQuery && !name.includes(searchQuery) && !email.includes(searchQuery) && !phone.includes(searchQuery)) return false;
+        
+        // Status & Link Filters
         if (currentFilter === 'active'   && u.active !== true)  return false;
         if (currentFilter === 'inactive' && u.active !== false)  return false;
         if (currentFilter === 'unlinked' && u.cardId)            return false;
+        
+        // Tier / Profession Filters
+        if (currentFilter === 'student'    && prof !== 'student') return false;
+        if (currentFilter === 'pharmacist' && prof !== 'pharmacist') return false;
+        if (currentFilter === 'owner'      && (prof !== 'pharmacy owner' && prof !== 'owner')) return false;
+        if (currentFilter === 'other'      && (prof === 'student' || prof === 'pharmacist' || prof === 'pharmacy owner' || prof === 'owner')) return false;
+        
         return true;
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🔍</div>No users found.</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🔍</div>No users found in this category.</div></td></tr>`;
         return;
       }
 
@@ -493,7 +512,7 @@
         const name    = p.name  || (p.firstName + ' ' + (p.lastName||'')).trim() || '—';
         const email   = p.email || '—';
         const phone   = p.phone || p.whatsapp || '—';
-        const prof    = p.profession || '—';
+        const profStr = p.profession || '—';
         const isActive = u.active === true;
         const cardId  = u.cardId || '';
         const sel     = selectedUids.has(u.uid);
@@ -509,7 +528,7 @@
               <small>${esc(phone)}</small>
             </td>
             <td><small style="color:var(--muted)">${esc(email)}</small></td>
-            <td><small>${esc(prof)}</small></td>
+            <td><small>${esc(profStr)}</small></td>
             <td>
               <span class="badge-pill ${isActive ? 'active' : 'inactive'}">
                 <span class="status-dot ${isActive ? 'active' : 'inactive'}"></span>
@@ -713,8 +732,17 @@
 
     window.setFilter = function(f) {
       currentFilter = f;
+      
+      // Update small text buttons in the toolbar (if any match)
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('filter-' + f).classList.add('active');
+      const toolbarBtn = document.getElementById('filter-' + f);
+      if (toolbarBtn) toolbarBtn.classList.add('active');
+
+      // Highlight the clicked Stat Card
+      document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active-filter'));
+      const statCard = document.getElementById('card-filter-' + f);
+      if (statCard) statCard.classList.add('active-filter');
+
       renderTable();
     };
 
@@ -800,33 +828,37 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-card">
+      <div class="stat-card" id="card-filter-all" onclick="setFilter('all')">
         <div class="val" id="stat-total">—</div>
         <div class="lbl">Total Members</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" id="card-filter-active" onclick="setFilter('active')">
         <div class="val" id="stat-active" style="color:var(--green)">—</div>
         <div class="lbl">Active</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" id="card-filter-inactive" onclick="setFilter('inactive')">
         <div class="val" id="stat-inactive" style="color:var(--red)">—</div>
         <div class="lbl">Inactive</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" id="card-filter-unlinked" onclick="setFilter('unlinked')">
         <div class="val" id="stat-linked" style="color:#60a5fa">—</div>
         <div class="lbl">Cards Linked</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" id="card-filter-student" onclick="setFilter('student')">
         <div class="val" id="stat-student" style="color:#facc15">—</div>
         <div class="lbl">Students</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" id="card-filter-pharmacist" onclick="setFilter('pharmacist')">
         <div class="val" id="stat-pharmacist" style="color:#2dd4bf">—</div>
         <div class="lbl">Pharmacists</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" id="card-filter-owner" onclick="setFilter('owner')">
         <div class="val" id="stat-owner" style="color:#c084fc">—</div>
         <div class="lbl">Pharmacy Owners</div>
+      </div>
+      <div class="stat-card" id="card-filter-other" onclick="setFilter('other')">
+        <div class="val" id="stat-other" style="color:#94a3b8">—</div>
+        <div class="lbl">Other / Unspecified</div>
       </div>
     </div>
 
