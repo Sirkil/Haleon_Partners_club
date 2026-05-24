@@ -180,17 +180,18 @@
   <div class="game-container" id="screen-start" style="text-align: center; justify-content: center; z-index: 20;">
     <button id="btn-exit-start" style="position: absolute; top: 15px; left: 15px; width: auto; padding: 6px 12px; font-size: 0.8rem; z-index: 50; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; cursor: pointer;" onclick="goBack()">← Back to App</button>
 
-    <img src="assets/Myth & Fact/Brought to you by Panadol.png" alt="Brought to you by" style="position: absolute; top: 20px; right: 20px; max-width: 150px; z-index: 50;">
+    <img src="assets/Myth & Fact/Brought to you by Panadol.png" alt="Brought to you by" style="position: absolute; top: 20px; right: 20px; width: 35%; max-width: 150px; z-index: 50;">
 
     <img src="assets/Myth & Fact/Myth&Fact_gameLogo.png" alt="Myth vs Fact" style="max-width: 250px; margin: 0 auto 20px; display: block;">
     
-    <div style="color: white; font-size: 2.8rem; font-weight: 800; margin-bottom: 10px;">Myth vs Fact</div>
-    <p style="color: #d1d5db; margin-bottom: 30px; line-height: 1.5; font-size: 1.05rem;">
+    <div style="color: white; font-size: clamp(2rem, 8vw, 2.8rem); font-weight: 800; margin-bottom: 10px; padding: 0 20px; box-sizing: border-box;">Myth vs Fact</div>
+
+    <p style="color: #d1d5db; margin-bottom: 30px; line-height: 1.5; font-size: clamp(0.9rem, 4vw, 1.05rem); padding: 0 20px; box-sizing: border-box;">
       Test your knowledge. Is the statement<br>a Myth or a Fact?<br><br>
-      <strong style="color: white; font-size: 1.15rem;">Correct answers: +5 pts. Max 40 pts.</strong>
+      <strong style="color: white; font-size: clamp(1rem, 4.5vw, 1.15rem); display: block;">Correct answers: +5 pts. Max 40 pts.</strong>
     </p>
-    
-    <img src="assets/Myth & Fact/startgameButton.png" alt="Start Game" class="img-btn" style="max-width: 300px; margin: 0 auto; display: block;" onclick="proceedFromStart()">
+
+    <img src="assets/Myth & Fact/startgameButton.png" alt="Start Game" class="img-btn" style="width: 80%; max-width: 300px; height: auto; margin: 0 auto; display: block;" onclick="proceedFromStart()">
   </div>
 
   <div class="game-container" id="screen-game" style="display: none; padding: 0; width: 100%; height: 100vh;">
@@ -206,10 +207,10 @@
       <div id="q-progress">Question 1 of 8</div>
       <div id="q-text">Loading...</div>
 
-      <div style="position: absolute; top: 56%; left: 0; width: 100%; display: flex; justify-content: center; gap: 40px; z-index: 20;">
-        <img src="assets/Myth & Fact/myth_button.png" alt="Myth" class="img-btn" style="width: 80%; max-width: 260px;" onclick="answer('myth')">
-        <img src="assets/Myth & Fact/fact_button.png" alt="Fact" class="img-btn" style="width: 80%; max-width: 260px;" onclick="answer('fact')">
-      </div>
+    <div style="position: absolute; top: 56%; left: 0; width: 100%; padding: 0 5%; display: flex; justify-content: center; gap: 5%; z-index: 20; box-sizing: border-box;">
+      <img src="assets/Myth & Fact/myth_button.png" alt="Myth" class="img-btn" style="width: 45%; max-width: 180px; height: auto; object-fit: contain;" onclick="answer('myth')">
+      <img src="assets/Myth & Fact/fact_button.png" alt="Fact" class="img-btn" style="width: 45%; max-width: 180px; height: auto; object-fit: contain;" onclick="answer('fact')">
+    </div>
 
       <img src="assets/Myth & Fact/panadol_logo.png" alt="Panadol Logo" style="position: absolute; bottom: 4%; left: 50%; transform: translateX(-50%); max-width: 100px; z-index: 15;">
     </div>
