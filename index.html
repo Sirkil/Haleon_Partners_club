@@ -208,10 +208,11 @@
         <div class="carousel-track" id="banner-carousel-track" style="display: flex; flex-wrap: nowrap; width: 100%;">
           <div class="carousel-slide" id="slide-banner-reg"
             style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
-            <div class="registration-reminder" onclick="document.getElementById('register-reminder-dialog').classList.add('open')"
+            <div class="registration-reminder"
+              onclick="trackWebinarClick('banner'); document.getElementById('register-reminder-dialog').classList.add('open')"
               style="width: 100%; border-radius: 16px; border: 1px solid #2ee701; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(46, 231, 1, 0.1); padding: 0;">
-              <img src="assets/banner1.jpg"
-                alt="Register for Haleon Partner Club" style="width: 100%; height: auto; display: block;">
+              <img src="assets/banner1.jpg" alt="Register for Haleon Partner Club"
+                style="width: 100%; height: auto; display: block;">
             </div>
           </div>
           <!-- <div class="carousel-slide" id="slide-banner-card" style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
@@ -469,23 +470,20 @@
     <img src="assets/Footer.png" alt="Haleon Footer">
   </div>
   
-  <!-- Image Promo Dialog -->
-  <div class="dialog-overlay" id="image-promo-dialog">
-    <div class="dialog-box"
-      style="position:relative; padding:0; background:transparent; border:none; max-width:420px; width:92%; margin:auto;">
-      <!-- Close Mark -->
-      <span onclick="document.getElementById('image-promo-dialog').classList.remove('open')"
-        style="position:absolute; top:12px; right:18px; color:#ffffff; font-size:2.2rem; font-weight:bold; cursor:pointer; z-index:101; text-shadow: 0 2px 8px rgba(0,0,0,0.8); line-height: 1;">
-        &times;
-      </span>
-      <!-- Clickable Image Link -->
-      <a href="https://www.haleonhealthpartner.com/en-eg/news-events/events-and-webinars/haleon-partners-club-beyond-the-counter/"
-        target="_blank"
-        style="display:block; overflow:hidden; border-radius:16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        <img src="assets/webinar2.png" alt="Haleon Partners Club Webinar" style="width:100%; height:auto; display:block;">
-      </a>
-    </div>
+<div class="dialog-overlay" id="image-promo-dialog">
+  <div class="dialog-box"
+    style="position:relative; padding:0; background:transparent; border:none; max-width:420px; width:92%; margin:auto;">
+    <span onclick="document.getElementById('image-promo-dialog').classList.remove('open')"
+      style="position:absolute; top:12px; right:18px; color:#ffffff; font-size:2.2rem; font-weight:bold; cursor:pointer; z-index:101; text-shadow: 0 2px 8px rgba(0,0,0,0.8); line-height: 1;">
+      &times;
+    </span>
+    <a href="https://www.haleonhealthpartner.com/en-eg/news-events/events-and-webinars/haleon-partners-club-beyond-the-counter/"
+      target="_blank" onclick="trackWebinarClick('popup')"
+      style="display:block; overflow:hidden; border-radius:16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <img src="assets/webinar2.png" alt="Haleon Partners Club Webinar" style="width:100%; height:auto; display:block;">
+    </a>
   </div>
+</div>
 
   <div class="dialog-overlay" id="welcome-dialog">
     <div class="dialog-box" style="position:relative;overflow:hidden;">

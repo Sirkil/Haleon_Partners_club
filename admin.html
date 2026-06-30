@@ -437,43 +437,55 @@
       }
     }
 
-    // ── Render stats ──────────────────────────────────────
-    function renderStats() {
-      const total    = allUsers.length;
-      const active   = allUsers.filter(u => u.active === true).length;
-      const inactive = total - active;
-      const linked   = allUsers.filter(u => u.cardId).length;
+  // ── Render stats ──────────────────────────────────────
+  function renderStats() {
+    const total = allUsers.length;
+    const active = allUsers.filter(u => u.active === true).length;
+    const inactive = total - active;
+    const linked = allUsers.filter(u => u.cardId).length;
 
-      let studentCount = 0;
-      let pharmacistCount = 0;
-      let ownerCount = 0;
-      let otherCount = 0;
+    let studentCount = 0;
+    let pharmacistCount = 0;
+    let ownerCount = 0;
+    let otherCount = 0;
 
-      allUsers.forEach(u => {
-        const p = u.profile || {};
-        const prof = (p.profession || '').toLowerCase().trim();
-        
-        if (prof === 'student') {
-          studentCount++;
-        } else if (prof === 'pharmacist') {
-          pharmacistCount++;
-        } else if (prof === 'pharmacy owner' || prof === 'owner') {
-          ownerCount++;
-        } else {
-          otherCount++; // The unassigned/other accounts will end up here
-        }
-      });
+    // NEW: Variables to track clicks
+    let bannerClickCount = 0;
+    let popupClickCount = 0;
 
-      document.getElementById('stat-total').textContent    = total;
-      document.getElementById('stat-active').textContent   = active;
-      document.getElementById('stat-inactive').textContent = inactive;
-      document.getElementById('stat-linked').textContent   = linked;
-      
-      document.getElementById('stat-student').textContent    = studentCount;
-      document.getElementById('stat-pharmacist').textContent = pharmacistCount;
-      document.getElementById('stat-owner').textContent      = ownerCount;
-      document.getElementById('stat-other').textContent      = otherCount;
-    }
+    allUsers.forEach(u => {
+      const p = u.profile || {};
+      const prof = (p.profession || '').toLowerCase().trim();
+
+      if (prof === 'student') {
+        studentCount++;
+      } else if (prof === 'pharmacist') {
+        pharmacistCount++;
+      } else if (prof === 'pharmacy owner' || prof === 'owner') {
+        ownerCount++;
+      } else {
+        otherCount++;
+      }
+
+      // NEW: Count if user clicked the links
+      if (u.clicked_banner === true) bannerClickCount++;
+      if (u.clicked_popup === true) popupClickCount++;
+    });
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-active').textContent = active;
+    document.getElementById('stat-inactive').textContent = inactive;
+    document.getElementById('stat-linked').textContent = linked;
+
+    document.getElementById('stat-student').textContent = studentCount;
+    document.getElementById('stat-pharmacist').textContent = pharmacistCount;
+    document.getElementById('stat-owner').textContent = ownerCount;
+    document.getElementById('stat-other').textContent = otherCount;
+
+    // NEW: Update UI with click counts
+    document.getElementById('stat-banner-clicks').textContent = bannerClickCount;
+    document.getElementById('stat-popup-clicks').textContent = popupClickCount;
+  }
 
     // ── Render table ──────────────────────────────────────
     function renderTable() {
@@ -859,6 +871,14 @@
       <div class="stat-card" id="card-filter-other" onclick="setFilter('other')">
         <div class="val" id="stat-other" style="color:#94a3b8">—</div>
         <div class="lbl">Other / Unspecified</div>
+      </div>
+      <div class="stat-card" style="cursor: default;">
+        <div class="val" id="stat-banner-clicks" style="color:#f97316">—</div>
+        <div class="lbl">Banner Clicks</div>
+      </div>
+      <div class="stat-card" style="cursor: default;">
+        <div class="val" id="stat-popup-clicks" style="color:#f97316">—</div>
+        <div class="lbl">Popup Clicks</div>
       </div>
     </div>
 

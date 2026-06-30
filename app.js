@@ -118,6 +118,27 @@ window.bootApp = function (uid, data, showWelcome) {
     setTimeout(() => { document.getElementById("welcome-dialog").classList.add("open"); launchConfetti(4000); }, 400);
   }
 };
+// ════════════════════════════════════════
+// WEBINAR CLICK TRACKING
+// ════════════════════════════════════════
+window.trackWebinarClick = async function(source) {
+  // Only track if the user is logged in
+  if (!state.uid) return;
+  
+  // Prevent duplicate tracking writes in the same session
+  if (state['tracked_' + source]) return;
+  state['tracked_' + source] = true;
+
+  try {
+    const updateData = {};
+    updateData['clicked_' + source] = true; // 'clicked_banner' or 'clicked_popup'
+    
+    await window._fb.updateDoc(window._fb.doc(window._fb.db, 'users', state.uid), updateData);
+    console.log(`Tracked click: ${source}`);
+  } catch (e) {
+    console.error("Tracking failed:", e);
+  }
+};
 
 window.showView = function showView(id) { document.querySelectorAll(".view").forEach((v) => v.classList.remove("active")); const el = document.getElementById(id); if (el) el.classList.add("active"); };
 
