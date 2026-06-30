@@ -122,14 +122,14 @@
       <div class="dialog-icon">
         <img src="assets/Haleon Logo (register).png" alt="Register" style="width: 180px; object-fit: contain;">
       </div>
-      <div class="dialog-title">Register for the first Haleon Partners Club webinar</div>
+      <div class="dialog-title">Register now for "Haleon Partners Club : Beyond the Counter" webinar</div>
       <div class="dialog-sub" style="text-align: left; margin-bottom: 20px;">
         1. Click the link below.<br>
         2. Register on the Haleon Health Partner website.<br>
         3. Receive your account confirmation<br>
         4. Sign up for the webinar 
       </div>
-      <button class="btn-primary" onclick="window.open('https://www.haleonhealthpartner.com/en-eg/news-events/events-and-webinars/haleon-partners-club-launch/', '_blank')">Register Here</button>
+      <button class="btn-primary" onclick="window.open('https://www.haleonhealthpartner.com/en-eg/news-events/events-and-webinars/haleon-partners-club-beyond-the-counter/', '_blank')">Register Here</button>
       <button class="btn-secondary" style="margin-top:12px" onclick="document.getElementById('register-reminder-dialog').classList.remove('open')">Close</button>
     </div>
   </div>
@@ -206,18 +206,20 @@
     <div class="section">
       <div class="carousel-wrap" id="top-banners-wrap" style="margin-bottom: 24px;">
         <div class="carousel-track" id="banner-carousel-track" style="display: flex; flex-wrap: nowrap; width: 100%;">
-          <div class="carousel-slide" id="slide-banner-reg" style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
-            <div class="registration-reminder" onclick="document.getElementById('register-reminder-dialog').classList.add('open')" style="width: 100%; background: linear-gradient(135deg, #1a4a2e, #0d2818); border-radius: 16px; padding: 20px; border: 1px solid #2ee701; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(46, 231, 1, 0.1);">
-               <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Register for Haleon Partner Club</div>
-               <div style="font-size: 0.85rem; color: #a1b0c0;">Don't forget to complete your registration to secure your points! Tap here for steps.</div>
+          <div class="carousel-slide" id="slide-banner-reg"
+            style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
+            <div class="registration-reminder" onclick="document.getElementById('register-reminder-dialog').classList.add('open')"
+              style="width: 100%; border-radius: 16px; border: 1px solid #2ee701; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(46, 231, 1, 0.1); padding: 0;">
+              <img src="assets/banner1.jpg"
+                alt="Register for Haleon Partner Club" style="width: 100%; height: auto; display: block;">
             </div>
           </div>
-          <div class="carousel-slide" id="slide-banner-card" style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
+          <!-- <div class="carousel-slide" id="slide-banner-card" style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
             <div class="registration-reminder" onclick="openCardLinkDialog()" style="width: 100%; background: linear-gradient(135deg, #0d1a2e, #1a3a5a); border-radius: 16px; padding: 20px; border: 1px solid #60a5fa; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(96, 165, 250, 0.1);">
               <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Link Your Physical Card</div>
               <div style="font-size: 0.85rem; color: #a1b0c0;">Tap here to scan your card and connect it to your account.</div>
             </div>
-          </div>
+          </div> -->
         </div>
         <div class="carousel-dots" id="banner-carousel-dots">
           <span class="dot active" id="dot-banner-reg" onclick="goToBannerSlide(0)"></span>
@@ -465,6 +467,24 @@
 
   <div class="global-footer">
     <img src="assets/Footer.png" alt="Haleon Footer">
+  </div>
+  
+  <!-- Image Promo Dialog -->
+  <div class="dialog-overlay" id="image-promo-dialog">
+    <div class="dialog-box"
+      style="position:relative; padding:0; background:transparent; border:none; max-width:420px; width:92%; margin:auto;">
+      <!-- Close Mark -->
+      <span onclick="document.getElementById('image-promo-dialog').classList.remove('open')"
+        style="position:absolute; top:12px; right:18px; color:#ffffff; font-size:2.2rem; font-weight:bold; cursor:pointer; z-index:101; text-shadow: 0 2px 8px rgba(0,0,0,0.8); line-height: 1;">
+        &times;
+      </span>
+      <!-- Clickable Image Link -->
+      <a href="https://www.haleonhealthpartner.com/en-eg/news-events/events-and-webinars/haleon-partners-club-beyond-the-counter/"
+        target="_blank"
+        style="display:block; overflow:hidden; border-radius:16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <img src="assets/webinar2.png" alt="Haleon Partners Club Webinar" style="width:100%; height:auto; display:block;">
+      </a>
+    </div>
   </div>
 
   <div class="dialog-overlay" id="welcome-dialog">

@@ -126,7 +126,19 @@ window.switchTab = function switchTab(tab) {
   document.getElementById("tab-" + tab).classList.add("active");
   currentTab = tabOrder.indexOf(tab);
   
-  if (tab === "home") { showView("view-home"); updateHomeUI(); } 
+  if (tab === "home") { 
+    showView("view-home"); 
+    updateHomeUI(); 
+    
+    // Automatically trigger the image banner promo dialog when entering the home page
+    if (!state.promoShown) {
+      const promoDialog = document.getElementById('image-promo-dialog');
+      if (promoDialog) {
+        promoDialog.classList.add('open');
+        state.promoShown = true;
+      }
+    }
+  } 
   else if (tab === "rewards") { showView("view-rewards"); renderRewardsPage(); } 
   else if (tab === "scanner") { showView("view-scanner"); } 
   else if (tab === "profile") { 
