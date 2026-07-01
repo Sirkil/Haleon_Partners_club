@@ -330,6 +330,7 @@
     let selectedUids = new Set();
     let currentFilter = 'all';
     let searchQuery   = '';
+    let currentFilteredUsers = [];
 
     // ── Auth state ───────────────────────────────────────
     onAuthStateChanged(auth, async (user) => {
@@ -487,81 +488,86 @@
     document.getElementById('stat-popup-clicks').textContent = popupClickCount;
   }
 
-    // ── Render table ──────────────────────────────────────
-    function renderTable() {
-      const tbody = document.getElementById('users-tbody');
-      let filtered = allUsers.filter(u => {
-        const p = u.profile || {};
-        const name  = (p.name  || '').toLowerCase();
-        const email = (p.email || '').toLowerCase();
-        const phone = (p.phone || p.whatsapp || '').toLowerCase();
-        const prof  = (p.profession || '').toLowerCase().trim();
-        
-        // Search Filter
-        if (searchQuery && !name.includes(searchQuery) && !email.includes(searchQuery) && !phone.includes(searchQuery)) return false;
-        
-        // Status & Link Filters
-        if (currentFilter === 'active'   && u.active !== true)  return false;
-        if (currentFilter === 'inactive' && u.active !== false)  return false;
-        if (currentFilter === 'unlinked' && u.cardId)            return false;
-        
-        // Tier / Profession Filters
-        if (currentFilter === 'student'    && prof !== 'student') return false;
-        if (currentFilter === 'pharmacist' && prof !== 'pharmacist') return false;
-        if (currentFilter === 'owner'      && (prof !== 'pharmacy owner' && prof !== 'owner')) return false;
-        if (currentFilter === 'other'      && (prof === 'student' || prof === 'pharmacist' || prof === 'pharmacy owner' || prof === 'owner')) return false;
-        
-        return true;
-      });
+  function renderTable() {
+    const tbody = document.getElementById('users-tbody');
 
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🔍</div>No users found in this category.</div></td></tr>`;
-        return;
-      }
+    // Assign to our global variable so the CSV exporter can access the currently displayed list
+    currentFilteredUsers = allUsers.filter(u => {
+      const p = u.profile || {};
+      const name = (p.name || '').toLowerCase();
+      const email = (p.email || '').toLowerCase();
+      const phone = (p.phone || p.whatsapp || '').toLowerCase();
+      const prof = (p.profession || '').toLowerCase().trim();
 
-      tbody.innerHTML = filtered.map(u => {
-        const p       = u.profile || {};
-        const name    = p.name  || (p.firstName + ' ' + (p.lastName||'')).trim() || '—';
-        const email   = p.email || '—';
-        const phone   = p.phone || p.whatsapp || '—';
-        const profStr = p.profession || '—';
-        const isActive = u.active === true;
-        const cardId  = u.cardId || '';
-        const sel     = selectedUids.has(u.uid);
+      // Search Filter
+      if (searchQuery && !name.includes(searchQuery) && !email.includes(searchQuery) && !phone.includes(searchQuery)) return false;
 
-        return `
-          <tr id="row-${u.uid}">
-            <td class="cb-cell">
-              <input type="checkbox" id="cb-${u.uid}" ${sel ? 'checked' : ''}
-                onchange="toggleSelect('${u.uid}', this.checked)">
-            </td>
-            <td class="name-cell">
-              <strong>${esc(name)}</strong>
-              <small>${esc(phone)}</small>
-            </td>
-            <td><small style="color:var(--muted)">${esc(email)}</small></td>
-            <td><small>${esc(profStr)}</small></td>
-            <td>
-              <span class="badge-pill ${isActive ? 'active' : 'inactive'}">
-                <span class="status-dot ${isActive ? 'active' : 'inactive'}"></span>
-                ${isActive ? 'Active' : 'Inactive'}
-              </span>
-            </td>
-            <td class="card-id-cell ${cardId ? 'linked' : ''}">
-              ${cardId ? esc(cardId) : '<span style="color:var(--muted)">Not linked</span>'}
-            </td>
-            <td><small style="color:var(--muted)">${u.tier || '—'}</small></td>
-            <td style="white-space:nowrap;">
-              <button class="btn-toggle ${isActive ? 'deactivate' : 'activate'}"
-                onclick="toggleActive('${u.uid}', ${!isActive})">
-                ${isActive ? 'Deactivate' : 'Activate'}
-              </button>
-              <button class="btn-toggle delete"
-                onclick="confirmDeleteUser('${u.uid}', '${esc(name).replace(/'/g, "&apos;")}')">🗑 Delete</button>
-            </td>
-          </tr>`;
-      }).join('');
+      // Status & Link Filters
+      if (currentFilter === 'active' && u.active !== true) return false;
+      if (currentFilter === 'inactive' && u.active !== false) return false;
+      if (currentFilter === 'unlinked' && u.cardId) return false;
+
+      // Tier / Profession Filters
+      if (currentFilter === 'student' && prof !== 'student') return false;
+      if (currentFilter === 'pharmacist' && prof !== 'pharmacist') return false;
+      if (currentFilter === 'owner' && (prof !== 'pharmacy owner' && prof !== 'owner')) return false;
+      if (currentFilter === 'other' && (prof === 'student' || prof === 'pharmacist' || prof === 'pharmacy owner' || prof === 'owner')) return false;
+
+      // NEW: Click Filters
+      if (currentFilter === 'banner' && u.clicked_banner !== true) return false;
+      if (currentFilter === 'popup' && u.clicked_popup !== true) return false;
+
+      return true;
+    });
+
+    if (currentFilteredUsers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🔍</div>No users found in this category.</div></td></tr>`;
+      return;
     }
+
+    tbody.innerHTML = currentFilteredUsers.map(u => {
+      const p = u.profile || {};
+      const name = p.name || (p.firstName + ' ' + (p.lastName || '')).trim() || '—';
+      const email = p.email || '—';
+      const phone = p.phone || p.whatsapp || '—';
+      const profStr = p.profession || '—';
+      const isActive = u.active === true;
+      const cardId = u.cardId || '';
+      const sel = selectedUids.has(u.uid);
+
+      return `
+      <tr id="row-${u.uid}">
+        <td class="cb-cell">
+          <input type="checkbox" id="cb-${u.uid}" ${sel ? 'checked' : ''}
+            onchange="toggleSelect('${u.uid}', this.checked)">
+        </td>
+        <td class="name-cell">
+          <strong>${esc(name)}</strong>
+          <small>${esc(phone)}</small>
+        </td>
+        <td><small style="color:var(--muted)">${esc(email)}</small></td>
+        <td><small>${esc(profStr)}</small></td>
+        <td>
+          <span class="badge-pill ${isActive ? 'active' : 'inactive'}">
+            <span class="status-dot ${isActive ? 'active' : 'inactive'}"></span>
+            ${isActive ? 'Active' : 'Inactive'}
+          </span>
+        </td>
+        <td class="card-id-cell ${cardId ? 'linked' : ''}">
+          ${cardId ? esc(cardId) : '<span style="color:var(--muted)">Not linked</span>'}
+        </td>
+        <td><small style="color:var(--muted)">${u.tier || '—'}</small></td>
+        <td style="white-space:nowrap;">
+          <button class="btn-toggle ${isActive ? 'deactivate' : 'activate'}"
+            onclick="toggleActive('${u.uid}', ${!isActive})">
+            ${isActive ? 'Deactivate' : 'Activate'}
+          </button>
+          <button class="btn-toggle delete"
+            onclick="confirmDeleteUser('${u.uid}', '${esc(name).replace(/'/g, "&apos;")}')">🗑 Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
 
     function esc(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -757,6 +763,64 @@
 
       renderTable();
     };
+    // ── Export to CSV ──────────────────────────────────────
+      window.exportCSV = function () {
+        if (!currentFilteredUsers || currentFilteredUsers.length === 0) {
+          showToast('❌ No data available to export.');
+          return;
+        }
+
+        // Define CSV headers
+        let csvContent = "Name,Email,Phone,Profession,Status,Tier,Card ID,Clicked Banner,Clicked Popup\n";
+
+        // Escape commas and quotes to prevent CSV formatting issues
+        const escapeCSV = (str) => {
+          let text = String(str || '').replace(/"/g, '""');
+          if (text.includes(',')) text = `"${text}"`;
+          return text;
+        };
+
+        // Populate rows based on the current filter
+        currentFilteredUsers.forEach(u => {
+          const p = u.profile || {};
+          const name = p.name || (p.firstName + ' ' + (p.lastName || '')).trim();
+          const email = p.email;
+          const phone = p.phone || p.whatsapp;
+          const prof = p.profession;
+          const status = u.active ? 'Active' : 'Inactive';
+          const tier = u.tier;
+          const cardId = u.cardId;
+          const banner = u.clicked_banner ? 'Yes' : 'No';
+          const popup = u.clicked_popup ? 'Yes' : 'No';
+
+          csvContent += [
+            escapeCSV(name),
+            escapeCSV(email),
+            escapeCSV(phone),
+            escapeCSV(prof),
+            escapeCSV(status),
+            escapeCSV(tier),
+            escapeCSV(cardId),
+            escapeCSV(banner),
+            escapeCSV(popup)
+          ].join(',') + "\n";
+        });
+
+        // Create a Blob and trigger download
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); // \uFEFF ensures UTF-8 BOM for Excel
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Haleon_Export_${currentFilter}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('📥 Download complete');
+      };
 
     window.refreshUsers = async function() {
       selectedUids.clear();
@@ -834,10 +898,13 @@
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <button class="filter-btn" id="btn-sync-jotform" onclick="doSyncJotForm()" title="Fetch new JotForm submissions and register them">⬇️ Sync JotForm</button>
         <button class="filter-btn" id="btn-force-activate" onclick="doForceActivate()" title="Re-process all submissions and set everyone to Active" style="border-color:#f59e0b;color:#f59e0b;">⚡ Fix Inactive</button>
+        <!-- NEW: Export Button -->
+        <button class="filter-btn" id="btn-export-csv" onclick="exportCSV()" style="border-color:#3b82f6;color:#3b82f6;">📥
+          Export CSV</button>
         <button class="filter-btn" onclick="refreshUsers()">🔄 Refresh</button>
         <button class="btn-logout" onclick="doAdminLogout()">Sign Out</button>
       </div>
-    </div>
+    </div>  
 
     <div class="stats-bar">
       <div class="stat-card" id="card-filter-all" onclick="setFilter('all')">
@@ -872,14 +939,14 @@
         <div class="val" id="stat-other" style="color:#94a3b8">—</div>
         <div class="lbl">Other / Unspecified</div>
       </div>
-      <div class="stat-card" style="cursor: default;">
-        <div class="val" id="stat-banner-clicks" style="color:#f97316">—</div>
-        <div class="lbl">Banner Clicks</div>
-      </div>
-      <div class="stat-card" style="cursor: default;">
-        <div class="val" id="stat-popup-clicks" style="color:#f97316">—</div>
-        <div class="lbl">Popup Clicks</div>
-      </div>
+    <div class="stat-card" id="card-filter-banner" onclick="setFilter('banner')">
+      <div class="val" id="stat-banner-clicks" style="color:#f97316">—</div>
+      <div class="lbl">Banner Clicks</div>
+    </div>
+    <div class="stat-card" id="card-filter-popup" onclick="setFilter('popup')">
+      <div class="val" id="stat-popup-clicks" style="color:#f97316">—</div>
+      <div class="lbl">Popup Clicks</div>
+    </div>
     </div>
 
     <div class="toolbar">
