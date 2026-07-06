@@ -15,7 +15,8 @@ if (initParams.get('ref') === 'in_event') {
 const state = {
   uid: null, user: null, score: 0, quizzesCompleted: 0,
   claimedBadges: [], answeredQuestions: [], gamesCompleted: {},
-  active: false, attendance: false, cardId: "", redeemedReward: null
+  active: false, attendance: false, cardId: "", redeemedReward: null,
+  ref: ""
 };
 
 let currentTab = 0;
@@ -50,6 +51,7 @@ window.bootApp = function (uid, data, showWelcome) {
   state.attendance = data.attendance !== undefined ? data.attendance : false;
   state.cardId = data.cardId || "";
   state.redeemedReward = data.redeemedReward || null;
+  state.ref = data.ref || "";
 
   answeredSet.clear();
   state.answeredQuestions.forEach((i) => answeredSet.add(i));
@@ -166,7 +168,8 @@ window.switchTab = function switchTab(tab) {
       const currentUrlParams = new URLSearchParams(window.location.search);
       const isEventRef = currentUrlParams.get('ref') === 'in_event' || 
                          sessionStorage.getItem('ref') === 'in_event' || 
-                         localStorage.getItem('ref') === 'in_event';
+                         localStorage.getItem('ref') === 'in_event' ||
+                         state.ref === 'in_event';
       
       if (isEventRef) {
         state.promoShown = true; // Skip showing and mark as shown
