@@ -27,6 +27,13 @@
     const auth  = getAuth(fbApp);
     const db    = getFirestore(fbApp);
 
+    // Parse URL parameters and check for reference
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('ref') === 'in_event') {
+      sessionStorage.setItem('ref', 'in_event');
+      localStorage.setItem('ref', 'in_event');
+    }
+
     const SHEETS_WEBHOOK = "https://script.google.com/macros/s/AKfycbwHj5I-AiO5mQhxJCUHjFf-p1spOTU-E5LZH3-Lc4cq5zkTHs2U-RrTsSY8JFzl2KrX/exec";
 
     // 2. Map Firebase error codes to friendly messages

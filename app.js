@@ -5,6 +5,13 @@
 
 const SHEETS_WEBHOOK = "https://script.google.com/macros/s/AKfycbwHj5I-AiO5mQhxJCUHjFf-p1spOTU-E5LZH3-Lc4cq5zkTHs2U-RrTsSY8JFzl2KrX/exec";
 
+// Parse URL parameters and check for reference
+const initParams = new URLSearchParams(window.location.search);
+if (initParams.get('ref') === 'in_event') {
+  sessionStorage.setItem('ref', 'in_event');
+  localStorage.setItem('ref', 'in_event');
+}
+
 const state = {
   uid: null, user: null, score: 0, quizzesCompleted: 0,
   claimedBadges: [], answeredQuestions: [], gamesCompleted: {},
@@ -156,10 +163,19 @@ window.switchTab = function switchTab(tab) {
     
     // Automatically trigger the image banner promo dialog when entering the home page
     if (!state.promoShown) {
-      const promoDialog = document.getElementById('image-promo-dialog');
-      if (promoDialog) {
-        promoDialog.classList.add('open');
-        state.promoShown = true;
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      const isEventRef = currentUrlParams.get('ref') === 'in_event' || 
+                         sessionStorage.getItem('ref') === 'in_event' || 
+                         localStorage.getItem('ref') === 'in_event';
+      
+      if (isEventRef) {
+        state.promoShown = true; // Skip showing and mark as shown
+      } else {
+        const promoDialog = document.getElementById('image-promo-dialog');
+        if (promoDialog) {
+          promoDialog.classList.add('open');
+          state.promoShown = true;
+        }
       }
     }
   } 
