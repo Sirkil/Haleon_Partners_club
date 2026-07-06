@@ -224,7 +224,8 @@
     <div style="color: white; font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Build Basket</div>
     <p style="color: #d1d5db; margin-bottom: 25px; line-height: 1.4; font-size: 0.95rem;">
       Read the patient case, then drag and drop<br>the correct medications into their basket.<br><br>
-      <strong style="color: white; font-size: 1.05rem;">+5 pts for correct items (max 50 pts)</strong>
+      <!-- [OLD - points system] <strong style="color: white; font-size: 1.05rem;">+5 pts for correct items (max 50 pts)</strong> -->
+      <strong style="color: white; font-size: 1.05rem;">Select the correct items for each patient!</strong>
     </p>
     
     <img src="assets/build basket/Start_Game_Button.png" alt="Start Game" style="max-width: 300px; cursor: pointer; margin: 0 auto; box-shadow: none;" onclick="proceedFromStart()">
@@ -242,7 +243,8 @@
       <button class="btn-secondary" style="background: rgba(255,255,255,0.1); border: none; padding: 6px 14px; width: auto; font-size: 0.85rem;" onclick="goBack()">← Exit</button>
       <div class="basket-hud">
         <div class="case-counter" id="case-counter">CASE 1 / 5</div>
-        <div class="score-display" id="hud-score">0 pts</div>
+        <!-- [OLD - points system] <div class="score-display" id="hud-score">0 pts</div> -->
+        <div class="score-display" id="hud-score" style="display:none;">0 pts</div>
       </div>
     </div>
 
@@ -381,7 +383,7 @@
 
       const caseData = cases[currentCaseIndex];
       document.getElementById('case-counter').textContent = `CASE ${currentCaseIndex + 1} / ${cases.length}`;
-      document.getElementById('hud-score').textContent = totalScore + " pts";
+      // [OLD - points system] document.getElementById('hud-score').textContent = totalScore + " pts";
       
       document.getElementById('case-text').textContent = caseData.scenario;
       document.getElementById('question-text').innerHTML = caseData.question;
@@ -480,17 +482,7 @@
       activeItem.style.height = '';
 
       if (itemCX > cartRect.left && itemCX < cartRect.right && itemCY > cartRect.top && itemCY < cartRect.bottom) {
-        // --- NEW LIMIT LOGIC ---
-        const itemsInCart = cart.querySelectorAll('.drag-item');
-        const isAlreadyInCart = activeItem.parentNode === cart;
-        
-        if (itemsInCart.length >= 2 && !isAlreadyInCart) {
-          showToast("You can only add 2 items to the basket!");
-          activeItem.originalSlot.appendChild(activeItem);
-        } else {
-          cart.appendChild(activeItem);
-        }
-        // ------------------------
+        cart.appendChild(activeItem);
       } else {
         activeItem.originalSlot.appendChild(activeItem);
       }
@@ -532,17 +524,17 @@
       });
 
       // Show total points earned/lost for this specific case at the top of the modal
-      const scoreHeaderColor = casePoints > 0 ? "var(--green)" : (casePoints < 0 ? "#ef4444" : "white");
-      const scoreHeader = `<h3 style="margin-bottom: 15px; color: ${scoreHeaderColor};">Score: ${casePoints > 0 ? '+'+casePoints : casePoints} pts</h3>`;
+      // [OLD - points system] const scoreHeaderColor = casePoints > 0 ? "var(--green)" : (casePoints < 0 ? "#ef4444" : "white");
+      // [OLD - points system] const scoreHeader = `<h3 style="margin-bottom: 15px; color: ${scoreHeaderColor};">Score: ${casePoints > 0 ? '+'+casePoints : casePoints} pts</h3>`;
 
-      document.getElementById('feedback-content').innerHTML = scoreHeader + feedbackHTML;
+      document.getElementById('feedback-content').innerHTML = feedbackHTML;
       document.getElementById('feedback-modal').classList.add('show');
 
       // Update total score in the background
       totalScore += casePoints;
       if (totalScore < 0) totalScore = 0;
       if (totalScore > 50) totalScore = 50;
-      document.getElementById('hud-score').textContent = totalScore + " pts";
+      // [OLD - points system] document.getElementById('hud-score').textContent = totalScore + " pts";
     }
 
     function closeFeedbackModal() {
@@ -561,7 +553,8 @@
       document.getElementById('screen-game').style.display = 'none';
       document.getElementById('screen-result').style.display = 'flex';
       
-      document.getElementById('result-score').textContent = totalScore + " pts";
+      // [OLD - points system] document.getElementById('result-score').textContent = totalScore + " pts";
+      document.getElementById('result-score').textContent = "Game Complete!";
 
       if(totalScore > 0) launchConfetti(3000); 
 

@@ -188,7 +188,8 @@
 
     <p style="color: #d1d5db; margin-bottom: 30px; line-height: 1.5; font-size: clamp(0.9rem, 4vw, 1.05rem); padding: 0 20px; box-sizing: border-box;">
       Test your knowledge. Is the statement<br>a Myth or a Fact?<br><br>
-      <strong style="color: white; font-size: clamp(1rem, 4.5vw, 1.15rem); display: block;">Correct answers: +5 pts. Max 40 pts.</strong>
+      <!-- [OLD - points system] <strong style="color: white; font-size: clamp(1rem, 4.5vw, 1.15rem); display: block;">Correct answers: +5 pts. Max 40 pts.</strong> -->
+      <strong style="color: white; font-size: clamp(1rem, 4.5vw, 1.15rem); display: block;">Answer all questions correctly to complete the challenge!</strong>
     </p>
 
     <img src="assets/Myth & Fact/startgameButton.png" alt="Start Game" class="img-btn" style="width: 80%; max-width: 300px; height: auto; margin: 0 auto; display: block;" onclick="proceedFromStart()">
@@ -200,7 +201,8 @@
 
     <div class="game-header">
       <button style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); padding: 8px 20px; width: auto; font-size: 1rem; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;" onclick="goBack()">← Exit</button>
-      <div class="score-display" id="hud-score">0 pts</div>
+      <!-- [OLD - points system] <div class="score-display" id="hud-score">0 pts</div> -->
+      <div class="score-display" id="hud-score" style="display:none;">0 pts</div>
     </div>
 
     <div class="game-board">
@@ -291,7 +293,8 @@
       const q = questions[currentQ];
       const isCorrect = (choice === q.answer);
       
-      let msg = isCorrect ? "Correct! +5 pts" : "Incorrect!";
+      // [OLD - points system] let msg = isCorrect ? "Correct! +5 pts" : "Incorrect!";
+      let msg = isCorrect ? "Correct!" : "Incorrect!";
       
       if (q.explanation) {
          msg += `<br><span style='font-size:0.85rem; font-weight:400; display:block; margin-top:6px; line-height:1.3;'>${q.explanation}</span>`;
@@ -299,7 +302,7 @@
 
       if (isCorrect) { 
         score += 5; 
-        document.getElementById('hud-score').textContent = score + " pts";
+        // [OLD - points system] document.getElementById('hud-score').textContent = score + " pts";
       }
       
       const readTime = q.explanation ? 3500 : 1500;
@@ -313,7 +316,8 @@
     function finishGame() {
       document.getElementById('screen-game').style.display = 'none'; 
       document.getElementById('screen-result').style.display = 'flex';
-      document.getElementById('result-score').textContent = score + " pts";
+      // [OLD - points system] document.getElementById('result-score').textContent = score + " pts";
+      document.getElementById('result-score').textContent = "Challenge Complete!";
       
       if (score > 0) launchConfetti(3000); 
 

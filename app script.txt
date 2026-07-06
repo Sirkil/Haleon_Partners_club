@@ -1,113 +1,353 @@
 /**
  * ════════════════════════════════════════════════════════════
- *  HALEON PARTNERS CLUB — Google Apps Script
- *  Receives POST from the app and upserts a row in Sheets
+ * HALEON PARTNERS CLUB — Google Apps Script  v8
+ * Fully Automatic (Time Trigger + Webhook + API Fallback)
  *
- *  HOW TO DEPLOY:
- *  1. Open Google Sheets → Extensions → Apps Script
- *  2. Paste this entire file, save
- *  3. Click Deploy → New Deployment → Web App
- *  4. Execute as: Me
- *     Who has access: Anyone
- *  5. Copy the Web App URL → paste into app.js SHEETS_WEBHOOK
+ * STEP 1 — Fill in Key & ID:
+ * • SPREADSHEET_ID: The ID of your APP DATA sheet
+ * • JOTFORM_API_KEY: Your JotForm API key
+ *
+ * STEP 2 — Update Google Sheet:
+ * • Delete old code in Extensions → Apps Script
+ * • Paste this new code → Save (💾)
+ *
+ * STEP 3 — Deploy & Connect JotForm Webhook (INSTANT SYNC):
+ * • Deploy → New Deployment → Web App → Execute as: Me / Anyone
+ * • Copy the Web App URL
+ * • Go to JotForm → Settings → Integrations → Webhooks
+ * • Paste the URL! Now every submit registers INSTANTLY!
  * ════════════════════════════════════════════════════════════
  */
 
-// ── Column order in the sheet ──────────
-const COLUMNS = [
-  'UID', 'Member ID', 'Name', 'Email', 'Phone', 'Pharmacy',
-  'Score', 'Tier', 'Quizzes Completed', 'Badges', 'Badges Count', 'Last Updated'
+// ══════════════════════════════════════════════════════════
+//  ⚙️  FILL IN THESE VALUES  ⚙️
+// ══════════════════════════════════════════════════════════
+var JOTFORM_API_KEY  = "69e05d717b12a2ee8ee9e7807bcf8999";
+var SPREADSHEET_ID   = "1u_KJkALsLzdQenxMEUySDcB-qIt8zdYG2oxr16-wnvU";
+var JOTFORM_FORM_ID  = "260843536266058";
+var FIREBASE_API_KEY = "AIzaSyAmVVQEPpfs_K3AfqfjkAaQUF8foj-WxsU";
+var FIREBASE_PROJECT = "haleon-partners-club";
+
+// ══════════════════════════════════════════════════════════
+var COLUMNS = [
+  'UID', 'Member ID', 'Name', 'Email', 'Phone', 'Pharmacy', 'City', 'Profession',
+  'Score', 'Tier', 'Quizzes Completed', 'Badges', 'Badges Count',
+  'Last Updated', 'PIN', 'Active', 'Attendance', 'Card ID', 'Submission ID'
 ];
 
+// ══════════════════════════════════════════════════════════
+//  🌟 RUN THIS MANUALLY TO TEST JOTFORM SYNC 🌟
+// ══════════════════════════════════════════════════════════
+function testSync() {
+  Logger.log('=== Starting JotForm sync test ===');
+  // Reset memory so it checks everything again (good for testing)
+  PropertiesService.getScriptProperties().deleteProperty('processedSubmissions');
+  var result = syncJotForm();
+  Logger.log('=== Sync result: ' + JSON.stringify(result) + ' ===');
+}
+
+function testSetup() {
+  try {
+    var sheet = getSheet();
+    upsertRow(sheet, {
+      uid: 'TEST-001', memberId: 'TEST0001', name: 'Test User',
+      email: 'test@haleon.com', phone: '01000000000', pharmacy: 'Test Pharmacy',
+      city: 'Cairo', profession: 'Pharmacist', score: 0, tier: 'Pharmacist',
+      quizzesCompleted: 0, badges: '', badgesCount: 0,
+      lastUpdated: new Date().toISOString(), pin: '1234',
+      active: true, attendance: false, cardId: '', submissionId: 'TEST'
+    });
+    Logger.log('✅ SUCCESS — check the Members sheet for the test row.');
+  } catch(err) {
+    Logger.log('❌ FAILED: ' + err.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  ⏰ TIME-BASED TRIGGER SETUP
+//  Run setupAutoSync() ONCE manually from the Apps Script editor.
+//  After that, new JotForm submissions are picked up every 1 minutes
+//  automatically — no JotForm webhook configuration needed.
+// ══════════════════════════════════════════════════════════
+function setupAutoSync() {
+  // Remove any existing autoSync triggers to avoid duplicates
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'autoSync') ScriptApp.deleteTrigger(t);
+  });
+  // Create new trigger: run autoSync every 1 minutes
+  ScriptApp.newTrigger('autoSync')
+    .timeBased()
+    .everyMinutes(1)
+    .create();
+  Logger.log('✅ Auto-sync trigger created — runs every 1 minutes automatically.');
+}
+
+function autoSync() {
+  // Called automatically every 1 minutes by the time-based trigger
+  var result = syncJotForm();
+  Logger.log('Auto-sync: ' + result.newUsers + ' new user(s) registered.');
+}
+
+// ══════════════════════════════════════════════════════════
+//  🔧 FORCE-ACTIVATE ALL USERS
+// ══════════════════════════════════════════════════════════
+function forceActivateAllUsers() {
+  Logger.log('=== Force-activating all users ===');
+  PropertiesService.getScriptProperties().deleteProperty('processedSubmissions');
+  var result = syncJotForm();
+  Logger.log('=== Force-activate result: ' + JSON.stringify(result) + ' ===');
+  return result;
+}
+
+// ══════════════════════════════════════════════════════════
+//  doPost — Handles JotForm Webhooks & App Sync
+// ══════════════════════════════════════════════════════════
 function doPost(e) {
   try {
-    const data    = JSON.parse(e.postData.contents);
-    const sheet   = getOrCreateSheet();
-    upsertRow(sheet, data);
+    // 1. JotForm Webhook (Instant trigger on submit)
+    // Apps Script puts multipart/form-data into e.parameter, not e.postData
+    if (e.parameter && (e.parameter.rawRequest || e.parameter.formID)) {
+      Logger.log('Webhook triggered instantly, running syncJotForm...');
+      var result = syncJotForm();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, newUsers: result.newUsers }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var body = {};
+    if (e.postData && e.postData.contents) {
+      try { body = JSON.parse(e.postData.contents); } catch(pe) {}
+    }
+    
+    Logger.log('doPost JSON: ' + JSON.stringify(body).substring(0, 100));
+
+    // 2. Admin Panel manual sync & Fallback JSON Webhook
+    if (body.action === 'syncJotForm' || body.formID) {
+      var result = syncJotForm();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, newUsers: result.newUsers }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 3. Force-activate all existing users (clears processed cache)
+    if (body.action === 'forceActivate') {
+      var result = forceActivateAllUsers();
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, newUsers: result.newUsers }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 4. Regular app sync (scores updates from game)
+    if (body.uid) {
+      var sheet = getSheet();
+      upsertRow(sheet, body);
+    }
+    
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
+
+  } catch(err) {
+    Logger.log('doPost ERROR: ' + err.message);
     return ContentService
       .createTextOutput(JSON.stringify({ success: false, error: err.message }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-// Allow CORS preflight (GET returns OK)
-function doGet(e) {
-  return ContentService
-    .createTextOutput('Haleon Partners Club — Sheets Webhook OK')
-    .setMimeType(ContentService.MimeType.TEXT);
+// ══════════════════════════════════════════════════════════
+//  API SYNC: Pulls data from JotForm API (fallback & instant sync)
+// ══════════════════════════════════════════════════════════
+function syncJotForm() {
+  if (!JOTFORM_API_KEY) return { newUsers: 0, error: 'no_api_key' };
+  
+  var props     = PropertiesService.getScriptProperties();
+  var processed = JSON.parse(props.getProperty('processedSubmissions') || '[]');
+  
+  var apiUrl = 'https://api.jotform.com/form/' + JOTFORM_FORM_ID + '/submissions?apiKey=' + JOTFORM_API_KEY + '&limit=100&orderby=created_at,DESC';
+  var res      = UrlFetchApp.fetch(apiUrl, { muteHttpExceptions: true });
+  var apiData  = JSON.parse(res.getContentText());
+  
+  if (apiData.responseCode !== 200) return { newUsers: 0, error: 'jotform_api_error' };
+
+  var submissions = apiData.content || [];
+  var newCount = 0;
+
+  submissions.forEach(function(sub) {
+    if (sub.status === 'DELETED' || processed.indexOf(sub.id) >= 0) return;
+
+    var a = sub.answers || {};
+    var email      = (fieldText(a, '4') || '').toLowerCase().trim();
+    var rawPin     = fieldText(a, '16');
+
+    if (!email || !rawPin) { processed.push(sub.id); return; }
+
+    registerUser({
+      firstName: fieldText(a, '3', 'first'), lastName: fieldText(a, '3', 'last'),
+      email: email, pharmacy: fieldText(a, '6'), phone: fieldText(a, '13'),
+      city: fieldText(a, '14'), profession: fieldText(a, '15'),
+      rawPin: rawPin, submissionId: sub.id
+    });
+
+    processed.push(sub.id);
+    newCount++;
+  });
+  
+  props.setProperty('processedSubmissions', JSON.stringify(processed.slice(-1000)));
+  return { newUsers: newCount };
 }
 
-// ────────────────────────────────────────
-function getOrCreateSheet() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
-  let   sheet = ss.getSheetByName('Members');
+function fieldText(answers, qNum, part) {
+  var q = answers[qNum];
+  if (!q) return '';
+  if (part && q.answer && typeof q.answer === 'object') return (q.answer[part] || '').toString().trim();
+  if (q.answer !== undefined && q.answer !== null) return q.answer.toString().trim();
+  return (q.text || '').trim();
+}
 
+// ══════════════════════════════════════════════════════════
+//  registerUser — Auth + Firestore + Sheet
+// ══════════════════════════════════════════════════════════
+function registerUser(f) {
+  var password = f.rawPin;
+  while (password.length > 0 && password.length < 6) password += '0';
+  var name = ((f.firstName || '') + ' ' + (f.lastName || '')).trim() || f.email;
+
+  var tier = 'Student';
+  var pl   = (f.profession || '').toLowerCase();
+  if (pl.indexOf('owner') >= 0)      tier = 'Pharmacy Owner';
+  else if (pl.indexOf('pharma') >= 0) tier = 'Pharmacist';
+
+  var uid     = '';
+  var idToken = '';
+  
+  // 1. Try to create a new Firebase Auth account
+  var signUpRes  = UrlFetchApp.fetch(
+    'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + FIREBASE_API_KEY,
+    { method:'post', contentType:'application/json', muteHttpExceptions:true,
+      payload: JSON.stringify({ email:f.email, password:password, returnSecureToken:true }) }
+  );
+  var signUpData = JSON.parse(signUpRes.getContentText());
+
+  if (signUpData.error && signUpData.error.message === 'EMAIL_EXISTS') {
+    // User already exists in Auth — sign in to get their UID & token
+    Logger.log('EMAIL_EXISTS — signing in to get UID for: ' + f.email);
+    var signInRes  = UrlFetchApp.fetch(
+      'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FIREBASE_API_KEY,
+      { method:'post', contentType:'application/json', muteHttpExceptions:true,
+        payload: JSON.stringify({ email:f.email, password:password, returnSecureToken:true }) }
+    );
+    var signInData = JSON.parse(signInRes.getContentText());
+    if (signInData.error) {
+      Logger.log('Sign-in failed for existing user: ' + signInData.error.message);
+      return 'signin_failed';
+    }
+    uid     = signInData.localId;
+    idToken = signInData.idToken;
+  } else if (signUpData.error) {
+    Logger.log('Auth error: ' + signUpData.error.message);
+    return 'auth_error';
+  } else {
+    // Brand new account created successfully
+    uid     = signUpData.localId;
+    idToken = signUpData.idToken;
+  }
+
+  var memberId = uid ? uid.slice(0, 8).toUpperCase() : '';
+  
+  // 2. Write / update Firestore document (always runs now — new or existing user)
+  if (uid && idToken) {
+    var userDoc = { fields: {
+      profile: { mapValue: { fields: {
+        firstName:  { stringValue: f.firstName  || '' },
+        lastName:   { stringValue: f.lastName   || '' },
+        name:       { stringValue: name },
+        email:      { stringValue: f.email },
+        phone:      { stringValue: f.phone      || '' },
+        whatsapp:   { stringValue: f.phone      || '' },
+        pharmacy:   { stringValue: f.pharmacy   || '' },
+        city:       { stringValue: f.city       || '' },
+        profession: { stringValue: f.profession || '' },
+        pin:        { stringValue: f.rawPin },
+        memberId:   { stringValue: memberId }
+      }}},
+      score:             { integerValue: 0 },
+      quizzesCompleted:  { integerValue: 0 },
+      tier:              { stringValue: tier },
+      active:            { booleanValue: true },
+      attendance:        { booleanValue: false },
+      cardId:            { stringValue: '' },
+      claimedBadges:     { arrayValue: { values: [] } },
+      answeredQuestions: { arrayValue: { values: [] } },
+      createdAt:         { stringValue: new Date().toISOString() }
+    }};
+
+    var firestoreRes = UrlFetchApp.fetch(
+      'https://firestore.googleapis.com/v1/projects/' + FIREBASE_PROJECT +
+      '/databases/(default)/documents/users/' + uid,
+      { method:'patch', contentType:'application/json', muteHttpExceptions:true,
+        headers: { 'Authorization': 'Bearer ' + idToken },
+        payload: JSON.stringify(userDoc) }
+    );
+    Logger.log('Firestore write status: ' + firestoreRes.getResponseCode() + ' for ' + f.email);
+  } else {
+    Logger.log('No UID/token — skipping Firestore write for: ' + f.email);
+  }
+
+  // 3. Spreadsheet (always write row)
+  var sheet = getSheet();
+  upsertRow(sheet, {
+    uid:uid||'', memberId:memberId||'', name:name, email:f.email, phone:f.phone,
+    pharmacy:f.pharmacy, city:f.city, profession:f.profession, score:0, tier:tier,
+    quizzesCompleted:0, badges:'', badgesCount:0, lastUpdated:new Date().toISOString(),
+    pin:f.rawPin, active:true, attendance:false, cardId:'', submissionId: f.submissionId || ''
+  });
+  
+  return 'ok';
+}
+
+function getSheet() {
+  var ss;
+  try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch(e) {}
+  if (!ss && SPREADSHEET_ID) ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  if (!ss) throw new Error('Cannot find spreadsheet. Ensure SPREADSHEET_ID is correct.');
+
+  var sheet = ss.getSheetByName('Members');
   if (!sheet) {
     sheet = ss.insertSheet('Members');
-    // Write header row
-    sheet.getRange(1, 1, 1, COLUMNS.length).setValues([COLUMNS]);
-    sheet.getRange(1, 1, 1, COLUMNS.length)
-      .setBackground('#1a4a2e')
-      .setFontColor('#ffffff')
-      .setFontWeight('bold');
+    var hdr = sheet.getRange(1, 1, 1, COLUMNS.length);
+    hdr.setValues([COLUMNS]);
+    hdr.setBackground('#1a4a2e').setFontColor('#ffffff').setFontWeight('bold');
     sheet.setFrozenRows(1);
   }
   return sheet;
 }
 
-function upsertRow(sheet, data) {
-  const values = sheet.getDataRange().getValues();
-  const uidCol = 0; // Column A = UID
+function upsertRow(sheet, d) {
+  var vals     = sheet.getDataRange().getValues();
+  var rowIndex = -1;
+  // match by email if uid is empty (for duplicate cases)
+  var searchKey = d.uid || d.email;
+  var colIndex = d.uid ? 0 : 3; // UID is col 0, Email is col 3
 
-  // Search for existing row (skip header row index 0)
-  let rowIndex = -1;
-  for (let i = 1; i < values.length; i++) {
-    if (values[i][uidCol] === data.uid) {
-      rowIndex = i + 1; // Sheets rows are 1-indexed
-      break;
-    }
+  for (var i = 1; i < vals.length; i++) {
+    if (vals[i][colIndex] === searchKey) { rowIndex = i + 1; break; }
   }
 
-  const rowData = [
-    data.uid               || '',
-    data.memberId          || '',
-    data.name              || '',
-    data.email             || '',
-    data.phone             || '',
-    data.pharmacy          || '',
-    data.score             || 0,
-    data.tier              || 'Student',
-    data.quizzesCompleted  || 0,
-    data.badges            || '',
-    data.badgesCount       || 0,
-    data.lastUpdated       || new Date().toISOString(),
+  var row = [
+    d.uid||'', d.memberId||'', d.name||'', d.email||'', d.phone||'', d.pharmacy||'', d.city||'', d.profession||'',
+    d.score||0, d.tier||'', d.quizzesCompleted||0, d.badges||'', d.badgesCount||0,
+    d.lastUpdated||new Date().toISOString(), d.pin||'', d.active!==undefined?d.active:false,
+    d.attendance!==undefined?d.attendance:false, d.cardId||'', d.submissionId||''
   ];
-
-  if (rowIndex > 0) {
-    // Update existing row
-    sheet.getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
-  } else {
-    // Append new row
-    sheet.appendRow(rowData);
-
-    // Auto-resize columns on first few rows
-    if (sheet.getLastRow() <= 5) {
-      sheet.autoResizeColumns(1, COLUMNS.length);
-    }
+  
+  if (rowIndex > 0) sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
+  else {
+    sheet.appendRow(row);
+    sheet.getRange(sheet.getLastRow(), 16).setBackground(d.active ? '#b7f0b0' : '#f0b0b0');
   }
+}
 
-  // Apply tier colour coding
-  const lastRow  = rowIndex > 0 ? rowIndex : sheet.getLastRow();
-  const tierCell = sheet.getRange(lastRow, 8); // Column H = Tier
-  const tierColors = {
-    'Student':              '#d0d8d0',
-    'Community Pharmacist': '#b0bac4',
-    'Pharmacy Owner':       '#d4b84a',
-  };
-  const color = tierColors[data.tier] || '#ffffff';
-  tierCell.setBackground(color);
+function doGet() {
+  return ContentService.createTextOutput("OK v8").setMimeType(ContentService.MimeType.JSON);
 }

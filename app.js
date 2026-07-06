@@ -57,10 +57,13 @@ window.bootApp = function (uid, data, showWelcome) {
   if (rGame && !isNaN(rPts)) {
     window.history.replaceState({}, document.title, window.location.pathname); 
     if (!state.gamesCompleted[rGame]) {
-      state.score += rPts;
-      state.gamesCompleted[rGame] = rPts;
+      // [OLD - points system] state.score += rPts;
+      // [OLD - points system] state.gamesCompleted[rGame] = rPts;
+      state.score += 5;
+      state.gamesCompleted[rGame] = 5;
       saveToFirebase(); 
-      setTimeout(() => showToast(`Success! +${rPts} points added.`), 500);
+      // [OLD - points system] setTimeout(() => showToast(`Success! +${rPts} points added.`), 500);
+      setTimeout(() => showToast(`Success! +5 points added.`), 500);
       setTimeout(() => checkBadgeUnlocks(), 1200);
     } else {
       setTimeout(() => showToast("Points already claimed for this game."), 500);
@@ -352,7 +355,8 @@ window.openGame = function(url, gameId) {
   if (state.gamesCompleted[gameId]) {
     const info = GAMES_INFO[gameId] || { name: 'Game', icon: 'assets/logo1.png' };
     const pts = state.gamesCompleted[gameId];
-    const ptsStr = (pts === true) ? "Points Collected" : (pts + " Points Collected");
+    // [OLD - points system] const ptsStr = (pts === true) ? "Points Collected" : (pts + " Points Collected");
+    const ptsStr = "Points already collected. You can play again but no more points will be added.";
 
     const iconEl = document.getElementById('replay-dialog-icon');
     if (iconEl) iconEl.innerHTML = `<img src="${info.icon}" style="width: 80px; height: 80px; object-fit: contain;">`;
@@ -433,7 +437,8 @@ async function processGameQR(raw) {
     if (state.gamesCompleted[data.gameId]) {
         const info = GAMES_INFO[data.gameId] || { name: 'Game', icon: 'assets/logo1.png' };
         const pts = state.gamesCompleted[data.gameId];
-        const ptsStr = (pts === true) ? "Points Already Collected" : (pts + " Points Already Collected");
+        // [OLD - points system] const ptsStr = (pts === true) ? "Points Already Collected" : (pts + " Points Already Collected");
+        const ptsStr = "Points already collected. You can play again but no more points will be added.";
 
         const iconEl = document.getElementById('replay-dialog-icon');
         if (iconEl) iconEl.innerHTML = `<img src="${info.icon}" style="width: 80px; height: 80px; object-fit: contain;">`;
@@ -451,10 +456,13 @@ async function processGameQR(raw) {
         return;
     }
     
-    state.score += data.points;
-    state.gamesCompleted[data.gameId] = data.points;
+    // [OLD - points system] state.score += data.points;
+    // [OLD - points system] state.gamesCompleted[data.gameId] = data.points;
+    state.score += 5;
+    state.gamesCompleted[data.gameId] = 5;
     await saveToFirebase();
-    showToast(`Success! +${data.points} points added.`);
+    // [OLD - points system] showToast(`Success! +${data.points} points added.`);
+    showToast(`Success! +5 points added.`);
     updateHomeUI();
     updateGamesUI();
     updateProfilePage();

@@ -420,7 +420,8 @@
         
         if (isCorrect) {
             if (isSinglePlayerMode) {
-                showToast("Correct! +15 pts");
+                // [OLD - points system] showToast("Correct! +15 pts");
+                showToast("Correct!");
             } else {
                 showToast(`Correct! Player ${activeBuzzer} +15 pts`);
             }
@@ -448,9 +449,7 @@
 
         if (isSinglePlayerMode) {
             actionsDiv.innerHTML = `
-              <div style="font-size:4cqi; font-weight:800; margin-bottom:30px; color: white;">
-                <span style="color:#FF9800;">Your Score: ${buzzerScore1} pts</span> 
-              </div>
+              <!-- [OLD - points system] <div style="font-size:4cqi; font-weight:800; margin-bottom:30px; color: white;"><span style="color:#FF9800;">Your Score: ${buzzerScore1} pts</span></div> -->
               <img src="assets/buzzer battle/collectpoints_button.png" class="img-btn" style="width: 25%; display: block; margin: 0 auto;" onclick="processPoints()">
             `;
         } else {
@@ -481,7 +480,8 @@
             actionsDiv.innerHTML = `
                 <div style="display:flex; justify-content:center; gap:5%; margin-bottom:20px;">
                     <div style="background:rgba(255,255,255,0.9); padding:1.5%; border-radius:16px;">
-                        <h3 style="margin-bottom:5px; color:#FF9800; font-size: 2cqi;">Reward: ${buzzerScore1} pts</h3>
+                        <!-- [OLD - points system] <h3 style="margin-bottom:5px; color:#FF9800; font-size: 2cqi;">Reward: ${buzzerScore1} pts</h3> -->
+                        <h3 style="margin-bottom:5px; color:#FF9800; font-size: 2cqi;">Your Reward</h3>
                         <div style="background:white; padding:5px; border-radius:8px;">${qr1.createImgTag(4)}</div>
                     </div>
                 </div>

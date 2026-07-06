@@ -416,7 +416,8 @@
     <div id="start-screen" class="screen active">
       <img src="assets/Perfect Shelf/gameLogo.png" alt="Game Logo" class="game-logo" onerror="this.style.display='none';">
       <h1>Perfect Shelf Builder</h1>
-      <p>Drag the 6 products to their correct places on the pharmacy shelves.<br><strong>Finish within 60s: 60 pts! Or 10 pts per item placed.</strong></p>
+      <!-- [OLD - points system] <p>Drag the 6 products to their correct places on the pharmacy shelves.<br><strong>Finish within 60s: 60 pts! Or 10 pts per item placed.</strong></p> -->
+      <p>Drag the 6 products to their correct places on the pharmacy shelves.<br><strong>Place all 6 products on the correct shelves within 60 seconds!</strong></p>
       <button class="btn-action" onclick="startGame()" style="padding:0; background:none;">
         <img src="assets/Perfect Shelf/startGameButton.png" alt="Start Game" onerror="this.outerHTML='<button class=\'btn-action\' onclick=\'startGame()\'>Start Game</button>'">
       </button>
@@ -459,7 +460,8 @@
     <div id="screen-result" class="screen end-screen-bg" style="text-align: center; justify-content: center; z-index: 20;">
       <div style="font-size: 5cqi; margin-bottom: 10px;">🏆</div>
       <div style="color: white; font-size: 4cqi; font-weight: 800;" id="result-title">Perfect!</div>
-      <div style="font-weight:800; font-size: 4.5cqi; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">120 pts</div>
+      <!-- [OLD - points system] <div style="font-weight:800; font-size: 4.5cqi; color: var(--green); margin-bottom: 20px; line-height: 1;" id="result-score">120 pts</div> -->
+      <div style="font-weight:800; font-size: 4.5cqi; color: var(--green); margin-bottom: 20px; line-height: 1; display:none;" id="result-score">120 pts</div>
       <div id="result-actions" style="width: 100%;"></div>
     </div>
 
@@ -573,16 +575,16 @@
 
     function finishGame() {
       showScreen('screen-result');
-      document.getElementById('result-score').textContent = dynamicScore + " pts";
-      const breakdown = dynamicScore === 60 
-        ? 'All 6 items placed — Speed Bonus! (60 pts)' 
-        : `${placedItemsCount} items placed × 10 pts each`;
+      // [OLD - points system] document.getElementById('result-score').textContent = dynamicScore + " pts";
+      // [OLD - points system] const breakdown = dynamicScore === 60 
+      //   ? 'All 6 items placed \u2014 Speed Bonus! (60 pts)' 
+      //   : `${placedItemsCount} items placed \u00d7 10 pts each`;
       document.getElementById('result-title').textContent = dynamicScore === 60 ? 'Perfect!' : 'Time\'s Up!';
 
       if(dynamicScore > 0) launchConfetti(3000); 
 
       const actionsDiv = document.getElementById('result-actions');
-      actionsDiv.innerHTML = `<button class="btn-action" onclick="processPoints()">Collect Points</button>`;
+      actionsDiv.innerHTML = `<button class="btn-action" onclick="processPoints()">Finish</button>`;
     }
 
     function processPoints() {
