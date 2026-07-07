@@ -75,6 +75,61 @@
       signOut
     };
 
+    // Helper: safely decode URL param (handles '+' as space, which some browsers don't)
+    function safeDecodeParam(val) {
+      if (!val) return '';
+      try {
+        // First replace '+' with spaces (URLSearchParams already does this, but be safe)
+        return decodeURIComponent(val.replace(/\+/g, ' '));
+      } catch (e) {
+        return val.replace(/\+/g, ' ');
+      }
+    }
+
+    // Helper: wait for a DOM element to exist (retries up to ~3 seconds)
+    function waitForElement(id, maxAttempts = 30) {
+      return new Promise((resolve) => {
+        let attempts = 0;
+        function check() {
+          const el = document.getElementById(id);
+          if (el) return resolve(el);
+          attempts++;
+          if (attempts >= maxAttempts) return resolve(null);
+          setTimeout(check, 100);
+        }
+        check();
+      });
+    }
+
+    // Helper: fill a field robustly (sets value + dispatches events for browser autofill recognition)
+    function fillField(el, value) {
+      if (!el || !value) return;
+      el.value = value;
+      el.setAttribute('value', value);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // Core autofill function (can be called from multiple entry points)
+    async function tryAutoFillFromURL() {
+      const _p = new URLSearchParams(window.location.search);
+      const emailParam = _p.get('email');
+      const passParam = _p.get('pass');
+      if (!emailParam && !passParam) return;
+
+      const emailEl = await waitForElement('login-email');
+      const passEl = await waitForElement('login-pass');
+
+      if (emailParam) fillField(emailEl, safeDecodeParam(emailParam));
+      if (passParam) fillField(passEl, safeDecodeParam(passParam));
+
+      // Clean URL to avoid leaking credentials in browser history
+      if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+
     onAuthStateChanged(auth, async user => {
       const overlay = document.getElementById('loading-overlay');
       if (overlay) overlay.style.display = 'none';
@@ -94,15 +149,16 @@
       } else {
         window.showView('view-login');
         // Pre-fill login fields from URL params (deep link)
-        const _p = new URLSearchParams(window.location.search);
-        if (_p.get('email')) {
-          const emailEl = document.getElementById('login-email');
-          if (emailEl) emailEl.value = decodeURIComponent(_p.get('email'));
-        }
-        if (_p.get('pass')) {
-          const passEl = document.getElementById('login-pass');
-          if (passEl) passEl.value = decodeURIComponent(_p.get('pass'));
-        }
+        tryAutoFillFromURL();
+      }
+    });
+
+    // Fallback: also try autofill on DOMContentLoaded (covers slow Firebase init on some devices)
+    document.addEventListener('DOMContentLoaded', () => {
+      const _p = new URLSearchParams(window.location.search);
+      if (_p.get('email') || _p.get('pass')) {
+        // Delay slightly to let views render
+        setTimeout(() => tryAutoFillFromURL(), 300);
       }
     });
   </script>
