@@ -507,6 +507,7 @@
       // Status & Link Filters
       if (currentFilter === 'active' && u.active !== true) return false;
       if (currentFilter === 'inactive' && u.active !== false) return false;
+      if (currentFilter === 'linked' && !u.cardId) return false;
       if (currentFilter === 'unlinked' && u.cardId) return false;
 
       // Tier / Profession Filters
@@ -921,7 +922,7 @@
         <div class="val" id="stat-inactive" style="color:var(--red)">—</div>
         <div class="lbl">Inactive</div>
       </div>
-      <div class="stat-card" id="card-filter-unlinked" onclick="setFilter('unlinked')">
+      <div class="stat-card" id="card-filter-linked" onclick="setFilter('linked')">
         <div class="val" id="stat-linked" style="color:#60a5fa">—</div>
         <div class="lbl">Cards Linked</div>
       </div>
