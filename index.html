@@ -173,6 +173,7 @@
   <div class="toast" id="toast"></div>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;display:none;"></canvas>
 
+  <!--
   <div class="dialog-overlay" id="register-reminder-dialog">
     <div class="dialog-box">
       <div class="dialog-icon">
@@ -189,6 +190,7 @@
       <button class="btn-secondary" style="margin-top:12px" onclick="document.getElementById('register-reminder-dialog').classList.remove('open')">Close</button>
     </div>
   </div>
+  -->
 
   <div class="loading-overlay" id="loading-overlay">
     <img src="assets/logo1.png" alt="Haleon Logo" class="app-logo" style="max-width: 180px;">
@@ -262,6 +264,7 @@
     <div class="section">
       <div class="carousel-wrap" id="top-banners-wrap" style="margin-bottom: 24px;">
         <div class="carousel-track" id="banner-carousel-track" style="display: flex; flex-wrap: nowrap; width: 100%;">
+          <!--
           <div class="carousel-slide" id="slide-banner-reg"
             style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
             <div class="registration-reminder"
@@ -271,16 +274,16 @@
                 style="width: 100%; height: auto; display: block;">
             </div>
           </div>
-          <!-- <div class="carousel-slide" id="slide-banner-card" style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
+          -->
+          <div class="carousel-slide" id="slide-banner-card" style="flex: 0 0 100%; width: 100%; min-width: 100%; padding: 0; height: auto;">
             <div class="registration-reminder" onclick="openCardLinkDialog()" style="width: 100%; background: linear-gradient(135deg, #0d1a2e, #1a3a5a); border-radius: 16px; padding: 20px; border: 1px solid #60a5fa; cursor: pointer; text-align: center; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(96, 165, 250, 0.1);">
               <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Link Your Physical Card</div>
               <div style="font-size: 0.85rem; color: #a1b0c0;">Tap here to scan your card and connect it to your account.</div>
             </div>
-          </div> -->
+          </div>
         </div>
-        <div class="carousel-dots" id="banner-carousel-dots">
-          <span class="dot active" id="dot-banner-reg" onclick="goToBannerSlide(0)"></span>
-          <span class="dot" id="dot-banner-card" onclick="goToBannerSlide(1)"></span>
+        <div class="carousel-dots" id="banner-carousel-dots" style="display: none;">
+          <span class="dot active" id="dot-banner-card" onclick="goToBannerSlide(0)"></span>
         </div>
       </div>
 
@@ -526,6 +529,7 @@
     <img src="assets/Footer.png" alt="Haleon Footer">
   </div>
   
+<!--
 <div class="dialog-overlay" id="image-promo-dialog">
   <div class="dialog-box"
     style="position:relative; padding:0; background:transparent; border:none; max-width:420px; width:92%; margin:auto;">
@@ -540,6 +544,7 @@
     </a>
   </div>
 </div>
+-->
 
   <div class="dialog-overlay" id="welcome-dialog">
     <div class="dialog-box" style="position:relative;overflow:hidden;">

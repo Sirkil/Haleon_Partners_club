@@ -112,7 +112,7 @@ window.bootApp = function (uid, data, showWelcome) {
       goToBannerSlide(0);
     } else {
       slideBannerCard.style.display = 'block';
-      if (bannerDotsWrapper) bannerDotsWrapper.style.display = 'flex';
+      if (bannerDotsWrapper) bannerDotsWrapper.style.display = 'none';
       if (topBannersWrap) {
         topBannersWrap.style.marginLeft = '';
         topBannersWrap.style.marginRight = '';
@@ -163,6 +163,7 @@ window.switchTab = function switchTab(tab) {
     showView("view-home"); 
     updateHomeUI(); 
     
+    /*
     // Automatically trigger the image banner promo dialog when entering the home page
     if (!state.promoShown) {
       const currentUrlParams = new URLSearchParams(window.location.search);
@@ -181,6 +182,7 @@ window.switchTab = function switchTab(tab) {
         }
       }
     }
+    */
   } 
   else if (tab === "rewards") { showView("view-rewards"); renderRewardsPage(); } 
   else if (tab === "scanner") { showView("view-scanner"); } 
